@@ -1,0 +1,668 @@
+{
+  "books": [
+    {
+      "id": 1,
+      "name": "Genèse",
+      "fileName": "genesis",
+      "testament": "old",
+      "abbreviation": "Gn",
+      "chapters": 50,
+      "order": 1
+    },
+    {
+      "id": 2,
+      "name": "Exode",
+      "fileName": "exodus",
+      "testament": "old",
+      "abbreviation": "Ex",
+      "chapters": 40,
+      "order": 2
+    },
+    {
+      "id": 3,
+      "name": "Lévitique",
+      "fileName": "leviticus",
+      "testament": "old",
+      "abbreviation": "Lv",
+      "chapters": 27,
+      "order": 3
+    },
+    {
+      "id": 4,
+      "name": "Nombres",
+      "fileName": "numbers",
+      "testament": "old",
+      "abbreviation": "Nb",
+      "chapters": 36,
+      "order": 4
+    },
+    {
+      "id": 5,
+      "name": "Deutéronome",
+      "fileName": "deuteronomy",
+      "testament": "old",
+      "abbreviation": "Dt",
+      "chapters": 34,
+      "order": 5
+    },
+    {
+      "id": 6,
+      "name": "Josué",
+      "fileName": "joshua",
+      "testament": "old",
+      "abbreviation": "Jos",
+      "chapters": 24,
+      "order": 6
+    },
+    {
+      "id": 7,
+      "name": "Juges",
+      "fileName": "judges",
+      "testament": "old",
+      "abbreviation": "Jg",
+      "chapters": 21,
+      "order": 7
+    },
+    {
+      "id": 8,
+      "name": "Ruth",
+      "fileName": "ruth",
+      "testament": "old",
+      "abbreviation": "Rt",
+      "chapters": 4,
+      "order": 8
+    },
+    {
+      "id": 9,
+      "name": "1 Samuel",
+      "fileName": "1-samuel",
+      "testament": "old",
+      "abbreviation": "1 S",
+      "chapters": 31,
+      "order": 9
+    },
+    {
+      "id": 10,
+      "name": "2 Samuel",
+      "fileName": "2-samuel",
+      "testament": "old",
+      "abbreviation": "2 S",
+      "chapters": 24,
+      "order": 10
+    },
+    {
+      "id": 11,
+      "name": "1 Rois",
+      "fileName": "1-kings",
+      "testament": "old",
+      "abbreviation": "1 R",
+      "chapters": 22,
+      "order": 11
+    },
+    {
+      "id": 12,
+      "name": "2 Rois",
+      "fileName": "2-kings",
+      "testament": "old",
+      "abbreviation": "2 R",
+      "chapters": 25,
+      "order": 12
+    },
+    {
+      "id": 13,
+      "name": "1 Chroniques",
+      "fileName": "1-chronicles",
+      "testament": "old",
+      "abbreviation": "1 Ch",
+      "chapters": 29,
+      "order": 13
+    },
+    {
+      "id": 14,
+      "name": "2 Chroniques",
+      "fileName": "2-chronicles",
+      "testament": "old",
+      "abbreviation": "2 Ch",
+      "chapters": 36,
+      "order": 14
+    },
+    {
+      "id": 15,
+      "name": "Esdras",
+      "fileName": "ezra",
+      "testament": "old",
+      "abbreviation": "Esd",
+      "chapters": 10,
+      "order": 15
+    },
+    {
+      "id": 16,
+      "name": "Néhémie",
+      "fileName": "nehemiah",
+      "testament": "old",
+      "abbreviation": "Ne",
+      "chapters": 13,
+      "order": 16
+    },
+    {
+      "id": 17,
+      "name": "Tobie",
+      "fileName": "tobit",
+      "testament": "old",
+      "abbreviation": "Tb",
+      "chapters": 14,
+      "order": 17,
+      "apocrypha": true
+    },
+    {
+      "id": 18,
+      "name": "Judith",
+      "fileName": "judith",
+      "testament": "old",
+      "abbreviation": "Jdt",
+      "chapters": 16,
+      "order": 18,
+      "apocrypha": true
+    },
+    {
+      "id": 19,
+      "name": "Esther",
+      "fileName": "esther",
+      "testament": "old",
+      "abbreviation": "Est",
+      "chapters": 10,
+      "order": 19
+    },
+    {
+      "id": 20,
+      "name": "1 Maccabées",
+      "fileName": "1-maccabees",
+      "testament": "old",
+      "abbreviation": "1 M",
+      "chapters": 16,
+      "order": 20,
+      "apocrypha": true
+    },
+    {
+      "id": 21,
+      "name": "2 Maccabées",
+      "fileName": "2-maccabees",
+      "testament": "old",
+      "abbreviation": "2 M",
+      "chapters": 15,
+      "order": 21,
+      "apocrypha": true
+    },
+    {
+      "id": 22,
+      "name": "Job",
+      "fileName": "job",
+      "testament": "old",
+      "abbreviation": "Jb",
+      "chapters": 42,
+      "order": 22
+    },
+    {
+      "id": 23,
+      "name": "Psaumes",
+      "fileName": "psalms",
+      "testament": "old",
+      "abbreviation": "Ps",
+      "chapters": 150,
+      "order": 23
+    },
+    {
+      "id": 24,
+      "name": "Proverbes",
+      "fileName": "proverbs",
+      "testament": "old",
+      "abbreviation": "Pr",
+      "chapters": 31,
+      "order": 24
+    },
+    {
+      "id": 25,
+      "name": "Ecclésiaste",
+      "fileName": "ecclesiastes",
+      "testament": "old",
+      "abbreviation": "Ec",
+      "chapters": 12,
+      "order": 25
+    },
+    {
+      "id": 26,
+      "name": "Cantique des Cantiques",
+      "fileName": "song-of-songs",
+      "testament": "old",
+      "abbreviation": "Ct",
+      "chapters": 8,
+      "order": 26
+    },
+    {
+      "id": 27,
+      "name": "Sagesse",
+      "fileName": "wisdom",
+      "testament": "old",
+      "abbreviation": "Sg",
+      "chapters": 19,
+      "order": 27,
+      "apocrypha": true
+    },
+    {
+      "id": 28,
+      "name": "Ecclésiastique",
+      "fileName": "sirach",
+      "testament": "old",
+      "abbreviation": "Si",
+      "chapters": 51,
+      "order": 28,
+      "apocrypha": true
+    },
+    {
+      "id": 29,
+      "name": "Isaïe",
+      "fileName": "isaiah",
+      "testament": "old",
+      "abbreviation": "Is",
+      "chapters": 66,
+      "order": 29
+    },
+    {
+      "id": 30,
+      "name": "Jérémie",
+      "fileName": "jeremiah",
+      "testament": "old",
+      "abbreviation": "Jr",
+      "chapters": 52,
+      "order": 30
+    },
+    {
+      "id": 31,
+      "name": "Lamentations",
+      "fileName": "lamentations",
+      "testament": "old",
+      "abbreviation": "Lm",
+      "chapters": 5,
+      "order": 31
+    },
+    {
+      "id": 32,
+      "name": "Baruch",
+      "fileName": "baruch",
+      "testament": "old",
+      "abbreviation": "Ba",
+      "chapters": 5,
+      "order": 32,
+      "apocrypha": true
+    },
+    {
+      "id": 33,
+      "name": "Ézéchiel",
+      "fileName": "ezekiel",
+      "testament": "old",
+      "abbreviation": "Ez",
+      "chapters": 48,
+      "order": 33
+    },
+    {
+      "id": 34,
+      "name": "Daniel",
+      "fileName": "daniel",
+      "testament": "old",
+      "abbreviation": "Dn",
+      "chapters": 12,
+      "order": 34
+    },
+    {
+      "id": 35,
+      "name": "Osée",
+      "fileName": "hosea",
+      "testament": "old",
+      "abbreviation": "Os",
+      "chapters": 14,
+      "order": 35
+    },
+    {
+      "id": 36,
+      "name": "Joël",
+      "fileName": "joel",
+      "testament": "old",
+      "abbreviation": "Jl",
+      "chapters": 3,
+      "order": 36
+    },
+    {
+      "id": 37,
+      "name": "Amos",
+      "fileName": "amos",
+      "testament": "old",
+      "abbreviation": "Am",
+      "chapters": 9,
+      "order": 37
+    },
+    {
+      "id": 38,
+      "name": "Abdias",
+      "fileName": "obadiah",
+      "testament": "old",
+      "abbreviation": "Ab",
+      "chapters": 1,
+      "order": 38
+    },
+    {
+      "id": 39,
+      "name": "Jonas",
+      "fileName": "jonah",
+      "testament": "old",
+      "abbreviation": "Jon",
+      "chapters": 4,
+      "order": 39
+    },
+    {
+      "id": 40,
+      "name": "Michée",
+      "fileName": "micah",
+      "testament": "old",
+      "abbreviation": "Mi",
+      "chapters": 7,
+      "order": 40
+    },
+    {
+      "id": 41,
+      "name": "Nahum",
+      "fileName": "nahum",
+      "testament": "old",
+      "abbreviation": "Na",
+      "chapters": 3,
+      "order": 41
+    },
+    {
+      "id": 42,
+      "name": "Habakuk",
+      "fileName": "habakkuk",
+      "testament": "old",
+      "abbreviation": "Ha",
+      "chapters": 3,
+      "order": 42
+    },
+    {
+      "id": 43,
+      "name": "Sophonie",
+      "fileName": "zephaniah",
+      "testament": "old",
+      "abbreviation": "Sf",
+      "chapters": 3,
+      "order": 43
+    },
+    {
+      "id": 44,
+      "name": "Aggée",
+      "fileName": "haggai",
+      "testament": "old",
+      "abbreviation": "Ag",
+      "chapters": 2,
+      "order": 44
+    },
+    {
+      "id": 45,
+      "name": "Zacharie",
+      "fileName": "zechariah",
+      "testament": "old",
+      "abbreviation": "Za",
+      "chapters": 14,
+      "order": 45
+    },
+    {
+      "id": 46,
+      "name": "Malachie",
+      "fileName": "malachi",
+      "testament": "old",
+      "abbreviation": "Ml",
+      "chapters": 4,
+      "order": 46
+    },
+    {
+      "id": 47,
+      "name": "Matthieu",
+      "fileName": "matthew",
+      "testament": "new",
+      "abbreviation": "Mt",
+      "chapters": 28,
+      "order": 47
+    },
+    {
+      "id": 48,
+      "name": "Marc",
+      "fileName": "mark",
+      "testament": "new",
+      "abbreviation": "Mc",
+      "chapters": 16,
+      "order": 48
+    },
+    {
+      "id": 49,
+      "name": "Luc",
+      "fileName": "luke",
+      "testament": "new",
+      "abbreviation": "Lc",
+      "chapters": 24,
+      "order": 49
+    },
+    {
+      "id": 50,
+      "name": "Jean",
+      "fileName": "john",
+      "testament": "new",
+      "abbreviation": "Jn",
+      "chapters": 21,
+      "order": 50
+    },
+    {
+      "id": 51,
+      "name": "Actes des Apôtres",
+      "fileName": "acts",
+      "testament": "new",
+      "abbreviation": "Ac",
+      "chapters": 28,
+      "order": 51
+    },
+    {
+      "id": 52,
+      "name": "Romains",
+      "fileName": "romans",
+      "testament": "new",
+      "abbreviation": "Rm",
+      "chapters": 16,
+      "order": 52
+    },
+    {
+      "id": 53,
+      "name": "1 Corinthiens",
+      "fileName": "1-corinthians",
+      "testament": "new",
+      "abbreviation": "1 Co",
+      "chapters": 16,
+      "order": 53
+    },
+    {
+      "id": 54,
+      "name": "2 Corinthiens",
+      "fileName": "2-corinthians",
+      "testament": "new",
+      "abbreviation": "2 Co",
+      "chapters": 13,
+      "order": 54
+    },
+    {
+      "id": 55,
+      "name": "Galates",
+      "fileName": "galatians",
+      "testament": "new",
+      "abbreviation": "Ga",
+      "chapters": 6,
+      "order": 55
+    },
+    {
+      "id": 56,
+      "name": "Éphésiens",
+      "fileName": "ephesians",
+      "testament": "new",
+      "abbreviation": "Ep",
+      "chapters": 6,
+      "order": 56
+    },
+    {
+      "id": 57,
+      "name": "Philippiens",
+      "fileName": "philippians",
+      "testament": "new",
+      "abbreviation": "Ph",
+      "chapters": 4,
+      "order": 57
+    },
+    {
+      "id": 58,
+      "name": "Colossiens",
+      "fileName": "colossians",
+      "testament": "new",
+      "abbreviation": "Col",
+      "chapters": 4,
+      "order": 58
+    },
+    {
+      "id": 59,
+      "name": "1 Thessaloniciens",
+      "fileName": "1-thessalonians",
+      "testament": "new",
+      "abbreviation": "1 Th",
+      "chapters": 5,
+      "order": 59
+    },
+    {
+      "id": 60,
+      "name": "2 Thessaloniciens",
+      "fileName": "2-thessalonians",
+      "testament": "new",
+      "abbreviation": "2 Th",
+      "chapters": 3,
+      "order": 60
+    },
+    {
+      "id": 61,
+      "name": "1 Timothée",
+      "fileName": "1-timothy",
+      "testament": "new",
+      "abbreviation": "1 Tm",
+      "chapters": 6,
+      "order": 61
+    },
+    {
+      "id": 62,
+      "name": "2 Timothée",
+      "fileName": "2-timothy",
+      "testament": "new",
+      "abbreviation": "2 Tm",
+      "chapters": 4,
+      "order": 62
+    },
+    {
+      "id": 63,
+      "name": "Tite",
+      "fileName": "titus",
+      "testament": "new",
+      "abbreviation": "Tt",
+      "chapters": 3,
+      "order": 63
+    },
+    {
+      "id": 64,
+      "name": "Philémon",
+      "fileName": "philemon",
+      "testament": "new",
+      "abbreviation": "Phm",
+      "chapters": 1,
+      "order": 64
+    },
+    {
+      "id": 65,
+      "name": "Hébreux",
+      "fileName": "hebrews",
+      "testament": "new",
+      "abbreviation": "He",
+      "chapters": 13,
+      "order": 65
+    },
+    {
+      "id": 66,
+      "name": "Jacques",
+      "fileName": "james",
+      "testament": "new",
+      "abbreviation": "Jc",
+      "chapters": 5,
+      "order": 66
+    },
+    {
+      "id": 67,
+      "name": "1 Pierre",
+      "fileName": "1-peter",
+      "testament": "new",
+      "abbreviation": "1 P",
+      "chapters": 5,
+      "order": 67
+    },
+    {
+      "id": 68,
+      "name": "2 Pierre",
+      "fileName": "2-peter",
+      "testament": "new",
+      "abbreviation": "2 P",
+      "chapters": 3,
+      "order": 68
+    },
+    {
+      "id": 69,
+      "name": "1 Jean",
+      "fileName": "1-john",
+      "testament": "new",
+      "abbreviation": "1 Jn",
+      "chapters": 5,
+      "order": 69
+    },
+    {
+      "id": 70,
+      "name": "2 Jean",
+      "fileName": "2-john",
+      "testament": "new",
+      "abbreviation": "2 Jn",
+      "chapters": 1,
+      "order": 70
+    },
+    {
+      "id": 71,
+      "name": "3 Jean",
+      "fileName": "3-john",
+      "testament": "new",
+      "abbreviation": "3 Jn",
+      "chapters": 1,
+      "order": 71
+    },
+    {
+      "id": 72,
+      "name": "Jude",
+      "fileName": "jude",
+      "testament": "new",
+      "abbreviation": "Jde",
+      "chapters": 1,
+      "order": 72
+    },
+    {
+      "id": 73,
+      "name": "Apocalypse",
+      "fileName": "revelation",
+      "testament": "new",
+      "abbreviation": "Ap",
+      "chapters": 22,
+      "order": 73
+    }
+  ]
+}
