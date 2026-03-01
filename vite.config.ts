@@ -1,9 +1,6 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { componentTagger } from "lovable-tagger";
-import { siteLinks } from './src/data/site-links';
-import { VitePWA } from 'vite-plugin-pwa';
 
 function buildSitemapXml(baseUrl: string, paths: string[]) {
   const lastmod = new Date().toISOString();
@@ -34,12 +31,11 @@ function sitemapPlugin(): Plugin {
   return {
     name: "3v-sitemap",
     apply: "build" as const,
-    generateBundle(this: any) {
-      // Public pages only (exclude /admin, /auth)
+    async generateBundle(this: any) {
+      // Dynamically import site-links only at build time
+      const { siteLinks } = await import('./src/data/site-links');
       const baseUrl = "https://voie-verite-vie.org";
-      // Build sitemap paths from central `siteLinks` to keep navigation + sitemap in sync
-      const paths = Array.from(new Set(siteLinks.flatMap((c) => c.items.map((i) => i.href))));
-
+      const paths = Array.from(new Set(siteLinks.flatMap((c: any) => c.items.map((i: any) => i.href))));
       const xml = buildSitemapXml(baseUrl, paths);
       this.emitFile({ type: "asset", fileName: "sitemap.xml", source: xml });
     },
@@ -56,64 +52,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' && componentTagger(),
     sitemapPlugin(),
-    mode === 'production' && VitePWA({
-      registerType: 'autoUpdate',
-      manifestFilename: 'manifest.json',
-      includeAssets: ['favicon.ico', 'robots.txt'],
-      devOptions: {
-        enabled: false,
-      },
-      manifest: {
-        name: 'Voie Vérité Vie',
-        short_name: 'Voie Vérité Vie',
-        description: 'Sanctuaire spirituel et phare d\'espérance pour la jeunesse',
-        theme_color: '#5AB4DB',
-        background_color: '#ffffff',
-        display: 'standalone',
-        orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
-        icons: [
-          {
-            src: '/pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any maskable'
-          },
-          {
-            src: '/pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
-          }
-        ]
-      },
-      workbox: {
-        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10 MB
-        globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg,woff,woff2}'],
-        cleanupOutdatedCaches: true,
-        skipWaiting: true,
-        clientsClaim: true,
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          }
-        ]
-      }
-    })
   ].filter(Boolean),
   resolve: {
     alias: {
