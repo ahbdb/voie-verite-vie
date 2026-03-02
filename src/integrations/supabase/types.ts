@@ -370,27 +370,30 @@ export type Database = {
       page_content: {
         Row: {
           content: Json | null
+          created_at: string | null
           id: string
           page_key: string
           subtitle: string | null
           title: string | null
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
           content?: Json | null
+          created_at?: string | null
           id?: string
           page_key: string
           subtitle?: string | null
           title?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
           content?: Json | null
+          created_at?: string | null
           id?: string
           page_key?: string
           subtitle?: string | null
           title?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -597,33 +600,6 @@ export type Database = {
           },
         ]
       }
-      user_program_progress: {
-        Row: {
-          created_at: string | null
-          id: string
-          program_key: string
-          date: string
-          user_id: string
-          metadata: Json | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          program_key: string
-          date: string
-          user_id: string
-          metadata?: Json | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          program_key?: string
-          date?: string
-          user_id?: string
-          metadata?: Json | null
-        }
-        Relationships: []
-      }
       user_roles: {
         Row: {
           id: string
@@ -647,12 +623,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      fix_superadmin_role: {
+        Args: never
+        Returns: {
+          new_role: Database["public"]["Enums"]["app_role"]
+          old_role: Database["public"]["Enums"]["app_role"]
+          success: boolean
+          user_id: string
+        }[]
+      }
+      get_current_user_roles: {
+        Args: never
+        Returns: {
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }[]
+      }
+      get_user_admin_role: {
+        Args: never
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      hard_delete_auth_user: { Args: { target_user_id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_admin_simple: { Args: { _user_id: string }; Returns: boolean }
+      update_page_content_data: {
+        Args: { p_content: Json; p_page_key: string }
+        Returns: Json
       }
     }
     Enums: {
