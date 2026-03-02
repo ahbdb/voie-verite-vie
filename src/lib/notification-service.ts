@@ -74,7 +74,6 @@ export const sendVisibleNotification = async (payload: NotificationPayload) => {
           tag: payload.tag || `visible-${Date.now()}`, // Unique tag pour ne pas fusionner
           silent: false, // AUDIBLE - le téléphone fait du bruit
           requireInteraction: true, // Reste visible jusqu'à action
-          vibrate: [200, 100, 200], // Vibration si supportée
           data: {
             ...payload.data,
             action: payload.action,

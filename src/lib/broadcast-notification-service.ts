@@ -96,10 +96,9 @@ export const sendBroadcastNotification = async (
     if (error) throw error;
     
     // Afficher aussi une notification système
-    await showSystemNotification(
-      'Notification envoyée',
-      'Votre notification a été envoyée à tous les utilisateurs'
-    );
+    await showSystemNotification('Notification envoyée', {
+      body: 'Votre notification a été envoyée à tous les utilisateurs',
+    });
 
     return true;
   } catch (err) {
@@ -349,7 +348,6 @@ export const showSystemNotification = async (
           tag: options.tag || `notification-${Date.now()}`,
           silent: !settings.sound_enabled,
           requireInteraction: options.requireInteraction ?? true,
-          vibrate: settings.vibration_enabled ? (options.vibrate || [200, 100, 200]) : undefined,
         });
       }
     } else if ('Notification' in window && Notification.permission === 'granted') {
