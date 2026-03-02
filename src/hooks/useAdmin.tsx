@@ -72,7 +72,7 @@ export const useAdmin = () => {
         try {
           console.log(`⏱ [useAdmin] Attempt ${attempts} - querying user_roles`);
           const res = await promiseWithTimeout(
-            supabase.from('user_roles').select('role').eq('user_id', userId),
+            supabase.from('user_roles').select('role').eq('user_id', userId) as unknown as Promise<any>,
             4000
           );
           // supabase returns { data, error }

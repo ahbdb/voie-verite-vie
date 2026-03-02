@@ -10,7 +10,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useBroadcastNotifications } from '@/hooks/useBroadcastNotifications';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -18,23 +17,21 @@ import { fr } from 'date-fns/locale';
 interface UserNotification {
   id: string;
   title: string;
-  body: string;
+  message: string;
   type: string;
-  icon: string | null;
-  data: Record<string, any> | null;
+  link: string | null;
   is_read: boolean;
-  viewed_at: string | null;
   created_at: string;
 }
 
 const typeIcons: Record<string, React.ReactNode> = {
-  greeting: <MessageCircle className="w-4 h-4 text-yellow-500" />,
-  reminder: <AlertCircle className="w-4 h-4 text-orange-500" />,
-  announcement: <Info className="w-4 h-4 text-blue-500" />,
-  update: <BookOpen className="w-4 h-4 text-green-500" />,
+  greeting: <MessageCircle className="w-4 h-4 text-primary" />,
+  reminder: <AlertCircle className="w-4 h-4 text-primary" />,
+  announcement: <Info className="w-4 h-4 text-primary" />,
+  update: <BookOpen className="w-4 h-4 text-primary" />,
   reading: <BookOpen className="w-4 h-4 text-primary" />,
-  activity: <Calendar className="w-4 h-4 text-blue-500" />,
-  prayer: <MessageCircle className="w-4 h-4 text-purple-500" />,
+  activity: <Calendar className="w-4 h-4 text-primary" />,
+  prayer: <MessageCircle className="w-4 h-4 text-primary" />,
   info: <Info className="w-4 h-4 text-muted-foreground" />,
 };
 
@@ -45,77 +42,82 @@ export const NotificationBell = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Initialize broadcast notifications listener
-  useBroadcastNotifications();
-
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   useEffect(() => {
-    if (user) {
-      loadNotifications();
-      
-      // Subscribe to realtime notifications from broadcast system
-      const channel = supabase
-        .channel(`user_notifications:${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'user_notifications',
-            filter: `user_id=eq.${user.id}`,
-          },
-          (payload) => {
-            const newNotification = payload.new as UserNotification;
-            setNotifications(prev => [newNotification, ...prev]);
-            
-            // Show browser notification if enabled
-            if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification(newNotification.title, {
-                body: newNotification.body,
-                icon: newNotification.icon || '/logo.png',
-              });
-            }
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'user_notifications',
-            filter: `user_id=eq.${user.id}`,
-          },
-          (payload) => {
-            const updatedNotification = payload.new as UserNotification;
-            setNotifications(prev =>
-              prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
-            );
-          }
-        )
-        .subscribe();
+    if (!user?.id) return;
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [user]);
+    loadNotifications(user.id);
 
-  const loadNotifications = async () => {
-    if (!user) return;
-    
+    const channel = supabase
+      .channel(`notifications:${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const newNotification = payload.new as UserNotification;
+          setNotifications((prev) => [newNotification, ...prev]);
+
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification(newNotification.title, {
+              body: newNotification.message,
+              icon: '/logo-3v.png',
+            });
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const updatedNotification = payload.new as UserNotification;
+          setNotifications((prev) =>
+            prev.map((n) => (n.id === updatedNotification.id ? updatedNotification : n))
+          );
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const deletedId = (payload.old as { id?: string })?.id;
+          if (!deletedId) return;
+          setNotifications((prev) => prev.filter((n) => n.id !== deletedId));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
+  const loadNotifications = async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from('user_notifications')
-        .select('*')
-        .eq('user_id', user.id)
+        .from('notifications')
+        .select('id,title,message,type,link,is_read,created_at')
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(50);
-      
+
       if (error) throw error;
-      if (data) {
-        setNotifications(data as UserNotification[]);
-      }
+      setNotifications((data ?? []) as UserNotification[]);
     } catch (error) {
       console.error('Error loading notifications:', error);
     } finally {
@@ -124,15 +126,19 @@ export const NotificationBell = () => {
   };
 
   const markAsRead = async (id: string) => {
+    if (!user?.id) return;
+
     try {
-      const { error } = await supabase.rpc('mark_notification_read', {
-        p_notification_id: id
-      });
-      
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', id)
+        .eq('user_id', user.id);
+
       if (error) throw error;
-      
-      setNotifications(prev =>
-        prev.map(n => n.id === id ? { ...n, is_read: true, viewed_at: new Date().toISOString() } : n)
+
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
       );
     } catch (error) {
       console.error('Error marking notification as read:', error);
@@ -140,41 +146,46 @@ export const NotificationBell = () => {
   };
 
   const markAllAsRead = async () => {
-    if (!user) return;
-    
+    if (!user?.id) return;
+
     try {
-      const unreadIds = notifications
-        .filter(n => !n.is_read)
-        .map(n => n.id);
-      
-      for (const id of unreadIds) {
-        await markAsRead(id);
-      }
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false);
+
+      if (error) throw error;
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     } catch (error) {
       console.error('Error marking all as read:', error);
     }
   };
 
   const deleteNotification = async (id: string) => {
+    if (!user?.id) return;
+
     try {
       const { error } = await supabase
-        .from('user_notifications')
+        .from('notifications')
         .delete()
-        .eq('id', id);
-      
+        .eq('id', id)
+        .eq('user_id', user.id);
+
       if (error) throw error;
-      setNotifications(prev => prev.filter(n => n.id !== id));
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (error) {
       console.error('Error deleting notification:', error);
     }
   };
 
   const handleNotificationClick = (notification: UserNotification) => {
-    markAsRead(notification.id);
-    
-    // Handle action link from data
-    if (notification.data?.action_url) {
-      navigate(notification.data.action_url);
+    if (!notification.is_read) {
+      markAsRead(notification.id);
+    }
+
+    if (notification.link) {
+      navigate(notification.link);
       setIsOpen(false);
     }
   };
@@ -187,7 +198,7 @@ export const NotificationBell = () => {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
-            <Badge 
+            <Badge
               className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
               variant="destructive"
             >
@@ -200,9 +211,9 @@ export const NotificationBell = () => {
         <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-primary/5 to-transparent">
           <h3 className="font-semibold text-base">Notifications</h3>
           {unreadCount > 0 && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="text-xs h-7"
               onClick={markAllAsRead}
             >
@@ -211,7 +222,7 @@ export const NotificationBell = () => {
             </Button>
           )}
         </div>
-        
+
         <ScrollArea className="h-[400px]">
           {isLoading ? (
             <div className="p-6 text-center text-muted-foreground text-sm">
@@ -231,8 +242,8 @@ export const NotificationBell = () => {
                 <div
                   key={notification.id}
                   className={`p-4 hover:bg-muted/60 cursor-pointer transition-all border-l-4 group ${
-                    !notification.is_read 
-                      ? 'bg-primary/8 border-l-primary' 
+                    !notification.is_read
+                      ? 'bg-primary/8 border-l-primary'
                       : 'border-l-transparent hover:border-l-muted'
                   }`}
                   onClick={() => handleNotificationClick(notification)}
@@ -253,7 +264,7 @@ export const NotificationBell = () => {
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                        {notification.body}
+                        {notification.message}
                       </p>
                       <p className="text-xs text-muted-foreground/70 mt-2">
                         {formatDistanceToNow(new Date(notification.created_at), {

@@ -3,9 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
+export type AppNotificationType = 'greeting' | 'reminder' | 'announcement' | 'update' | 'reading' | 'activity' | 'prayer' | 'info';
+
 /**
- * Hook pour gérer les notifications persistantes du système de broadcast
- * Se connecte aux nouvelles notifications et les affiche en temps réel
+ * Écoute en temps réel les notifications de l'utilisateur
  */
 export const useBroadcastNotifications = () => {
   const { user } = useAuth();
@@ -14,51 +15,34 @@ export const useBroadcastNotifications = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    // S'abonner aux nouvelles notifications de broadcast
-    const channel = (supabase as any)
-      .channel(`broadcast:${user.id}:${Date.now()}`)
+    const channel = supabase
+      .channel(`notifications-toast:${user.id}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'user_notifications',
+          table: 'notifications',
           filter: `user_id=eq.${user.id}`,
         },
-        async (payload: any) => {
-          const notification = payload.new as any;
-          
-          // Afficher une notification système (Web Push)
+        (payload) => {
+          const notification = payload.new as {
+            id: string;
+            title: string;
+            message: string;
+            type: AppNotificationType;
+          };
+
           if ('Notification' in window && Notification.permission === 'granted') {
-            try {
-              const options: any = {
-                body: notification.body,
-                icon: notification.icon || '/logo-3v.png',
-                badge: '/logo-3v.png',
-                tag: notification.id,
-                requireInteraction: true, // Reste visible jusqu'à l'action
-              };
-              
-              // Ajouter la vibration si supportée (propriété non-standard)
-              if ('vibrate' in navigator) {
-                options.vibrate = [200, 100, 200];
-              }
-              
-              new Notification(notification.title, options);
-            } catch (error) {
-              console.error('Erreur lors de l\'affichage de la notification:', error);
-            }
-          }
-          
-          // Afficher un toast si la notification est une salutation du matin
-          if (notification.type === 'greeting') {
-            toast.success(notification.title, {
-              description: notification.body,
-              duration: 5000,
+            new Notification(notification.title, {
+              body: notification.message,
+              icon: '/logo-3v.png',
             });
-          } else if (notification.type === 'reminder') {
-            toast.info(notification.title, {
-              description: notification.body,
+          }
+
+          if (notification.type === 'greeting' || notification.type === 'reminder') {
+            toast(notification.title, {
+              description: notification.message,
               duration: 5000,
             });
           }
@@ -79,154 +63,75 @@ export const useBroadcastNotifications = () => {
 };
 
 /**
- * Service pour envoyer les notifications de broadcast aux utilisateurs
+ * Service d'envoi de notifications dans la table publique `notifications`
  */
 export const broadcastNotificationService = {
-  /**
-   * Envoyer une notification à tous les utilisateurs
-   */
   async sendToAll(
     title: string,
-    body: string,
-    type: 'greeting' | 'reminder' | 'announcement' | 'update' = 'announcement',
-    icon?: string
+    message: string,
+    type: AppNotificationType = 'announcement'
   ) {
-    try {
-      const user = await supabase.auth.getUser();
-      
-      const { data, error } = await (supabase as any)
-        .from('broadcast_notifications')
-        .insert({
-          title,
-          body,
-          type,
-          icon: icon || null,
-          target_role: null, // null = tous les utilisateurs
-          created_by: user.data.user?.id,
-        })
-        .select()
-        .single();
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id');
 
-      if (error) throw error;
+    if (profilesError) throw profilesError;
+    if (!profiles || profiles.length === 0) return { inserted: 0 };
 
-      // Envoyer la notification
-      const { error: sendError } = await (supabase as any).rpc(
-        'send_broadcast_notification',
-        { p_broadcast_id: data.id }
-      );
+    const payload = profiles.map((profile) => ({
+      user_id: profile.id,
+      title,
+      message,
+      type,
+      is_read: false,
+    }));
 
-      if (sendError) throw sendError;
+    const { error } = await supabase.from('notifications').insert(payload);
+    if (error) throw error;
 
-      console.log('✓ Notification envoyée à tous les utilisateurs');
-      return data;
-    } catch (error) {
-      console.error('Erreur lors de l\'envoi de la notification:', error);
-      throw error;
-    }
+    return { inserted: payload.length };
   },
 
-  /**
-   * Envoyer une notification à une catégorie d'utilisateurs (admins, users)
-   */
   async sendToRole(
     title: string,
-    body: string,
+    message: string,
     role: 'admin' | 'user',
-    type: 'greeting' | 'reminder' | 'announcement' | 'update' = 'announcement',
-    icon?: string
+    type: AppNotificationType = 'announcement'
   ) {
-    try {
-      const user = await supabase.auth.getUser();
-      
-      const { data, error } = await (supabase as any)
-        .from('broadcast_notifications')
-        .insert({
-          title,
-          body,
-          type,
-          icon: icon || null,
-          target_role: role,
-          created_by: user.data.user?.id,
-        })
-        .select()
-        .single();
+    const roleFilter = role === 'admin' ? ['admin', 'admin_principal'] : ['user'];
 
-      if (error) throw error;
+    const { data: roleRows, error: roleError } = await supabase
+      .from('user_roles')
+      .select('user_id, role')
+      .in('role', roleFilter as any);
 
-      // Envoyer la notification
-      const { error: sendError } = await (supabase as any).rpc(
-        'send_broadcast_notification',
-        { p_broadcast_id: data.id }
-      );
+    if (roleError) throw roleError;
+    if (!roleRows || roleRows.length === 0) return { inserted: 0 };
 
-      if (sendError) throw sendError;
+    const uniqueUserIds = [...new Set(roleRows.map((r) => r.user_id))];
+    const payload = uniqueUserIds.map((userId) => ({
+      user_id: userId,
+      title,
+      message,
+      type,
+      is_read: false,
+    }));
 
-      console.log(`✓ Notification envoyée aux ${role}s`);
-      return data;
-    } catch (error) {
-      console.error('Erreur lors de l\'envoi de la notification:', error);
-      throw error;
-    }
-  },
+    const { error } = await supabase.from('notifications').insert(payload);
+    if (error) throw error;
 
-  /**
-   * Exemples de notifications quotidiennes
-   */
-  async sendDailyGreeting() {
-    const hour = new Date().getHours();
-    let greeting = '';
-
-    if (hour < 12) {
-      greeting = 'Bonjour! 🌅 Commence la journée avec confiance et paix.';
-    } else if (hour < 18) {
-      greeting = 'Bonne après-midi! 🌤️ Continue à avancer avec courage.';
-    } else {
-      greeting = 'Bonsoir! 🌙 Que cette soirée soit remplie de sérénité.';
-    }
-
-    return this.sendToAll(
-      '👋 Salutation du jour',
-      greeting,
-      'greeting',
-      '🙏'
-    );
-  },
-
-  /**
-   * Envoyer une notification de rappel
-   */
-  async sendReminder(title: string, message: string, icon?: string) {
-    return this.sendToAll(title, message, 'reminder', icon || '🔔');
-  },
-
-  /**
-   * Envoyer une annonce
-   */
-  async sendAnnouncement(title: string, message: string, icon?: string) {
-    return this.sendToAll(title, message, 'announcement', icon || '📢');
-  },
-
-  /**
-   * Envoyer une mise à jour
-   */
-  async sendUpdate(title: string, message: string, icon?: string) {
-    return this.sendToAll(title, message, 'update', icon || '✨');
+    return { inserted: payload.length };
   },
 };
 
-/**
- * Fonction pour tester les notifications
- */
 export const testNotificationSystem = async () => {
   try {
-    // Tester l'envoi d'une notification
     await broadcastNotificationService.sendToAll(
       '🧪 Test Notification',
-      'Ceci est un message de test du système de notifications persistantes.',
-      'announcement',
-      '🔔'
+      'Ceci est un test du système de notifications.',
+      'announcement'
     );
-    return { success: true, message: 'Notification de test envoyée!' };
+    return { success: true, message: 'Notification de test envoyée !' };
   } catch (error) {
     console.error('Erreur test notification:', error);
     return { success: false, message: 'Erreur lors de l\'envoi du test' };
