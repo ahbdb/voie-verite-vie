@@ -44,6 +44,8 @@ import AdminTestSave from "./pages/admin/AdminTestSave";
 import AdminManagement from "./pages/admin/AdminManagement";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminNotificationScheduler from "./pages/admin/AdminNotificationScheduler";
+import AdminVideo from "./pages/admin/AdminVideo";
+import AdminVideoRoom from "./pages/admin/AdminVideoRoom";
 import AdminRepair from "./pages/AdminRepair";
 import Profile from "./pages/Profile";
 import Creator from "./pages/Creator";
@@ -123,6 +125,8 @@ const App = () => {
                     <Route path="/admin/ai" element={<AdminAI />} />
                     <Route path="/admin/notifications" element={<AdminNotifications />} />
                     <Route path="/admin/notification-scheduler" element={<AdminNotificationScheduler />} />
+                    <Route path="/admin/video" element={<AdminVideo />} />
+                    <Route path="/admin/video/:roomId" element={<AdminVideoRoom />} />
                     <Route path="/admin/users" element={<AdminUsers />} />
                     <Route path="/admin/admins" element={<AdminManagement />} />
                     <Route path="/profile" element={<Profile />} />

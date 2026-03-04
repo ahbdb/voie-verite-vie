@@ -618,6 +618,112 @@ export type Database = {
         }
         Relationships: []
       }
+      video_room_participants: {
+        Row: {
+          display_name: string | null
+          id: string
+          is_active: boolean
+          joined_at: string
+          left_at: string | null
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          display_name?: string | null
+          id?: string
+          is_active?: boolean
+          joined_at?: string
+          left_at?: string | null
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          display_name?: string | null
+          id?: string
+          is_active?: boolean
+          joined_at?: string
+          left_at?: string | null
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_room_participants_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "video_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_room_signals: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json
+          recipient_id: string | null
+          room_id: string
+          sender_id: string
+          signal_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          recipient_id?: string | null
+          room_id: string
+          sender_id: string
+          signal_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          recipient_id?: string | null
+          room_id?: string
+          sender_id?: string
+          signal_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_room_signals_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "video_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_rooms: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

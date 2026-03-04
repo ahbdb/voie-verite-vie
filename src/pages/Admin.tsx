@@ -5,9 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import FixSuperadminRole from '@/components/admin/FixSuperadminRole';
-import { 
-  Home, Info, Calendar, BookOpen, MessageSquare, 
-  Image, HelpCircle, Mail, Bot, Settings, Users, Shield, Flame, Cross, User, Palette, Bell, Clock
+import {
+  Home, Info, Calendar, BookOpen, MessageSquare,
+  Image, HelpCircle, Mail, Bot, Settings, Users, Shield, Flame, Cross, User, Palette, Bell, Clock, Video
 } from 'lucide-react';
 
 const adminSections = [
@@ -25,6 +25,7 @@ const adminSections = [
   { title: 'Contact', description: 'Voir les messages', icon: Mail, path: '/admin/contact' },
   { title: 'Notifications', description: 'Envoyer des notifications persistentes', icon: Bell, path: '/admin/notifications' },
   { title: 'Scheduler', description: 'Gérer les notifications automatiques', icon: Clock, path: '/admin/notification-scheduler' },
+  { title: 'Salles vidéo', description: 'Créer et ouvrir des réunions admin', icon: Video, path: '/admin/video' },
   { title: 'Assistant IA', description: 'Configurer l\'IA', icon: Bot, path: '/admin/ai' },
   { title: 'Utilisateurs', description: 'Gérer les utilisateurs', icon: Users, path: '/admin/users' },
 ];
