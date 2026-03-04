@@ -142,7 +142,7 @@ const AdminCheminDeCroix = () => {
       const { error: updateError } = await supabase
         .from('page_content')
         .update({
-          content: contentData,
+          content: contentData as any,
           title: formData.community,
           updated_at: new Date().toISOString()
         })
@@ -181,7 +181,7 @@ const AdminCheminDeCroix = () => {
         const { error: updateError } = await supabase
           .from('page_content')
           .update({
-            content: contentData,
+            content: contentData as any,
             title: formData.community,
             updated_at: new Date().toISOString()
           })
@@ -241,7 +241,7 @@ const AdminCheminDeCroix = () => {
       const { error: updateError } = await supabase
         .from('page_content')
         .update({
-          content: contentData,
+          content: contentData as any,
           title: 'Chemin de Croix',
           subtitle: '14 stations de méditation',
           updated_at: new Date().toISOString()
@@ -257,7 +257,7 @@ const AdminCheminDeCroix = () => {
         // Fallback: Try RPC if direct update fails
         const { error: rpcError } = await supabase.rpc('update_page_content_data', {
           p_page_key: 'chemin-de-croix',
-          p_content: contentData
+          p_content: contentData as any
         });
 
         if (!rpcError) {
@@ -291,10 +291,11 @@ const AdminCheminDeCroix = () => {
         if (loadError) {
           console.warn('⚠️ [AdminCheminDeCroix] Load error:', loadError);
         } else if (freshData) {
-          console.log('✅ [AdminCheminDeCroix] Fresh data loaded:', freshData.content?.stations?.length, 'stations');
+          const freshContent = (freshData.content as { stations?: Station[] } | null) ?? null;
+          console.log('✅ [AdminCheminDeCroix] Fresh data loaded:', freshContent?.stations?.length ?? 0, 'stations');
           setProgramContent(freshData as CheminProgram);
-          if (freshData.content?.stations) {
-            setStations(freshData.content.stations as Station[]);
+          if (freshContent?.stations) {
+            setStations(freshContent.stations);
             console.log('✅ [AdminCheminDeCroix] UI updated with fresh data from DB');
           }
         }

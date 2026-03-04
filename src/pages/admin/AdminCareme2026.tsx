@@ -161,7 +161,7 @@ const AdminCareme2026 = () => {
       const { error: updateError } = await supabase
         .from('page_content')
         .update({
-          content: contentData,
+          content: contentData as any,
           title: formData.title,
           subtitle: formData.subtitle,
           updated_at: new Date().toISOString()
@@ -195,7 +195,7 @@ const AdminCareme2026 = () => {
         const { error: updateError } = await supabase
           .from('page_content')
           .update({
-            content: contentData,
+            content: contentData as any,
             title: formData.title,
             subtitle: formData.subtitle,
             updated_at: new Date().toISOString()
@@ -250,7 +250,7 @@ const AdminCareme2026 = () => {
       const { error: updateError } = await supabase
         .from('page_content')
         .update({
-          content: contentData,
+          content: contentData as any,
           title: formData.title,
           subtitle: formData.subtitle,
           updated_at: new Date().toISOString()
@@ -266,7 +266,7 @@ const AdminCareme2026 = () => {
         // Fallback: Try RPC if direct update fails
         const { error: rpcError } = await supabase.rpc('update_page_content_data', {
           p_page_key: 'careme-2026',
-          p_content: contentData
+          p_content: contentData as any
         });
         
         if (!rpcError) {
@@ -300,10 +300,11 @@ const AdminCareme2026 = () => {
         if (loadError) {
           console.warn('⚠️ [AdminCareme] Load error:', loadError);
         } else if (freshData) {
-          console.log('✅ [AdminCareme] Fresh data loaded:', freshData.content?.days?.length, 'days');
+          const freshContent = (freshData.content as { days?: CaremDay[] } | null) ?? null;
+          console.log('✅ [AdminCareme] Fresh data loaded:', freshContent?.days?.length ?? 0, 'days');
           setProgramContent(freshData as CaremeProgram);
-          if (freshData.content?.days) {
-            setDaysData(freshData.content.days as CaremDay[]);
+          if (freshContent?.days) {
+            setDaysData(freshContent.days);
             console.log('✅ [AdminCareme] UI updated with fresh data from DB');
           }
         }

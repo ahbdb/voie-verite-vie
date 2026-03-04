@@ -83,7 +83,6 @@ export const specialNotificationSchedule = {
   appOpen: {
     description: '👋 Notification de bienvenue à l\'ouverture',
     messageFunction: async () => {
-      // Message de bienvenue personnalisé
       const hours = new Date().getHours();
       const greeting = hours < 12 
         ? '☀️ Bonjour! Que Dieu bénisse votre jour.' 
@@ -92,7 +91,7 @@ export const specialNotificationSchedule = {
         : '🌙 Bonsoir! Prenez du temps pour prier.';
       
       const { broadcastNotificationService } = await import('../hooks/useBroadcastNotifications');
-      await broadcastNotificationService.sendDailyGreeting();
+      await broadcastNotificationService.sendToAll('👋 Bienvenue', greeting, 'greeting');
     },
   },
 

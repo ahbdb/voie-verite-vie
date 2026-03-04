@@ -69,7 +69,9 @@ export const broadcastNotificationService = {
   async sendToAll(
     title: string,
     message: string,
-    type: AppNotificationType = 'announcement'
+    type: AppNotificationType = 'announcement',
+    _icon?: string,
+    link: string | null = null
   ) {
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
@@ -83,6 +85,7 @@ export const broadcastNotificationService = {
       title,
       message,
       type,
+      link,
       is_read: false,
     }));
 
@@ -96,7 +99,9 @@ export const broadcastNotificationService = {
     title: string,
     message: string,
     role: 'admin' | 'user',
-    type: AppNotificationType = 'announcement'
+    type: AppNotificationType = 'announcement',
+    _icon?: string,
+    link: string | null = null
   ) {
     const roleFilter = role === 'admin' ? ['admin', 'admin_principal'] : ['user'];
 
@@ -114,6 +119,7 @@ export const broadcastNotificationService = {
       title,
       message,
       type,
+      link,
       is_read: false,
     }));
 

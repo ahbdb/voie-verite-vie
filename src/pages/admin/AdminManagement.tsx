@@ -200,7 +200,7 @@ const AdminManagementContent = () => {
                         {!isCurrentUser && admin.role !== 'admin_principal' && (
                           <>
                             <Select 
-                              value={admin.role === 'admin_principal' ? 'admin' : admin.role}
+                              value={admin.role}
                               onValueChange={(newRole: any) => updateAdminRole(admin.id, newRole)}
                             >
                               <SelectTrigger className="w-[150px]">
