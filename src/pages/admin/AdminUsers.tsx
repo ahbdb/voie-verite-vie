@@ -116,11 +116,11 @@ const AdminUsers = () => {
       const [profilesRes, rolesRes, permissionsRes] = await Promise.all([
         supabase.from('profiles').select('*').order('created_at', { ascending: false }),
         supabase.from('user_roles').select('*'),
-        supabase.from('user_permissions').select('*')
+        (supabase as any).from('user_permissions').select('*')
       ]);
       if (profilesRes.data) setProfiles(profilesRes.data);
       if (rolesRes.data) setRoles(rolesRes.data);
-      if (permissionsRes.data) setPermissions(permissionsRes.data);
+      if (permissionsRes.data) setPermissions(permissionsRes.data as UserPermissionData[]);
     } finally {
       setLoading(false);
     }
@@ -188,7 +188,7 @@ const AdminUsers = () => {
     if (!selectedUserId) return;
     try {
       // Delete existing permissions
-      const deleteRes = await supabase.from('user_permissions').delete().eq('user_id', selectedUserId);
+      const deleteRes = await (supabase as any).from('user_permissions').delete().eq('user_id', selectedUserId);
       if (deleteRes.error) {
         console.error('❌ Delete permissions error:', deleteRes.error);
       }
@@ -200,7 +200,7 @@ const AdminUsers = () => {
           permission,
           granted_by: user?.id
         }));
-        const insertRes = await supabase.from('user_permissions').insert(newPermissions);
+        const insertRes = await (supabase as any).from('user_permissions').insert(newPermissions);
         if (insertRes.error) {
           console.error('❌ Insert permissions error:', insertRes.error);
           toast.error('Erreur: ' + insertRes.error.message);
@@ -239,7 +239,7 @@ const AdminUsers = () => {
       else console.log('✅ Roles deleted');
       
       // Supprimer les permissions
-      const deletePermsRes = await supabase.from('user_permissions').delete().eq('user_id', selectedUserId);
+      const deletePermsRes = await (supabase as any).from('user_permissions').delete().eq('user_id', selectedUserId);
       if (deletePermsRes.error) console.warn('⚠️ Delete permissions error:', deletePermsRes.error);
       else console.log('✅ Permissions deleted');
       

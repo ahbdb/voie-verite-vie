@@ -10,6 +10,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { generateShareImage, shareImage } from '@/lib/share-utils';
 import { useToast } from '@/components/ui/use-toast';
 
+interface Station {
+  number: number;
+  title: string;
+  reading: string;
+  text: string;
+  meditation: string;
+  prayer: string;
+}
+
 const CheminDeCroix = memo(() => {
   const [selectedStation, setSelectedStation] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState('intro');
@@ -124,7 +133,7 @@ const CheminDeCroix = memo(() => {
     }
     
     setSharingProgress(null);
-    toast.success(`✝️ Les 14 stations ont été téléchargées/partagées!`);
+    toast({ title: '✝️ Les 14 stations ont été téléchargées/partagées!' });
   };
 
   const [contentData, setContentData] = useState<any>(null);
@@ -144,9 +153,10 @@ const CheminDeCroix = memo(() => {
           return;
         }
 
-        if (data?.content) {
-          console.log('✅ [CheminDeCroix] Content loaded, stations count:', data.content.stations?.length);
-          setContentData(data.content);
+        const content = data.content as { stations?: Station[] } | null;
+        if (content?.stations) {
+          console.log('✅ [CheminDeCroix] Content loaded, stations count:', content.stations.length);
+          setContentData(content);
         }
       } catch (err) {
         console.error('❌ [CheminDeCroix] Failed to load content:', err);

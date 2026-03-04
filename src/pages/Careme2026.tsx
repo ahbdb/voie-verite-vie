@@ -104,9 +104,10 @@ const Careme2026 = memo(() => {
         return;
       }
 
-      if (data?.content) {
-        console.log('✅ [Careme2026] Content loaded successfully, days count:', data.content.days?.length);
-        setContentData(data.content);
+        const content = data.content as { days?: any[] } | null;
+        if (content?.days) {
+          console.log('✅ [Careme2026] Content loaded successfully, days count:', content.days.length);
+          setContentData(content);
       } else {
         console.warn('⚠️ [Careme2026] No content data found, using fallback');
       }
@@ -118,13 +119,13 @@ const Careme2026 = memo(() => {
   const loadUserProgress = useCallback(async () => {
     if (!user) return;
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('user_program_progress')
         .select('date')
         .eq('user_id', user.id)
         .eq('program_key', 'careme-2026');
 
-      if (error?.code === 'PGRST116' || error?.status === 404) {
+      if (error?.code === 'PGRST116') {
         console.warn('⚠️ user_program_progress table not found (404). This table may not exist yet on this deployment.');
         return;
       }
@@ -156,7 +157,7 @@ const Careme2026 = memo(() => {
     const dateStr = toIsoDate(dateObj);
     setCompletedDates((s) => Array.from(new Set([...s, dateStr])));
     try {
-      await supabase.from('user_program_progress').upsert({
+      await (supabase as any).from('user_program_progress').upsert({
         user_id: user.id,
         program_key: 'careme-2026',
         date: dateStr,
@@ -176,7 +177,7 @@ const Careme2026 = memo(() => {
     const dateStr = toIsoDate(dateObj);
     setCompletedDates((s) => s.filter(d => d !== dateStr));
     try {
-      await supabase.from('user_program_progress').delete()
+      await (supabase as any).from('user_program_progress').delete()
         .eq('user_id', user.id)
         .eq('program_key', 'careme-2026')
         .eq('date', dateStr);
@@ -294,7 +295,7 @@ const Careme2026 = memo(() => {
     }
     
     setSharingProgress(null);
-    toast.success(`✝️ Les 40 jours ont été téléchargés/partagés!`);
+    toast({ title: '✝️ Les 40 jours ont été téléchargés/partagés!' });
   };
 
   useEffect(() => {

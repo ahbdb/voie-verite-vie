@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useEffect, useState, useRef } from 'react';
+import type { Tables } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import AdminLoadingSpinner from '@/components/admin/AdminLoadingSpinner';
@@ -17,24 +18,9 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { ArrowLeft, Calendar, Plus, Pencil, Trash2, Users, Upload, X, Loader2, Clock, CheckCircle } from 'lucide-react';
 
-interface Activity {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  date: string;
-  time: string;
-  location: string;
-  max_participants: number;
-  price: string;
-  image_url: string | null;
-  is_published: boolean;
-  allow_registration: boolean;
-  start_date?: string;
-  end_date?: string;
-  start_time?: string;
-  end_time?: string;
-}
+type Activity = Tables<'activities'> & {
+  allow_registration?: boolean;
+};
 
 interface Registration {
   id: string;
@@ -159,12 +145,11 @@ const AdminActivities = () => {
       time: timeDisplay, // Legacy field
       start_date: formData.start_date,
       end_date: formData.end_date || null,
-      start_time: formData.start_time,
+      start_time: formData.start_time || null,
       end_time: formData.end_time || null,
       location: formData.location,
       price: formData.price,
       is_published: formData.is_published,
-      allow_registration: formData.allow_registration,
       image_url: imageUrl,
       max_participants: 9999 // No limit
     };
@@ -206,8 +191,8 @@ const AdminActivities = () => {
       start_time: activity.start_time || activity.time.split(' - ')[0] || '',
       end_time: activity.end_time || activity.time.split(' - ')[1] || '',
       location: activity.location,
-      price: activity.price,
-      is_published: activity.is_published,
+      price: activity.price ?? 'Gratuit',
+      is_published: activity.is_published ?? true,
       allow_registration: activity.allow_registration ?? true
     });
     setUploadedImages(activity.image_url ? [activity.image_url] : []);

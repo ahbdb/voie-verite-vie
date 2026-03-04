@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { Tables } from '@/integrations/supabase/types';
 import Navigation from '@/components/Navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -14,24 +15,9 @@ import activityBibleStudy from '@/assets/activity-bible-study.jpg';
 import activityCommunity from '@/assets/activity-community.jpg';
 import activityCreative from '@/assets/activity-creative.jpg';
 
-interface Activity {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  date: string;
-  time: string;
-  location: string;
-  max_participants: number;
-  price: string;
-  image_url: string | null;
-  is_published: boolean;
-  allow_registration: boolean;
-  start_date?: string;
-  end_date?: string;
-  start_time?: string;
-  end_time?: string;
-}
+type Activity = Tables<'activities'> & {
+  allow_registration?: boolean;
+};
 
 const defaultImages: Record<string, string> = {
   'conferences': activityConference,
@@ -226,7 +212,7 @@ const Activities = () => {
           </div>
           
           {/* Affichage conditionnel selon allow_registration */}
-          {activity.allow_registration && (
+          {(activity.allow_registration ?? true) && (
             <>
               {/* Nombre d'inscrits - Visible uniquement si inscriptions activées */}
               <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
@@ -239,7 +225,7 @@ const Activities = () => {
               
               <div className="flex items-center justify-between">
                 <span className="text-lg font-semibold text-primary">
-                  {activity.price}
+                  {activity.price ?? 'Gratuit'}
                 </span>
                 {!isPast ? (
                   <Button 

@@ -1,17 +1,18 @@
-/**
- * Service de gestion des notifications persistantes
- * Gère les notifications de broadcast (pour tous) et individuelles
- */
-
+import type { Tables } from '@/integrations/supabase/types';
 import { supabase } from './supabase';
+
+export type BroadcastNotificationType = 'greeting' | 'reminder' | 'announcement' | 'update';
+export type BroadcastTargetRole = 'all' | 'user' | 'admin' | null;
+
+type NotificationRow = Tables<'notifications'>;
 
 export interface BroadcastNotification {
   id: string;
   title: string;
   body?: string;
   icon?: string;
-  type: 'greeting' | 'reminder' | 'announcement' | 'update';
-  target_role?: 'all' | 'user' | 'admin' | null;
+  type: BroadcastNotificationType;
+  target_role?: BroadcastTargetRole;
   created_by: string;
   scheduled_at?: string;
   is_sent: boolean;
@@ -23,14 +24,11 @@ export interface BroadcastNotification {
 export interface UserNotification {
   id: string;
   user_id: string;
-  broadcast_notification_id?: string;
   title: string;
-  body?: string;
-  icon?: string;
+  message: string;
   type: string;
-  data?: Record<string, any>;
+  link: string | null;
   is_read: boolean;
-  viewed_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -42,149 +40,280 @@ export interface NotificationSettings {
   vibration_enabled: boolean;
 }
 
-/**
- * Crée une notification de broadcast (pour tous ou une catégorie)
- */
+type DraftBroadcastNotification = BroadcastNotification & {
+  link?: string | null;
+};
+
+const SETTINGS_STORAGE_KEY = 'notification-settings';
+const draftBroadcasts = new Map<string, DraftBroadcastNotification>();
+
+const DEFAULT_SETTINGS = {
+  push_enabled: true,
+  sound_enabled: true,
+  vibration_enabled: true,
+} satisfies Omit<NotificationSettings, 'user_id'>;
+
+const mapNotificationRow = (row: NotificationRow): UserNotification => ({
+  id: row.id,
+  user_id: row.user_id ?? '',
+  title: row.title,
+  message: row.message,
+  type: row.type,
+  link: row.link,
+  is_read: row.is_read,
+  created_at: row.created_at,
+  updated_at: row.created_at,
+});
+
+const getCurrentUser = async () => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return user;
+};
+
+const normalizeBroadcastType = (type?: string): BroadcastNotificationType => {
+  if (type === 'greeting' || type === 'reminder' || type === 'announcement' || type === 'update') {
+    return type;
+  }
+
+  return 'announcement';
+};
+
+const getStoredSettings = (userId: string): NotificationSettings => {
+  if (typeof window === 'undefined') {
+    return { user_id: userId, ...DEFAULT_SETTINGS };
+  }
+
+  try {
+    const raw = window.localStorage.getItem(`${SETTINGS_STORAGE_KEY}:${userId}`);
+    if (!raw) {
+      return { user_id: userId, ...DEFAULT_SETTINGS };
+    }
+
+    return {
+      user_id: userId,
+      ...DEFAULT_SETTINGS,
+      ...(JSON.parse(raw) as Partial<NotificationSettings>),
+    };
+  } catch {
+    return { user_id: userId, ...DEFAULT_SETTINGS };
+  }
+};
+
+const saveStoredSettings = (settings: NotificationSettings) => {
+  if (typeof window === 'undefined') return;
+
+  window.localStorage.setItem(
+    `${SETTINGS_STORAGE_KEY}:${settings.user_id}`,
+    JSON.stringify(settings)
+  );
+};
+
+const resolveRecipientIds = async (targetRole: BroadcastTargetRole): Promise<string[]> => {
+  if (targetRole === 'admin') {
+    const { data, error } = await supabase
+      .from('user_roles')
+      .select('user_id')
+      .in('role', ['admin', 'admin_principal']);
+
+    if (error) throw error;
+
+    return [...new Set((data ?? []).map((row) => row.user_id))];
+  }
+
+  if (targetRole === 'user') {
+    const { data, error } = await supabase
+      .from('user_roles')
+      .select('user_id')
+      .eq('role', 'user');
+
+    if (error) throw error;
+
+    return [...new Set((data ?? []).map((row) => row.user_id))];
+  }
+
+  const { data, error } = await supabase.from('profiles').select('id');
+
+  if (error) throw error;
+
+  return (data ?? []).map((profile) => profile.id);
+};
+
+const insertNotifications = async (
+  recipientIds: string[],
+  broadcast: DraftBroadcastNotification
+): Promise<boolean> => {
+  if (recipientIds.length === 0) {
+    return true;
+  }
+
+  const payload = recipientIds.map((userId) => ({
+    user_id: userId,
+    title: broadcast.title,
+    message: broadcast.body ?? '',
+    type: broadcast.type,
+    link: broadcast.link ?? null,
+    is_read: false,
+  }));
+
+  const { error } = await supabase.from('notifications').insert(payload);
+
+  if (error) throw error;
+
+  return true;
+};
+
+const sendDraftBroadcast = async (broadcast: DraftBroadcastNotification): Promise<boolean> => {
+  const recipientIds = await resolveRecipientIds(broadcast.target_role ?? 'all');
+  await insertNotifications(recipientIds, broadcast);
+
+  const sentAt = new Date().toISOString();
+  draftBroadcasts.set(broadcast.id, {
+    ...broadcast,
+    is_sent: true,
+    sent_at: sentAt,
+    updated_at: sentAt,
+  });
+
+  await showSystemNotification('Notification envoyée', {
+    body: 'La notification a été envoyée aux destinataires sélectionnés.',
+    tag: `broadcast-sent-${broadcast.id}`,
+    requireInteraction: false,
+  });
+
+  return true;
+};
+
 export const createBroadcastNotification = async (
   title: string,
   body: string,
   options: {
     icon?: string;
-    type?: 'greeting' | 'reminder' | 'announcement' | 'update';
-    target_role?: 'all' | 'user' | 'admin' | null;
+    type?: BroadcastNotificationType;
+    target_role?: BroadcastTargetRole;
     scheduled_at?: string;
+    link?: string | null;
   } = {}
 ): Promise<BroadcastNotification | null> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase
-      .from('broadcast_notifications')
-      .insert({
-        title,
-        body,
-        icon: options.icon,
-        type: options.type || 'announcement',
-        target_role: options.target_role || 'all',
-        created_by: user.id,
-        scheduled_at: options.scheduled_at,
-      })
-      .select()
-      .single();
+    const now = new Date().toISOString();
+    const broadcast: DraftBroadcastNotification = {
+      id: crypto.randomUUID(),
+      title,
+      body,
+      icon: options.icon,
+      type: options.type ?? 'announcement',
+      target_role: options.target_role ?? 'all',
+      created_by: user.id,
+      scheduled_at: options.scheduled_at,
+      is_sent: false,
+      created_at: now,
+      updated_at: now,
+      link: options.link ?? null,
+    };
 
-    if (error) throw error;
-    return data;
+    draftBroadcasts.set(broadcast.id, broadcast);
+    return broadcast;
   } catch (err) {
     console.error('Error creating broadcast notification:', err);
     return null;
   }
 };
 
-/**
- * Envoie une notification de broadcast à tous les utilisateurs
- * Crée des entrées dans user_notifications
- */
-export const sendBroadcastNotification = async (
-  broadcastId: string
-): Promise<boolean> => {
+export const sendBroadcastNotification = async (broadcastId: string): Promise<boolean> => {
   try {
-    const { error } = await supabase.rpc('send_broadcast_notification', {
-      p_broadcast_id: broadcastId,
-    });
+    const draft = draftBroadcasts.get(broadcastId);
+    if (!draft) {
+      throw new Error('Notification introuvable');
+    }
 
-    if (error) throw error;
-    
-    // Afficher aussi une notification système
-    await showSystemNotification('Notification envoyée', {
-      body: 'Votre notification a été envoyée à tous les utilisateurs',
-    });
-
-    return true;
+    return await sendDraftBroadcast(draft);
   } catch (err) {
     console.error('Error sending broadcast notification:', err);
     return false;
   }
 };
 
-/**
- * Récupère toutes les notifications de l'utilisateur courant
- */
 export const getUserNotifications = async (limit = 50): Promise<UserNotification[]> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) throw new Error('Not authenticated');
 
     const { data, error } = await supabase
-      .from('user_notifications')
+      .from('notifications')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(limit);
 
     if (error) throw error;
-    return data || [];
+
+    return (data ?? []).map(mapNotificationRow);
   } catch (err) {
     console.error('Error fetching user notifications:', err);
     return [];
   }
 };
 
-/**
- * Récupère les notifications non lues
- */
 export const getUnreadNotifications = async (): Promise<UserNotification[]> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) throw new Error('Not authenticated');
 
     const { data, error } = await supabase
-      .from('user_notifications')
+      .from('notifications')
       .select('*')
       .eq('user_id', user.id)
       .eq('is_read', false)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+
+    return (data ?? []).map(mapNotificationRow);
   } catch (err) {
     console.error('Error fetching unread notifications:', err);
     return [];
   }
 };
 
-/**
- * Compte les notifications non lues
- */
 export const getUnreadCount = async (): Promise<number> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) throw new Error('Not authenticated');
 
     const { count, error } = await supabase
-      .from('user_notifications')
+      .from('notifications')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', user.id)
       .eq('is_read', false);
 
     if (error) throw error;
-    return count || 0;
+
+    return count ?? 0;
   } catch (err) {
     console.error('Error getting unread count:', err);
     return 0;
   }
 };
 
-/**
- * Marque une notification comme lue
- */
 export const markNotificationAsRead = async (notificationId: string): Promise<boolean> => {
   try {
-    const { error } = await supabase.rpc('mark_notification_read', {
-      p_notification_id: notificationId,
-    });
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', notificationId)
+      .eq('user_id', user.id);
 
     if (error) throw error;
+
     return true;
   } catch (err) {
     console.error('Error marking notification as read:', err);
@@ -192,35 +321,23 @@ export const markNotificationAsRead = async (notificationId: string): Promise<bo
   }
 };
 
-/**
- * Marque une notification comme visualisée (cliquée)
- */
 export const markNotificationAsViewed = async (notificationId: string): Promise<boolean> => {
-  try {
-    const { error } = await supabase.rpc('mark_notification_viewed', {
-      p_notification_id: notificationId,
-    });
-
-    if (error) throw error;
-    return true;
-  } catch (err) {
-    console.error('Error marking notification as viewed:', err);
-    return false;
-  }
+  return markNotificationAsRead(notificationId);
 };
 
-/**
- * Efface une notification
- */
 export const deleteNotification = async (notificationId: string): Promise<boolean> => {
   try {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Not authenticated');
+
     const { error } = await supabase
-      .from('user_notifications')
+      .from('notifications')
       .delete()
       .eq('id', notificationId)
-      .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+      .eq('user_id', user.id);
 
     if (error) throw error;
+
     return true;
   } catch (err) {
     console.error('Error deleting notification:', err);
@@ -228,21 +345,19 @@ export const deleteNotification = async (notificationId: string): Promise<boolea
   }
 };
 
-/**
- * Marque toutes les notifications comme lues
- */
 export const markAllNotificationsAsRead = async (): Promise<boolean> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) throw new Error('Not authenticated');
 
     const { error } = await supabase
-      .from('user_notifications')
-      .update({ is_read: true, viewed_at: new Date().toISOString() })
+      .from('notifications')
+      .update({ is_read: true })
       .eq('user_id', user.id)
       .eq('is_read', false);
 
     if (error) throw error;
+
     return true;
   } catch (err) {
     console.error('Error marking all notifications as read:', err);
@@ -250,77 +365,79 @@ export const markAllNotificationsAsRead = async (): Promise<boolean> => {
   }
 };
 
-/**
- * S'abonne aux notifications en temps réel
- */
 export const subscribeToNotifications = (callback: (notification: UserNotification) => void) => {
-  const { data: { user } } = supabase.auth.getUser().then(result => result.data);
-  
-  if (!user) {
-    console.error('Not authenticated');
-    return () => {};
-  }
+  let active = true;
+  let channel: ReturnType<typeof supabase.channel> | null = null;
 
-  const subscription = supabase
-    .from(`user_notifications:user_id=eq.${user.id}`)
-    .on('*', (payload) => {
-      if (payload.new) {
-        callback(payload.new as UserNotification);
-      }
-    })
-    .subscribe();
+  void getCurrentUser().then((user) => {
+    if (!active || !user) return;
+
+    channel = supabase
+      .channel(`notifications:${user.id}:insert`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          callback(mapNotificationRow(payload.new as NotificationRow));
+        }
+      )
+      .subscribe();
+  });
 
   return () => {
-    supabase.removeSubscription(subscription);
+    active = false;
+    if (channel) {
+      supabase.removeChannel(channel);
+    }
   };
 };
 
-/**
- * S'abonne aux changements (nouveau, modifié, supprimé)
- */
 export const subscribeToNotificationsChanges = (
   callback: (payload: {
     type: 'INSERT' | 'UPDATE' | 'DELETE';
     notification: UserNotification;
   }) => void
 ) => {
-  const { data: { user } } = supabase.auth.getUser().then(result => result.data);
-  
-  if (!user) {
-    console.error('Not authenticated');
-    return () => {};
-  }
+  let active = true;
+  let channel: ReturnType<typeof supabase.channel> | null = null;
 
-  const channel = supabase.channel(`notifications:${user.id}`);
+  void getCurrentUser().then((user) => {
+    if (!active || !user) return;
 
-  const subscription = channel
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'user_notifications',
-        filter: `user_id=eq.${user.id}`,
-      },
-      (payload) => {
-        const type = payload.eventType.toUpperCase() as 'INSERT' | 'UPDATE' | 'DELETE';
-        const notification = payload.new || payload.old;
-        callback({
-          type,
-          notification: notification as UserNotification,
-        });
-      }
-    )
-    .subscribe();
+    channel = supabase
+      .channel(`notifications:${user.id}:all`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const source = (payload.eventType === 'DELETE' ? payload.old : payload.new) as NotificationRow;
+          callback({
+            type: payload.eventType,
+            notification: mapNotificationRow(source),
+          });
+        }
+      )
+      .subscribe();
+  });
 
   return () => {
-    channel.unsubscribe();
+    active = false;
+    if (channel) {
+      supabase.removeChannel(channel);
+    }
   };
 };
 
-/**
- * Affiche une notification système (Web Push)
- */
 export const showSystemNotification = async (
   title: string,
   options: {
@@ -329,33 +446,34 @@ export const showSystemNotification = async (
     badge?: string;
     tag?: string;
     requireInteraction?: boolean;
-    sound?: boolean;
     vibrate?: number[];
   } = {}
 ) => {
   try {
     const settings = await getNotificationSettings();
-
     if (!settings.push_enabled) return;
 
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
+    if ('serviceWorker' in navigator) {
       const registration = await navigator.serviceWorker.ready;
       if (registration.showNotification) {
         await registration.showNotification(title, {
-          body: options.body || '',
-          badge: options.badge || '/logo-3v.png',
-          icon: options.icon || '/logo-3v.png',
-          tag: options.tag || `notification-${Date.now()}`,
+          body: options.body ?? '',
+          badge: options.badge ?? '/logo-3v.png',
+          icon: options.icon ?? '/logo-3v.png',
+          tag: options.tag ?? `notification-${Date.now()}`,
           silent: !settings.sound_enabled,
-          requireInteraction: options.requireInteraction ?? true,
+          requireInteraction: options.requireInteraction ?? false,
         });
+        return;
       }
-    } else if ('Notification' in window && Notification.permission === 'granted') {
+    }
+
+    if ('Notification' in window && Notification.permission === 'granted') {
       new Notification(title, {
         body: options.body,
-        badge: options.badge || '/logo-3v.png',
-        icon: options.icon || '/logo-3v.png',
-        tag: options.tag || `notification-${Date.now()}`,
+        badge: options.badge ?? '/logo-3v.png',
+        icon: options.icon ?? '/logo-3v.png',
+        tag: options.tag ?? `notification-${Date.now()}`,
       });
     }
   } catch (err) {
@@ -363,62 +481,34 @@ export const showSystemNotification = async (
   }
 };
 
-/**
- * Récupère les paramètres de notification de l'utilisateur
- */
 export const getNotificationSettings = async (): Promise<NotificationSettings> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
+    const user = await getCurrentUser();
+    if (!user) {
+      return { user_id: '', ...DEFAULT_SETTINGS };
+    }
 
-    const { data, error } = await supabase
-      .from('notification_settings')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-
-    if (error && error.code !== 'PGRST116') throw error;
-
-    // Return default settings if not found
-    return (
-      data || {
-        user_id: user.id,
-        push_enabled: true,
-        sound_enabled: true,
-        vibration_enabled: true,
-      }
-    );
+    return getStoredSettings(user.id);
   } catch (err) {
     console.error('Error getting notification settings:', err);
-    return {
-      user_id: '',
-      push_enabled: true,
-      sound_enabled: true,
-      vibration_enabled: true,
-    };
+    return { user_id: '', ...DEFAULT_SETTINGS };
   }
 };
 
-/**
- * Mets à jour les paramètres de notification de l'utilisateur
- */
 export const updateNotificationSettings = async (
   settings: Partial<NotificationSettings>
 ): Promise<boolean> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) throw new Error('Not authenticated');
 
-    const { error } = await supabase
-      .from('notification_settings')
-      .upsert({
-        user_id: user.id,
-        ...settings,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', user.id);
+    const nextSettings: NotificationSettings = {
+      ...getStoredSettings(user.id),
+      ...settings,
+      user_id: user.id,
+    };
 
-    if (error) throw error;
+    saveStoredSettings(nextSettings);
     return true;
   } catch (err) {
     console.error('Error updating notification settings:', err);
@@ -426,21 +516,42 @@ export const updateNotificationSettings = async (
   }
 };
 
-/**
- * Récupère les notifications de broadcast (pour l'admin)
- */
 export const getBroadcastNotifications = async (limit = 50): Promise<BroadcastNotification[]> => {
   try {
+    const draftHistory = [...draftBroadcasts.values()]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, limit);
+
     const { data, error } = await supabase
-      .from('broadcast_notifications')
-      .select('*')
+      .from('notifications')
+      .select('id,title,message,type,created_at,user_id')
       .order('created_at', { ascending: false })
       .limit(limit);
 
     if (error) throw error;
-    return data || [];
+
+    const persistedHistory: BroadcastNotification[] = (data ?? []).map((row) => ({
+      id: row.id,
+      title: row.title,
+      body: row.message,
+      type: normalizeBroadcastType(row.type),
+      target_role: null,
+      created_by: row.user_id ?? '',
+      is_sent: true,
+      sent_at: row.created_at,
+      created_at: row.created_at,
+      updated_at: row.created_at,
+    }));
+
+    const combined = [...draftHistory, ...persistedHistory];
+    const unique = combined.filter(
+      (notification, index, array) =>
+        array.findIndex((candidate) => candidate.id === notification.id) === index
+    );
+
+    return unique.slice(0, limit);
   } catch (err) {
     console.error('Error fetching broadcast notifications:', err);
-    return [];
+    return [...draftBroadcasts.values()].slice(0, limit);
   }
 };
