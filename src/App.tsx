@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { HelmetProvider } from "react-helmet-async";
+import { toast } from "sonner";
 import { SettingsProvider } from "@/hooks/useSettings";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -75,6 +76,17 @@ const App = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    const handler = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled rejection:', event.reason);
+      toast.error('Une erreur inattendue est survenue.');
+      event.preventDefault();
+    };
+
+    window.addEventListener('unhandledrejection', handler);
+    return () => window.removeEventListener('unhandledrejection', handler);
+  }, []);
+
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
@@ -127,6 +139,7 @@ const App = () => {
                     <Route path="/admin/notification-scheduler" element={<AdminNotificationScheduler />} />
                     <Route path="/admin/video" element={<AdminVideo />} />
                     <Route path="/admin/video/:roomId" element={<AdminVideoRoom />} />
+                    <Route path="/meeting/:roomId" element={<AdminVideoRoom />} />
                     <Route path="/admin/users" element={<AdminUsers />} />
                     <Route path="/admin/admins" element={<AdminManagement />} />
                     <Route path="/profile" element={<Profile />} />
@@ -144,3 +157,4 @@ const App = () => {
 };
 
 export default App;
+

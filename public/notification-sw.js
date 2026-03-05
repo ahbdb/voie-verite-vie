@@ -1,19 +1,12 @@
-// Service Worker pour les notifications
-// Gère les notifications visibles, audibles et avec vibration
-
-self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installation');
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activation');
+self.addEventListener('activate', () => {
   self.clients.claim();
 });
 
 self.addEventListener('push', (event) => {
-  console.log('Service Worker: Push notification reçue');
-
   let data = {
     title: 'Voie, Vérité, Vie',
     body: 'Vous avez une nouvelle notification',
@@ -21,14 +14,15 @@ self.addEventListener('push', (event) => {
     icon: '/logo-3v.png',
     tag: 'default',
     silent: false,
-    requireInteraction: true, // ✨ Les notifications restent visibles jusqu'à action utilisateur
+    requireInteraction: true,
+    data: {},
   };
 
   if (event.data) {
     try {
       const json = event.data.json();
       data = { ...data, ...json };
-    } catch (e) {
+    } catch (_error) {
       data.body = event.data.text();
     }
   }
@@ -39,23 +33,22 @@ self.addEventListener('push', (event) => {
       badge: data.badge,
       icon: data.icon,
       tag: data.tag,
-      requireInteraction: data.requireInteraction, // ✨ Reste visible jusqu'à action
+      requireInteraction: data.requireInteraction,
       silent: data.silent ?? false,
       vibrate: data.vibrate || [200, 100, 200],
-      data: data,
+      data: data.data || data,
     })
   );
 });
 
 self.addEventListener('notificationclick', (event) => {
-  console.log('Service Worker: Clique sur notification');
-
   event.notification.close();
 
-  let urlToOpen = '/';
+  const payload = event.notification.data || {};
+  let urlToOpen = payload.url || '/';
 
-  if (event.notification.data && event.notification.data.action) {
-    switch (event.notification.data.action) {
+  if (!payload.url && payload.action) {
+    switch (payload.action) {
       case 'careme':
         urlToOpen = '/careme-2026';
         break;
@@ -68,10 +61,12 @@ self.addEventListener('notificationclick', (event) => {
       case 'bible':
         urlToOpen = '/biblical-reading';
         break;
+      case 'gallery':
+        urlToOpen = '/gallery';
+        break;
+      case 'call':
       case 'welcome':
       case 'reminder':
-        urlToOpen = '/';
-        break;
       default:
         urlToOpen = '/';
     }
@@ -84,15 +79,19 @@ self.addEventListener('notificationclick', (event) => {
         includeUncontrolled: true,
       });
 
-      // Chercher un onglet existant
-      for (let i = 0; i < allClients.length; i++) {
-        const client = allClients[i];
-        if (client.url === urlToOpen && 'focus' in client) {
+      for (const client of allClients) {
+        if (client.url.includes(urlToOpen) && 'focus' in client) {
+          client.postMessage({
+            type: 'NOTIFICATION_CLICK',
+            payload: {
+              action: payload.action,
+              data: payload,
+            },
+          });
           return client.focus();
         }
       }
 
-      // Ouvrir un nouvel onglet si aucun n'existe
       if (self.clients.openWindow) {
         return self.clients.openWindow(urlToOpen);
       }
@@ -100,20 +99,6 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-self.addEventListener('notificationclose', (event) => {
-  console.log('Service Worker: Notification fermée');
-});
-
-// Pour les messages depuis le client
-self.addEventListener('message', (event) => {
-  console.log('Service Worker: Message reçu', event.data);
-
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-});
-
-// Handler pour les notifications même si l'app n'est pas ouverte
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
     const notification = event.data.payload;
@@ -128,5 +113,8 @@ self.addEventListener('message', (event) => {
       data: notification.data || {},
     });
   }
-});
 
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
