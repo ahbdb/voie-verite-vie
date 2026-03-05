@@ -618,6 +618,86 @@ export type Database = {
         }
         Relationships: []
       }
+      video_message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "video_room_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_message_reactions_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "video_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_room_messages: {
+        Row: {
+          content: string
+          created_at: string
+          display_name: string | null
+          id: string
+          room_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          room_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          room_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_room_messages_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "video_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       video_room_participants: {
         Row: {
           display_name: string | null
@@ -699,7 +779,10 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          ended_at: string | null
           id: string
+          room_type: string
+          started_at: string | null
           status: string
           title: string
           updated_at: string
@@ -708,7 +791,10 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          ended_at?: string | null
           id?: string
+          room_type?: string
+          started_at?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -717,7 +803,10 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          ended_at?: string | null
           id?: string
+          room_type?: string
+          started_at?: string | null
           status?: string
           title?: string
           updated_at?: string

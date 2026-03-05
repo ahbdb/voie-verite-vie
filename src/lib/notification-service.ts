@@ -1,6 +1,6 @@
 /**
  * Service de notifications intelligentes
- * Gère les notifications push automatiques sans demander de permission
+ * Gère les notifications visibles, silencieuses et les appels entrants.
  */
 
 export interface NotificationPayload {
@@ -10,133 +10,149 @@ export interface NotificationPayload {
   icon?: string;
   tag?: string;
   data?: Record<string, any>;
-  action?: 'careme' | 'chemin-croix' | 'activity' | 'bible' | 'gallery' | 'reminder';
+  action?: 'careme' | 'chemin-croix' | 'activity' | 'bible' | 'gallery' | 'reminder' | 'call';
   silent?: boolean;
   badge_count?: number;
+  requireInteraction?: boolean;
 }
 
-/**
- * Envoie une notification silencieuse automatiquement
- * Sans demander la permission (permissions implicites)
- */
+const NOTIFICATION_SW_PATH = '/notification-sw.js';
+
+export const registerNotificationServiceWorker = async () => {
+  if (!('serviceWorker' in navigator)) {
+    return null;
+  }
+
+  try {
+    return await navigator.serviceWorker.register(NOTIFICATION_SW_PATH, { scope: '/' });
+  } catch (error) {
+    console.log('Service Worker déjà enregistré ou indisponible:', error);
+    return navigator.serviceWorker.ready;
+  }
+};
+
+const buildNotificationOptions = (payload: NotificationPayload) => ({
+  body: payload.body || '',
+  badge: payload.badge || '/logo-3v.png',
+  icon: payload.icon || '/logo-3v.png',
+  tag: payload.tag || 'default',
+  silent: payload.silent ?? true,
+  requireInteraction: payload.requireInteraction ?? payload.action === 'call',
+  data: {
+    ...payload.data,
+    action: payload.action,
+    url: payload.data?.url,
+    timestamp: new Date().toISOString(),
+  },
+});
+
+export const playAttentionTone = async () => {
+  try {
+    const AudioContextConstructor = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextConstructor) return;
+
+    const context = new AudioContextConstructor();
+    const scheduleBeep = (delay: number, duration: number, frequency: number) => {
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+      gainNode.gain.value = 0.0001;
+
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+
+      const startAt = context.currentTime + delay;
+      oscillator.start(startAt);
+      gainNode.gain.exponentialRampToValueAtTime(0.08, startAt + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+      oscillator.stop(startAt + duration + 0.02);
+    };
+
+    scheduleBeep(0, 0.24, 720);
+    scheduleBeep(0.32, 0.24, 860);
+    scheduleBeep(0.64, 0.32, 720);
+  } catch (error) {
+    console.log('Sonnerie non disponible:', error);
+  }
+};
+
 export const sendSilentNotification = async (payload: NotificationPayload) => {
   try {
-    // Si le service worker est prêt
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-      const registration = await navigator.serviceWorker.ready;
-      if (registration.showNotification) {
-        await registration.showNotification(payload.title, {
-          body: payload.body || '',
-          badge: payload.badge || '/logo-3v.png',
-          icon: payload.icon || '/logo-3v.png',
-          tag: payload.tag || 'default',
-          silent: payload.silent !== false, // Par défaut silencieux
-          requireInteraction: false, // N'empêche pas la fermeture auto
-          data: {
-            ...payload.data,
-            action: payload.action,
-            timestamp: new Date().toISOString(),
-          },
-        });
-      }
-    } else {
-      // Fallback simple
-      if (Notification.permission === 'granted') {
-        new Notification(payload.title, {
-          body: payload.body,
-          badge: payload.badge || '/logo-3v.png',
-          icon: payload.icon || '/logo-3v.png',
-          tag: payload.tag || 'default',
-          silent: true,
-        });
-      }
+    const registration = await registerNotificationServiceWorker();
+
+    if (registration?.showNotification && 'Notification' in window && Notification.permission === 'granted') {
+      await registration.showNotification(payload.title, buildNotificationOptions(payload));
+      return;
+    }
+
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(payload.title, buildNotificationOptions(payload));
     }
   } catch (err) {
     console.log('Notification non supportée:', err);
   }
 };
 
-/**
- * Envoie une notification VISIBLE et AUDIBLE
- * Affichée en haut du téléphone avec requireInteraction: true
- * Cette notification est destinée à être bien remarquée
- */
 export const sendVisibleNotification = async (payload: NotificationPayload) => {
   try {
-    // Si le service worker est prêt
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-      const registration = await navigator.serviceWorker.ready;
-      if (registration.showNotification) {
-        await registration.showNotification(payload.title, {
-          body: payload.body || '',
-          badge: payload.badge || '/logo-3v.png',
-          icon: payload.icon || '/logo-3v.png',
-          tag: payload.tag || `visible-${Date.now()}`, // Unique tag pour ne pas fusionner
-          silent: false, // AUDIBLE - le téléphone fait du bruit
-          requireInteraction: true, // Reste visible jusqu'à action
-          data: {
-            ...payload.data,
-            action: payload.action,
-            timestamp: new Date().toISOString(),
-          },
-        });
-      }
-    } else {
-      // Fallback simple
-      if (Notification.permission === 'granted') {
-        new Notification(payload.title, {
-          body: payload.body,
-          badge: payload.badge || '/logo-3v.png',
-          icon: payload.icon || '/logo-3v.png',
-          tag: `visible-${Date.now()}`,
-        });
-      }
+    const registration = await registerNotificationServiceWorker();
+
+    if (registration?.showNotification && 'Notification' in window && Notification.permission === 'granted') {
+      await registration.showNotification(
+        payload.title,
+        buildNotificationOptions({
+          ...payload,
+          silent: false,
+          requireInteraction: payload.requireInteraction ?? true,
+          tag: payload.tag || `visible-${Date.now()}`,
+        })
+      );
+      return;
+    }
+
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(
+        payload.title,
+        buildNotificationOptions({
+          ...payload,
+          silent: false,
+          requireInteraction: payload.requireInteraction ?? true,
+          tag: payload.tag || `visible-${Date.now()}`,
+        })
+      );
     }
   } catch (err) {
     console.log('Notification visible non supportée:', err);
   }
 };
 
-/**
- * Envoie une notification immédiate (peut être visible ou silencieuse)
- */
 export const sendNotification = async (payload: NotificationPayload) => {
+  if (payload.silent === false || payload.action === 'call') {
+    await sendVisibleNotification(payload);
+    return;
+  }
+
   await sendSilentNotification(payload);
 };
 
-/**
- * Initialise le service worker et les permissions silencieusement
- */
 export const initNotificationsAutomatically = async () => {
   try {
-    // Enregistrer le service worker sans demander
-    if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.register(
-        '/notification-sw.js',
-        { scope: '/' }
-      );
-      console.log('Service Worker enregistré automatiquement pour les notifications');
-      
-      // Vérifier et demander la permission silencieusement si possible
-      if ('Notification' in window && Notification.permission === 'default') {
-        // Essayer de demander la permission discrètement
-        try {
-          await Notification.requestPermission();
-        } catch (err) {
-          // Échouer silencieusement - continuer quand même
-          console.log('Permission de notification non disponible (normal sur certains navigateurs)');
-        }
+    await registerNotificationServiceWorker();
+
+    if ('Notification' in window && Notification.permission === 'default') {
+      try {
+        await Notification.requestPermission();
+      } catch (err) {
+        console.log('Permission de notification non disponible:', err);
       }
     }
   } catch (err) {
-    console.log('Initialisation des notifications échouée (normal):', err);
+    console.log('Initialisation des notifications échouée:', err);
   }
 };
 
-/**
- * Envoie une notification pour une nouvelle lecture biblique
- * VISIBLE et AUDIBLE
- */
 export const sendBibleNotification = async (title: string, chapter: string) => {
   await sendVisibleNotification({
     title: `📖 Nouvelle lecture: ${title}`,
@@ -146,16 +162,13 @@ export const sendBibleNotification = async (title: string, chapter: string) => {
       action: 'bible',
       title,
       chapter,
+      url: '/biblical-reading',
     },
     action: 'bible',
     silent: false,
   });
 };
 
-/**
- * Envoie une notification pour un jour du Carême
- * VISIBLE et AUDIBLE
- */
 export const sendCaremeReminder = async (day: number, title: string) => {
   await sendVisibleNotification({
     title: `🙏 Carême Jour ${day}`,
@@ -164,16 +177,13 @@ export const sendCaremeReminder = async (day: number, title: string) => {
     data: {
       action: 'careme',
       day,
+      url: '/careme-2026',
     },
     action: 'careme',
     silent: false,
   });
 };
 
-/**
- * Envoie une notification pour le Chemin de Croix
- * VISIBLE et AUDIBLE
- */
 export const sendCheminDeCroixReminder = async (station: number, title: string) => {
   await sendVisibleNotification({
     title: `✝️ Station ${station}: ${title}`,
@@ -182,16 +192,13 @@ export const sendCheminDeCroixReminder = async (station: number, title: string) 
     data: {
       action: 'chemin-croix',
       station,
+      url: '/chemin-de-croix',
     },
     action: 'chemin-croix',
     silent: false,
   });
 };
 
-/**
- * Envoie une notification pour une activité
- * VISIBLE et AUDIBLE
- */
 export const sendActivityNotification = async (activityName: string, description: string) => {
   await sendVisibleNotification({
     title: `🎯 ${activityName}`,
@@ -200,16 +207,13 @@ export const sendActivityNotification = async (activityName: string, description
     data: {
       action: 'activity',
       name: activityName,
+      url: '/activities',
     },
     action: 'activity',
     silent: false,
   });
 };
 
-/**
- * Envoie une notification pour une galerie/image
- * VISIBLE et AUDIBLE
- */
 export const sendGalleryNotification = async (title: string, description: string) => {
   await sendVisibleNotification({
     title: `🖼️ ${title}`,
@@ -218,15 +222,13 @@ export const sendGalleryNotification = async (title: string, description: string
     data: {
       action: 'gallery',
       title,
+      url: '/gallery',
     },
+    action: 'gallery',
     silent: false,
   });
 };
 
-/**
- * Envoie une notification générique pour une nouveauté
- * VISIBLE et AUDIBLE
- */
 export const sendUpdateNotification = async (title: string, description: string, type: string = 'update') => {
   await sendVisibleNotification({
     title: `✨ ${title}`,
@@ -235,41 +237,56 @@ export const sendUpdateNotification = async (title: string, description: string,
     data: {
       action: 'reminder',
       type,
+      url: '/',
     },
     action: 'reminder',
     silent: false,
   });
 };
 
-/**
- * Initialise le gestionnaire de clics sur les notifications
- */
 export const initNotificationClickHandler = () => {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      if (event.data && event.data.type === 'NOTIFICATION_CLICK') {
-        const { action, data } = event.data.payload;
-
-        switch (action) {
-          case 'careme':
-            window.location.href = `/careme-2026`;
-            break;
-          case 'chemin-croix':
-            window.location.href = `/chemin-de-croix`;
-            break;
-          case 'bible':
-            window.location.href = `/biblical-reading`;
-            break;
-          case 'activity':
-            window.location.href = `/activities`;
-            break;
-          case 'gallery':
-            window.location.href = `/gallery`;
-            break;
-          default:
-            window.location.href = '/';
-        }
-      }
-    });
+  if (!('serviceWorker' in navigator)) {
+    return;
   }
+
+  if ((window as any).__notificationClickHandlerInitialized) {
+    return;
+  }
+
+  (window as any).__notificationClickHandlerInitialized = true;
+
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'NOTIFICATION_CLICK') {
+      const { action, data } = event.data.payload;
+      const explicitUrl = data?.url;
+
+      if (explicitUrl) {
+        window.location.href = explicitUrl;
+        return;
+      }
+
+      switch (action) {
+        case 'careme':
+          window.location.href = '/careme-2026';
+          break;
+        case 'chemin-croix':
+          window.location.href = '/chemin-de-croix';
+          break;
+        case 'bible':
+          window.location.href = '/biblical-reading';
+          break;
+        case 'activity':
+          window.location.href = '/activities';
+          break;
+        case 'gallery':
+          window.location.href = '/gallery';
+          break;
+        case 'call':
+          window.location.href = '/';
+          break;
+        default:
+          window.location.href = '/';
+      }
+    }
+  });
 };

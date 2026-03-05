@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from 'react';
+import { memo, useState, useEffect, useRef } from 'react';
 import Navigation from '@/components/Navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ const CheminDeCroix = memo(() => {
   const [selectedStation, setSelectedStation] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState('intro');
   const [sharingProgress, setSharingProgress] = useState<{ current: number, total: number } | null>(null);
-  const [subscription, setSubscription] = useState<any>(null);
+  const subscriptionRef = useRef<any>(null);
   const { toast } = useToast();
 
   const printPage = () => window.print();
@@ -141,7 +141,6 @@ const CheminDeCroix = memo(() => {
   useEffect(() => {
     const loadContent = async () => {
       try {
-        console.log('🔄 [CheminDeCroix] Loading content from DB for page_key=chemin-de-croix...');
         const { data, error } = await supabase
           .from('page_content')
           .select('*')
@@ -155,21 +154,18 @@ const CheminDeCroix = memo(() => {
 
         const content = data.content as { stations?: Station[] } | null;
         if (content?.stations) {
-          console.log('✅ [CheminDeCroix] Content loaded, stations count:', content.stations.length);
           setContentData(content);
         }
       } catch (err) {
         console.error('❌ [CheminDeCroix] Failed to load content:', err);
       }
     };
-    
-    loadContent();
-    
-    // ✨ FIX: Use stable channel ID instead of Date.now()
-    if (!subscription) {
-      console.log('📡 [CheminDeCroix] Setting up real-time subscription for chemin-de-croix...');
-      const sub = supabase
-        .channel('chemin_de_croix_updates') // ← Stable ID!
+
+    void loadContent();
+
+    if (!subscriptionRef.current) {
+      subscriptionRef.current = supabase
+        .channel('chemin_de_croix_updates')
         .on(
           'postgres_changes',
           {
@@ -179,28 +175,21 @@ const CheminDeCroix = memo(() => {
             filter: `page_key=eq.chemin-de-croix`
           },
           (payload: any) => {
-            console.log('🔔 [CheminDeCroix] Real-time update received, event:', payload.eventType);
             if (payload.new?.content?.stations) {
-              console.log('✅ [CheminDeCroix] Updating with fresh data from real-time event');
               setContentData(payload.new.content);
             } else {
-              loadContent();
+              void loadContent();
             }
           }
         )
-        .subscribe((status) => {
-          console.log('🔗 [CheminDeCroix] Subscription status:', status);
-        });
-      
-      setSubscription(sub);
+        .subscribe();
     }
-    
+
     return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
+      subscriptionRef.current?.unsubscribe();
+      subscriptionRef.current = null;
     };
-  }, [subscription]);
+  }, []);
 
   // Force reload when page becomes visible (user returns from admin)
   useEffect(() => {

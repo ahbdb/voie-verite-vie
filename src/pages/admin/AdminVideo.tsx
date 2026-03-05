@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import AdminPageWrapper from '@/components/admin/AdminPageWrapper';
 import { useAdmin } from '@/hooks/useAdmin';
+import { broadcastNotificationService } from '@/hooks/useBroadcastNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, Radio, Video } from 'lucide-react';
+import { ArrowLeft, Plus, Radio, Video, Mic } from 'lucide-react';
 import type { VideoParticipantRecord, VideoRoomRecord } from '@/hooks/useAdminVideoRoom';
 
 const db = supabase as any;
@@ -26,6 +27,7 @@ const AdminVideo = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    roomType: 'video' as 'video' | 'audio',
   });
 
   const activeParticipantsByRoom = useMemo(() => {
@@ -99,6 +101,7 @@ const AdminVideo = () => {
           description: formData.description.trim() || null,
           created_by: user.id,
           status: 'waiting',
+          room_type: formData.roomType,
           updated_at: new Date().toISOString(),
         })
         .select('*')
@@ -106,9 +109,23 @@ const AdminVideo = () => {
 
       if (error) throw error;
 
-      toast.success('Salle vidéo créée.');
-      setFormData({ title: '', description: '' });
-      navigate(`/admin/video/${data.id}`);
+      const meetingPath = `/meeting/${data.id}`;
+
+      try {
+        await broadcastNotificationService.sendToAll(
+          `📞 ${formData.title.trim()}`,
+          `${displayName(user)} a lancé une réunion ${formData.roomType === 'audio' ? 'audio' : 'vidéo'}. Rejoins-la maintenant.`,
+          'call',
+          undefined,
+          meetingPath
+        );
+      } catch (notificationError) {
+        console.error('[admin-video] Failed to broadcast call notification', notificationError);
+      }
+
+      toast.success('Salle créée, appel envoyé.');
+      setFormData({ title: '', description: '', roomType: 'video' });
+      navigate(meetingPath);
     } catch (error) {
       console.error('[admin-video] Failed to create room', error);
       toast.error('La création de la salle a échoué.');
@@ -121,7 +138,7 @@ const AdminVideo = () => {
     try {
       const { error } = await db
         .from('video_rooms')
-        .update({ status: 'ended', updated_at: new Date().toISOString() })
+        .update({ status: 'ended', ended_at: new Date().toISOString() })
         .eq('id', roomId);
 
       if (error) throw error;
@@ -167,14 +184,14 @@ const AdminVideo = () => {
                 <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <Video className="h-5 w-5" />
                 </span>
-                Salles vidéo maison
+                Salles maison ouvertes aux participants
               </h1>
               <p className="mt-2 max-w-2xl text-muted-foreground">
-                MVP admin pour créer une salle, ouvrir la réunion et lancer caméra/micro en WebRTC.
+                Crée une réunion audio ou vidéo, déclenche l’appel, puis partage le lien public de participation.
               </p>
             </div>
             <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
-              Accès réservé aux administrateurs connectés.
+              Création réservée aux administrateurs connectés.
             </div>
           </div>
 
@@ -183,7 +200,7 @@ const AdminVideo = () => {
               <CardHeader>
                 <CardTitle>Créer une salle</CardTitle>
                 <CardDescription>
-                  Lance une conférence privée admin avec audio/vidéo en direct.
+                  Lance une conférence avec appel entrant, chat persistant et présence temps réel.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -197,6 +214,25 @@ const AdminVideo = () => {
                     />
                   </div>
                   <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Type de réunion</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        type="button"
+                        variant={formData.roomType === 'video' ? 'default' : 'outline'}
+                        onClick={() => setFormData((current) => ({ ...current, roomType: 'video' }))}
+                      >
+                        <Video className="h-4 w-4" /> Vidéo
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={formData.roomType === 'audio' ? 'default' : 'outline'}
+                        onClick={() => setFormData((current) => ({ ...current, roomType: 'audio' }))}
+                      >
+                        <Mic className="h-4 w-4" /> Audio
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Description</label>
                     <Textarea
                       value={formData.description}
@@ -208,7 +244,7 @@ const AdminVideo = () => {
                   </div>
                   <Button type="submit" disabled={creating} className="w-full sm:w-auto">
                     <Plus className="h-4 w-4" />
-                    {creating ? 'Création...' : 'Créer et ouvrir la salle'}
+                    {creating ? 'Création...' : 'Créer et appeler'}
                   </Button>
                 </form>
               </CardContent>
@@ -216,18 +252,18 @@ const AdminVideo = () => {
 
             <Card className="border-border/70 bg-gradient-to-br from-card via-card to-muted/40">
               <CardHeader>
-                <CardTitle>Ce MVP inclut</CardTitle>
+                <CardTitle>Ce module inclut</CardTitle>
                 <CardDescription>Base 100% maison, gratuite et évolutive.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-muted-foreground">
-                <div className="rounded-lg border border-border bg-background/70 p-3">Création sécurisée des salles</div>
-                <div className="rounded-lg border border-border bg-background/70 p-3">Page de réunion avec caméra et micro</div>
-                <div className="rounded-lg border border-border bg-background/70 p-3">Présence temps réel entre admins</div>
+                <div className="rounded-lg border border-border bg-background/70 p-3">Réunions audio et vidéo</div>
+                <div className="rounded-lg border border-border bg-background/70 p-3">Partage d’écran et salle ouverte aux participants</div>
+                <div className="rounded-lg border border-border bg-background/70 p-3">Chat persistant, likes, emojis et présence temps réel</div>
                 <Alert>
                   <Radio className="h-4 w-4" />
-                  <AlertTitle>Limite actuelle</AlertTitle>
+                  <AlertTitle>Important</AlertTitle>
                   <AlertDescription>
-                    Pas d'enregistrement cloud ni de multistream social dans ce MVP gratuit.
+                    Les utilisateurs reçoivent maintenant un appel entrant via le système de notifications de l’application.
                   </AlertDescription>
                 </Alert>
               </CardContent>
@@ -245,7 +281,7 @@ const AdminVideo = () => {
             {rooms.length === 0 && !loading ? (
               <Card>
                 <CardContent className="pt-6 text-muted-foreground">
-                  Aucune salle pour le moment. Crée la première conférence admin ci-dessus.
+                  Aucune salle pour le moment. Crée la première réunion ci-dessus.
                 </CardContent>
               </Card>
             ) : (
@@ -276,12 +312,17 @@ const AdminVideo = () => {
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Radio className="h-4 w-4 text-primary" /> {activeCount} admin(s) connecté(s)
+                        <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-2">
+                            <Radio className="h-4 w-4 text-primary" /> {activeCount} participant(s)
+                          </span>
+                          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                            {room.room_type === 'audio' ? 'Audio' : 'Vidéo'}
+                          </span>
                         </div>
                         <div className="flex flex-wrap gap-3">
                           <Button asChild>
-                            <Link to={`/admin/video/${room.id}`}>Ouvrir la salle</Link>
+                            <Link to={`/meeting/${room.id}`}>Ouvrir la salle</Link>
                           </Button>
                           {room.status !== 'ended' && (
                             <Button variant="outline" onClick={() => void handleCloseRoom(room.id)}>
@@ -302,4 +343,8 @@ const AdminVideo = () => {
   );
 };
 
+const displayName = (user: { email?: string | null; user_metadata?: { full_name?: string } }) =>
+  user.user_metadata?.full_name || user.email || 'Un administrateur';
+
 export default AdminVideo;
+

@@ -2,12 +2,19 @@ import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { playAttentionTone, sendVisibleNotification } from '@/lib/notification-service';
 
-export type AppNotificationType = 'greeting' | 'reminder' | 'announcement' | 'update' | 'reading' | 'activity' | 'prayer' | 'info';
+export type AppNotificationType =
+  | 'greeting'
+  | 'reminder'
+  | 'announcement'
+  | 'update'
+  | 'reading'
+  | 'activity'
+  | 'prayer'
+  | 'info'
+  | 'call';
 
-/**
- * Écoute en temps réel les notifications de l'utilisateur
- */
 export const useBroadcastNotifications = () => {
   const { user } = useAuth();
   const unsubscribeRef = useRef<(() => void) | null>(null);
@@ -31,7 +38,28 @@ export const useBroadcastNotifications = () => {
             title: string;
             message: string;
             type: AppNotificationType;
+            link: string | null;
           };
+
+          if (notification.type === 'call') {
+            void playAttentionTone();
+            void sendVisibleNotification({
+              title: notification.title,
+              body: notification.message,
+              tag: `call-${notification.id}`,
+              action: 'call',
+              silent: false,
+              data: {
+                url: notification.link || '/',
+              },
+            });
+
+            toast(notification.title, {
+              description: notification.message,
+              duration: 10000,
+            });
+            return;
+          }
 
           if ('Notification' in window && Notification.permission === 'granted') {
             new Notification(notification.title, {
@@ -55,16 +83,11 @@ export const useBroadcastNotifications = () => {
     };
 
     return () => {
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-      }
+      unsubscribeRef.current?.();
     };
   }, [user?.id]);
 };
 
-/**
- * Service d'envoi de notifications dans la table publique `notifications`
- */
 export const broadcastNotificationService = {
   async sendToAll(
     title: string,
@@ -73,9 +96,7 @@ export const broadcastNotificationService = {
     _icon?: string,
     link: string | null = null
   ) {
-    const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('id');
+    const { data: profiles, error: profilesError } = await supabase.from('profiles').select('id');
 
     if (profilesError) throw profilesError;
     if (!profiles || profiles.length === 0) return { inserted: 0 };
@@ -113,7 +134,7 @@ export const broadcastNotificationService = {
     if (roleError) throw roleError;
     if (!roleRows || roleRows.length === 0) return { inserted: 0 };
 
-    const uniqueUserIds = [...new Set(roleRows.map((r) => r.user_id))];
+    const uniqueUserIds = [...new Set(roleRows.map((entry) => entry.user_id))];
     const payload = uniqueUserIds.map((userId) => ({
       user_id: userId,
       title,
@@ -140,6 +161,6 @@ export const testNotificationSystem = async () => {
     return { success: true, message: 'Notification de test envoyée !' };
   } catch (error) {
     console.error('Erreur test notification:', error);
-    return { success: false, message: 'Erreur lors de l\'envoi du test' };
+    return { success: false, message: "Erreur lors de l'envoi du test" };
   }
 };
