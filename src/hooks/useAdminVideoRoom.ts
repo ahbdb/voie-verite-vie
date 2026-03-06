@@ -300,7 +300,36 @@ export const useAdminVideoRoom = ({
       };
 
       connection.onconnectionstatechange = () => {
-        if (['failed', 'closed', 'disconnected'].includes(connection.connectionState)) {
+        const state = connection.connectionState;
+        const existingTimer = disconnectTimersRef.current.get(participantId);
+
+        if (state === 'connected') {
+          if (existingTimer) {
+            window.clearTimeout(existingTimer);
+            disconnectTimersRef.current.delete(participantId);
+          }
+          return;
+        }
+
+        if (state === 'disconnected') {
+          if (!existingTimer) {
+            const timeoutId = window.setTimeout(() => {
+              if (connection.connectionState === 'disconnected' || connection.connectionState === 'failed') {
+                removePeer(participantId);
+              }
+              disconnectTimersRef.current.delete(participantId);
+            }, 6000);
+
+            disconnectTimersRef.current.set(participantId, timeoutId);
+          }
+          return;
+        }
+
+        if (state === 'failed' || state === 'closed') {
+          if (existingTimer) {
+            window.clearTimeout(existingTimer);
+            disconnectTimersRef.current.delete(participantId);
+          }
           removePeer(participantId);
         }
       };
