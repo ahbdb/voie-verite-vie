@@ -513,7 +513,7 @@ export const useAdminVideoRoom = ({
 
   const activateRoom = useCallback(
     async (currentRoom: VideoRoomRecord) => {
-      if (!roomId || !canManageRoom) {
+      if (!roomId || !canManageRoomRef.current) {
         return currentRoom;
       }
 
@@ -535,7 +535,7 @@ export const useAdminVideoRoom = ({
 
       return currentRoom;
     },
-    [canManageRoom, roomId]
+    [roomId]
   );
 
   const joinRoom = useCallback(async () => {
@@ -545,7 +545,7 @@ export const useAdminVideoRoom = ({
       {
         room_id: roomId,
         user_id: userId,
-        display_name: displayName || 'Participant',
+        display_name: displayNameRef.current,
         is_active: true,
         joined_at: new Date().toISOString(),
         left_at: null,
@@ -558,7 +558,7 @@ export const useAdminVideoRoom = ({
     }
 
     joinedRef.current = true;
-  }, [displayName, roomId, userId]);
+  }, [roomId, userId]);
 
   const leaveRoom = useCallback(async () => {
     if (!roomId || !userId || !joinedRef.current) return;
@@ -570,10 +570,11 @@ export const useAdminVideoRoom = ({
       .eq('user_id', userId);
 
     joinedRef.current = false;
+    setIsConnected(false);
   }, [roomId, userId]);
 
   const endRoom = useCallback(async () => {
-    if (!roomId || !canManageRoom) return;
+    if (!roomId || !canManageRoomRef.current) return;
 
     await db
       .from('video_rooms')
@@ -587,7 +588,70 @@ export const useAdminVideoRoom = ({
       .from('video_room_participants')
       .update({ is_active: false, left_at: new Date().toISOString() })
       .eq('room_id', roomId);
-  }, [canManageRoom, roomId]);
+
+    setIsConnected(false);
+  }, [roomId]);
+
+  const requestJoin = useCallback(async () => {
+    if (!enabled || !roomId || !userId || isJoining || startRequested) {
+      return;
+    }
+
+    setIsJoining(true);
+    setLoading(true);
+    setMediaError(null);
+
+    try {
+      const currentRoom = room || (await loadRoom());
+      if (!currentRoom) {
+        throw new Error('Salle introuvable.');
+      }
+
+      const shouldUseVideo = currentRoom.room_type !== 'audio';
+      let media: MediaStream | null = null;
+
+      try {
+        media = await navigator.mediaDevices.getUserMedia({
+          video: shouldUseVideo,
+          audio: true,
+        });
+      } catch (error) {
+        if (shouldUseVideo) {
+          try {
+            media = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            setMediaError('Caméra indisponible : connexion basculée en audio uniquement.');
+          } catch {
+            media = null;
+          }
+        }
+      }
+
+      if (!media) {
+        const fallbackStream = new MediaStream();
+        localStreamRef.current = fallbackStream;
+        originalVideoTrackRef.current = null;
+        setLocalStream(fallbackStream);
+        setMicEnabled(false);
+        setCameraEnabled(false);
+        setMediaError('Micro/caméra refusés. Participation en écoute + chat activée.');
+        setStartRequested(true);
+        return;
+      }
+
+      originalVideoTrackRef.current = media.getVideoTracks()[0] || null;
+      localStreamRef.current = media;
+      setLocalStream(media);
+      setMicEnabled(media.getAudioTracks().some((track) => track.enabled));
+      setCameraEnabled(currentRoom.room_type !== 'audio' && Boolean(originalVideoTrackRef.current?.enabled));
+      setStartRequested(true);
+    } catch (error) {
+      console.error('[video-room] Failed to request local media', error);
+      setMediaError("Impossible d'activer le micro ou la caméra pour cette salle.");
+    } finally {
+      setIsJoining(false);
+      setLoading(false);
+    }
+  }, [enabled, isJoining, loadRoom, room, roomId, startRequested, userId]);
 
   const toggleMicrophone = useCallback(() => {
     const audioTracks = localStreamRef.current?.getAudioTracks() || [];
@@ -622,7 +686,7 @@ export const useAdminVideoRoom = ({
       const { error } = await db.from('video_room_messages').insert({
         room_id: roomId,
         user_id: userId,
-        display_name: displayName || 'Participant',
+        display_name: displayNameRef.current,
         content: content.trim(),
       });
 
@@ -630,7 +694,7 @@ export const useAdminVideoRoom = ({
         throw error;
       }
     },
-    [displayName, roomId, userId]
+    [roomId, userId]
   );
 
   const toggleReaction = useCallback(
