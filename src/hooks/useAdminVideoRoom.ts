@@ -95,6 +95,9 @@ export const useAdminVideoRoom = ({
   const [micEnabled, setMicEnabled] = useState(true);
   const [cameraEnabled, setCameraEnabled] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [startRequested, setStartRequested] = useState(false);
 
   const channelRef = useRef<any>(null);
   const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
@@ -106,6 +109,9 @@ export const useAdminVideoRoom = ({
   const screenTrackRef = useRef<MediaStreamTrack | null>(null);
   const participantsRef = useRef<VideoParticipantRecord[]>([]);
   const disconnectTimersRef = useRef<Map<string, number>>(new Map());
+  const displayNameRef = useRef(displayName || 'Participant');
+  const canManageRoomRef = useRef(canManageRoom);
+  const roomRef = useRef<VideoRoomRecord | null>(null);
 
   const roomType = room?.room_type ?? 'unknown';
   const canShareScreen =
@@ -118,7 +124,10 @@ export const useAdminVideoRoom = ({
 
   useEffect(() => {
     participantsRef.current = participants;
-  }, [participants]);
+    displayNameRef.current = displayName || 'Participant';
+    canManageRoomRef.current = canManageRoom;
+    roomRef.current = room;
+  }, [participants, displayName, canManageRoom, room]);
 
   const getParticipantLabel = useCallback((participantId: string) => {
     const participant = participantsRef.current.find((entry) => entry.user_id === participantId);
@@ -282,9 +291,25 @@ export const useAdminVideoRoom = ({
 
       const connection = new RTCPeerConnection(RTC_CONFIGURATION);
 
-      localStreamRef.current?.getTracks().forEach((track) => {
-        connection.addTrack(track, localStreamRef.current as MediaStream);
+      const stream = localStreamRef.current;
+      const audioTracks = stream?.getAudioTracks() || [];
+      const videoTracks = stream?.getVideoTracks() || [];
+
+      audioTracks.forEach((track) => {
+        connection.addTrack(track, stream as MediaStream);
       });
+
+      videoTracks.forEach((track) => {
+        connection.addTrack(track, stream as MediaStream);
+      });
+
+      if (audioTracks.length === 0) {
+        connection.addTransceiver('audio', { direction: 'recvonly' });
+      }
+
+      if (roomType !== 'audio' && videoTracks.length === 0) {
+        connection.addTransceiver('video', { direction: 'recvonly' });
+      }
 
       connection.onicecandidate = (event) => {
         if (event.candidate) {
@@ -337,7 +362,7 @@ export const useAdminVideoRoom = ({
       peerConnectionsRef.current.set(participantId, connection);
       return connection;
     },
-    [removePeer, sendSignal, upsertRemoteStream]
+    [removePeer, roomType, sendSignal, upsertRemoteStream]
   );
 
   const createOfferForParticipant = useCallback(
@@ -490,7 +515,7 @@ export const useAdminVideoRoom = ({
 
   const activateRoom = useCallback(
     async (currentRoom: VideoRoomRecord) => {
-      if (!roomId || !canManageRoom) {
+      if (!roomId || !canManageRoomRef.current) {
         return currentRoom;
       }
 
@@ -512,7 +537,7 @@ export const useAdminVideoRoom = ({
 
       return currentRoom;
     },
-    [canManageRoom, roomId]
+    [roomId]
   );
 
   const joinRoom = useCallback(async () => {
@@ -522,7 +547,7 @@ export const useAdminVideoRoom = ({
       {
         room_id: roomId,
         user_id: userId,
-        display_name: displayName || 'Participant',
+        display_name: displayNameRef.current,
         is_active: true,
         joined_at: new Date().toISOString(),
         left_at: null,
@@ -535,7 +560,7 @@ export const useAdminVideoRoom = ({
     }
 
     joinedRef.current = true;
-  }, [displayName, roomId, userId]);
+  }, [roomId, userId]);
 
   const leaveRoom = useCallback(async () => {
     if (!roomId || !userId || !joinedRef.current) return;
@@ -547,10 +572,11 @@ export const useAdminVideoRoom = ({
       .eq('user_id', userId);
 
     joinedRef.current = false;
+    setIsConnected(false);
   }, [roomId, userId]);
 
   const endRoom = useCallback(async () => {
-    if (!roomId || !canManageRoom) return;
+    if (!roomId || !canManageRoomRef.current) return;
 
     await db
       .from('video_rooms')
@@ -564,7 +590,70 @@ export const useAdminVideoRoom = ({
       .from('video_room_participants')
       .update({ is_active: false, left_at: new Date().toISOString() })
       .eq('room_id', roomId);
-  }, [canManageRoom, roomId]);
+
+    setIsConnected(false);
+  }, [roomId]);
+
+  const requestJoin = useCallback(async () => {
+    if (!enabled || !roomId || !userId || isJoining || startRequested) {
+      return;
+    }
+
+    setIsJoining(true);
+    setLoading(true);
+    setMediaError(null);
+
+    try {
+      const currentRoom = room || (await loadRoom());
+      if (!currentRoom) {
+        throw new Error('Salle introuvable.');
+      }
+
+      const shouldUseVideo = currentRoom.room_type !== 'audio';
+      let media: MediaStream | null = null;
+
+      try {
+        media = await navigator.mediaDevices.getUserMedia({
+          video: shouldUseVideo,
+          audio: true,
+        });
+      } catch (error) {
+        if (shouldUseVideo) {
+          try {
+            media = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            setMediaError('Caméra indisponible : connexion basculée en audio uniquement.');
+          } catch {
+            media = null;
+          }
+        }
+      }
+
+      if (!media) {
+        const fallbackStream = new MediaStream();
+        localStreamRef.current = fallbackStream;
+        originalVideoTrackRef.current = null;
+        setLocalStream(fallbackStream);
+        setMicEnabled(false);
+        setCameraEnabled(false);
+        setMediaError('Micro/caméra refusés. Participation en écoute + chat activée.');
+        setStartRequested(true);
+        return;
+      }
+
+      originalVideoTrackRef.current = media.getVideoTracks()[0] || null;
+      localStreamRef.current = media;
+      setLocalStream(media);
+      setMicEnabled(media.getAudioTracks().some((track) => track.enabled));
+      setCameraEnabled(currentRoom.room_type !== 'audio' && Boolean(originalVideoTrackRef.current?.enabled));
+      setStartRequested(true);
+    } catch (error) {
+      console.error('[video-room] Failed to request local media', error);
+      setMediaError("Impossible d'activer le micro ou la caméra pour cette salle.");
+    } finally {
+      setIsJoining(false);
+      setLoading(false);
+    }
+  }, [enabled, isJoining, loadRoom, room, roomId, startRequested, userId]);
 
   const toggleMicrophone = useCallback(() => {
     const audioTracks = localStreamRef.current?.getAudioTracks() || [];
@@ -599,7 +688,7 @@ export const useAdminVideoRoom = ({
       const { error } = await db.from('video_room_messages').insert({
         room_id: roomId,
         user_id: userId,
-        display_name: displayName || 'Participant',
+        display_name: displayNameRef.current,
         content: content.trim(),
       });
 
@@ -607,7 +696,7 @@ export const useAdminVideoRoom = ({
         throw error;
       }
     },
-    [displayName, roomId, userId]
+    [roomId, userId]
   );
 
   const toggleReaction = useCallback(
@@ -649,114 +738,127 @@ export const useAdminVideoRoom = ({
 
     let active = true;
 
+    const preloadRoom = async () => {
+      try {
+        await loadRoom();
+      } catch (error) {
+        console.error('[video-room] Failed to preload room', error);
+      } finally {
+        if (active && !startRequested) {
+          setLoading(false);
+        }
+      }
+    };
+
+    if (!startRequested) {
+      void preloadRoom();
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [enabled, loadRoom, roomId, startRequested, userId]);
+
+  useEffect(() => {
+    if (!enabled || !roomId || !userId || !startRequested) {
+      return;
+    }
+
+    let active = true;
+
     const startRoom = async () => {
       setLoading(true);
-      setMediaError(null);
 
       try {
-        const currentRoom = await loadRoom();
+        const currentRoom = roomRef.current || (await loadRoom());
         if (!currentRoom) {
           throw new Error('Salle introuvable.');
         }
 
-        let media: MediaStream;
-
-        try {
-          media = await navigator.mediaDevices.getUserMedia({
-            video: currentRoom.room_type !== 'audio',
-            audio: true,
-          });
-        } catch (error) {
-          if (currentRoom.room_type !== 'audio') {
-            media = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-            setMediaError('Caméra indisponible : connexion basculée en audio uniquement.');
-          } else {
-            throw error;
-          }
+        if (!localStreamRef.current) {
+          const fallbackStream = new MediaStream();
+          localStreamRef.current = fallbackStream;
+          setLocalStream(fallbackStream);
+          originalVideoTrackRef.current = null;
+          setMicEnabled(false);
+          setCameraEnabled(false);
         }
-
-        if (!active) {
-          media.getTracks().forEach((track) => track.stop());
-          return;
-        }
-
-        originalVideoTrackRef.current = media.getVideoTracks()[0] || null;
-        localStreamRef.current = media;
-        setLocalStream(media);
-        setMicEnabled(media.getAudioTracks().some((track) => track.enabled));
-        setCameraEnabled(
-          currentRoom.room_type !== 'audio' && Boolean(originalVideoTrackRef.current?.enabled)
-        );
 
         await joinRoom();
         await activateRoom(currentRoom);
         await Promise.all([loadParticipants(), loadMessages(), loadReactions()]);
 
-        const channel = db
-          .channel(`video-room:${roomId}`)
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'video_room_participants',
-              filter: `room_id=eq.${roomId}`,
-            },
-            () => {
-              void loadParticipants();
-            }
-          )
-          .on(
-            'postgres_changes',
-            {
-              event: 'INSERT',
-              schema: 'public',
-              table: 'video_room_signals',
-              filter: `room_id=eq.${roomId}`,
-            },
-            (payload: { new: VideoSignalRecord }) => {
-              void handleIncomingSignal(payload.new);
-            }
-          )
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'video_room_messages',
-              filter: `room_id=eq.${roomId}`,
-            },
-            () => {
-              void loadMessages();
-            }
-          )
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'video_message_reactions',
-              filter: `room_id=eq.${roomId}`,
-            },
-            () => {
-              void loadReactions();
-            }
-          )
-          .on(
-            'postgres_changes',
-            {
-              event: 'UPDATE',
-              schema: 'public',
-              table: 'video_rooms',
-              filter: `id=eq.${roomId}`,
-            },
-            (payload: { new: VideoRoomRecord }) => {
-              setRoom(payload.new);
-            }
-          )
-          .subscribe();
+        if (!channelRef.current) {
+          const channel = db
+            .channel(`video-room:${roomId}`)
+            .on(
+              'postgres_changes',
+              {
+                event: '*',
+                schema: 'public',
+                table: 'video_room_participants',
+                filter: `room_id=eq.${roomId}`,
+              },
+              () => {
+                void loadParticipants();
+              }
+            )
+            .on(
+              'postgres_changes',
+              {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'video_room_signals',
+                filter: `room_id=eq.${roomId}`,
+              },
+              (payload: { new: VideoSignalRecord }) => {
+                void handleIncomingSignal(payload.new);
+              }
+            )
+            .on(
+              'postgres_changes',
+              {
+                event: '*',
+                schema: 'public',
+                table: 'video_room_messages',
+                filter: `room_id=eq.${roomId}`,
+              },
+              () => {
+                void loadMessages();
+              }
+            )
+            .on(
+              'postgres_changes',
+              {
+                event: '*',
+                schema: 'public',
+                table: 'video_message_reactions',
+                filter: `room_id=eq.${roomId}`,
+              },
+              () => {
+                void loadReactions();
+              }
+            )
+            .on(
+              'postgres_changes',
+              {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'video_rooms',
+                filter: `id=eq.${roomId}`,
+              },
+              (payload: { new: VideoRoomRecord }) => {
+                setRoom(payload.new);
+              }
+            )
+            .subscribe();
 
-        channelRef.current = channel;
+          channelRef.current = channel;
+        }
+
+        if (active) {
+          setIsConnected(true);
+        }
       } catch (error) {
         console.error('[video-room] Failed to start room', error);
         if (active) {
@@ -792,6 +894,8 @@ export const useAdminVideoRoom = ({
       originalVideoTrackRef.current = null;
       setLocalStream(null);
       setIsScreenSharing(false);
+      setIsConnected(false);
+      setStartRequested(false);
     };
   }, [
     activateRoom,
@@ -804,13 +908,14 @@ export const useAdminVideoRoom = ({
     loadReactions,
     loadRoom,
     roomId,
+    startRequested,
     userId,
   ]);
 
   useEffect(() => {
-    if (!enabled || !localStreamRef.current) return;
+    if (!enabled || !startRequested || !localStreamRef.current) return;
     void syncPeers();
-  }, [activeParticipants, enabled, syncPeers]);
+  }, [activeParticipants, enabled, startRequested, syncPeers]);
 
   return {
     room,
@@ -825,7 +930,10 @@ export const useAdminVideoRoom = ({
     micEnabled,
     cameraEnabled,
     isScreenSharing,
+    isJoining,
+    isConnected,
     canShareScreen,
+    requestJoin,
     toggleMicrophone,
     toggleCamera,
     startScreenShare,

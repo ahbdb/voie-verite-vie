@@ -1,6 +1,6 @@
 import { memo, useState, useEffect, useRef } from 'react';
 import Navigation from '@/components/Navigation';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,6 +18,8 @@ interface Station {
   meditation: string;
   prayer: string;
 }
+
+const mergeCheminContent = (rawContent: any) => ({ ...cheminDeCroixData, ...rawContent, intro: { ...cheminDeCroixData.intro, ...(rawContent?.intro || {}) }, conclusion: { ...cheminDeCroixData.conclusion, ...(rawContent?.conclusion || {}) }, stations: Array.isArray(rawContent?.stations) && rawContent.stations.length > 0 ? rawContent.stations : cheminDeCroixData.stations, adoration: rawContent?.adoration || cheminDeCroixData.adoration });
 
 const CheminDeCroix = memo(() => {
   const [selectedStation, setSelectedStation] = useState<any | null>(null);
@@ -153,8 +155,8 @@ const CheminDeCroix = memo(() => {
         }
 
         const content = data.content as { stations?: Station[] } | null;
-        if (content?.stations) {
-          setContentData(content);
+        if (content) {
+          setContentData(mergeCheminContent(content));
         }
       } catch (err) {
         console.error('❌ [CheminDeCroix] Failed to load content:', err);
@@ -175,8 +177,8 @@ const CheminDeCroix = memo(() => {
             filter: `page_key=eq.chemin-de-croix`
           },
           (payload: any) => {
-            if (payload.new?.content?.stations) {
-              setContentData(payload.new.content);
+            if (payload.new?.content) {
+              setContentData(mergeCheminContent(payload.new.content));
             } else {
               void loadContent();
             }
@@ -206,7 +208,7 @@ const CheminDeCroix = memo(() => {
 
             if (data?.content && !error) {
               console.log('✅ [CheminDeCroix] Content reloaded on visibility');
-              setContentData(data.content);
+              setContentData(mergeCheminContent(data.content));
             }
           } catch (err) {
             console.warn('⚠️ [CheminDeCroix] Reload failed:', err);
@@ -383,6 +385,7 @@ const CheminDeCroix = memo(() => {
                 </div>
               </div>
             </DialogTitle>
+            <DialogDescription className="sr-only">Détails de la station, navigation, partage et prière.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
