@@ -782,6 +782,8 @@ export const useAdminVideoRoom = ({
       peerConnectionsRef.current.clear();
       initiatedPeersRef.current.clear();
       pendingIceCandidatesRef.current.clear();
+      disconnectTimersRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+      disconnectTimersRef.current.clear();
       setRemoteStreams([]);
       screenTrackRef.current?.stop();
       screenTrackRef.current = null;
