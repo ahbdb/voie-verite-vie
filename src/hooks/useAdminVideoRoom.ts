@@ -235,6 +235,12 @@ export const useAdminVideoRoom = ({
   );
 
   const removePeer = useCallback((participantId: string) => {
+    const disconnectTimer = disconnectTimersRef.current.get(participantId);
+    if (disconnectTimer) {
+      window.clearTimeout(disconnectTimer);
+      disconnectTimersRef.current.delete(participantId);
+    }
+
     const existing = peerConnectionsRef.current.get(participantId);
     if (existing) {
       existing.onicecandidate = null;
