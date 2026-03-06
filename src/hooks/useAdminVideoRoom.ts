@@ -360,7 +360,7 @@ export const useAdminVideoRoom = ({
       peerConnectionsRef.current.set(participantId, connection);
       return connection;
     },
-    [removePeer, sendSignal, upsertRemoteStream]
+    [removePeer, roomType, sendSignal, upsertRemoteStream]
   );
 
   const createOfferForParticipant = useCallback(
