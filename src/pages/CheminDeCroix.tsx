@@ -385,6 +385,7 @@ const CheminDeCroix = memo(() => {
                 </div>
               </div>
             </DialogTitle>
+            <DialogDescription className="sr-only">Détails de la station, navigation, partage et prière.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
