@@ -95,6 +95,9 @@ export const useAdminVideoRoom = ({
   const [micEnabled, setMicEnabled] = useState(true);
   const [cameraEnabled, setCameraEnabled] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [startRequested, setStartRequested] = useState(false);
 
   const channelRef = useRef<any>(null);
   const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
@@ -106,6 +109,8 @@ export const useAdminVideoRoom = ({
   const screenTrackRef = useRef<MediaStreamTrack | null>(null);
   const participantsRef = useRef<VideoParticipantRecord[]>([]);
   const disconnectTimersRef = useRef<Map<string, number>>(new Map());
+  const displayNameRef = useRef(displayName || 'Participant');
+  const canManageRoomRef = useRef(canManageRoom);
 
   const roomType = room?.room_type ?? 'unknown';
   const canShareScreen =
@@ -118,7 +123,9 @@ export const useAdminVideoRoom = ({
 
   useEffect(() => {
     participantsRef.current = participants;
-  }, [participants]);
+    displayNameRef.current = displayName || 'Participant';
+    canManageRoomRef.current = canManageRoom;
+  }, [participants, displayName, canManageRoom]);
 
   const getParticipantLabel = useCallback((participantId: string) => {
     const participant = participantsRef.current.find((entry) => entry.user_id === participantId);
