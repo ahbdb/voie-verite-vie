@@ -170,6 +170,11 @@ const AdminVideoRoom = () => {
   const handleSubmitMessage = async (event: FormEvent) => {
     event.preventDefault();
 
+    if (!isConnected) {
+      toast.error('Rejoins d’abord l’appel pour envoyer un message.');
+      return;
+    }
+
     try {
       await sendMessage(draftMessage);
       setDraftMessage('');
@@ -179,7 +184,16 @@ const AdminVideoRoom = () => {
     }
   };
 
+  const handleJoinCall = async () => {
+    await requestJoin();
+  };
+
   const handleToggleScreenShare = async () => {
+    if (!isConnected) {
+      toast.error('Rejoins d’abord l’appel.');
+      return;
+    }
+
     try {
       if (isScreenSharing) {
         await stopScreenShare();
