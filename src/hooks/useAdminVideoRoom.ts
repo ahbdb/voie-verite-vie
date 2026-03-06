@@ -388,6 +388,10 @@ export const useAdminVideoRoom = ({
   }, [isScreenSharing, rebuildLocalStream, replaceOutgoingVideoTrack]);
 
   const startScreenShare = useCallback(async () => {
+    if (roomType === 'audio') {
+      throw new Error('Partage d’écran indisponible pendant un appel audio.');
+    }
+
     if (!navigator.mediaDevices?.getDisplayMedia) {
       throw new Error('Partage d’écran indisponible sur cet appareil.');
     }
@@ -412,7 +416,7 @@ export const useAdminVideoRoom = ({
     screenTrack.onended = () => {
       void stopScreenShare();
     };
-  }, [rebuildLocalStream, replaceOutgoingVideoTrack, stopScreenShare]);
+  }, [rebuildLocalStream, replaceOutgoingVideoTrack, roomType, stopScreenShare]);
 
   const handleIncomingSignal = useCallback(
     async (signal: VideoSignalRecord) => {
