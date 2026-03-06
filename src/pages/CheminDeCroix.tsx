@@ -155,8 +155,8 @@ const CheminDeCroix = memo(() => {
         }
 
         const content = data.content as { stations?: Station[] } | null;
-        if (content?.stations) {
-          setContentData(content);
+        if (content) {
+          setContentData(mergeCheminContent(content));
         }
       } catch (err) {
         console.error('❌ [CheminDeCroix] Failed to load content:', err);
