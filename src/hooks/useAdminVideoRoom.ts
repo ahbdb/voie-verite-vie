@@ -104,22 +104,26 @@ export const useAdminVideoRoom = ({
   const pendingIceCandidatesRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
   const originalVideoTrackRef = useRef<MediaStreamTrack | null>(null);
   const screenTrackRef = useRef<MediaStreamTrack | null>(null);
+  const participantsRef = useRef<VideoParticipantRecord[]>([]);
+  const disconnectTimersRef = useRef<Map<string, number>>(new Map());
 
-  const roomType = room?.room_type ?? 'video';
-  const canShareScreen = typeof navigator !== 'undefined' && Boolean(navigator.mediaDevices?.getDisplayMedia);
+  const roomType = room?.room_type ?? 'unknown';
+  const canShareScreen =
+    roomType === 'video' && typeof navigator !== 'undefined' && Boolean(navigator.mediaDevices?.getDisplayMedia);
 
   const activeParticipants = useMemo(
     () => participants.filter((participant) => participant.is_active && !participant.left_at),
     [participants]
   );
 
-  const getParticipantLabel = useCallback(
-    (participantId: string) => {
-      const participant = participants.find((entry) => entry.user_id === participantId);
-      return participant?.display_name || 'Participant';
-    },
-    [participants]
-  );
+  useEffect(() => {
+    participantsRef.current = participants;
+  }, [participants]);
+
+  const getParticipantLabel = useCallback((participantId: string) => {
+    const participant = participantsRef.current.find((entry) => entry.user_id === participantId);
+    return participant?.display_name || 'Participant';
+  }, []);
 
   const loadRoom = useCallback(async () => {
     if (!roomId) return null;
@@ -231,6 +235,12 @@ export const useAdminVideoRoom = ({
   );
 
   const removePeer = useCallback((participantId: string) => {
+    const disconnectTimer = disconnectTimersRef.current.get(participantId);
+    if (disconnectTimer) {
+      window.clearTimeout(disconnectTimer);
+      disconnectTimersRef.current.delete(participantId);
+    }
+
     const existing = peerConnectionsRef.current.get(participantId);
     if (existing) {
       existing.onicecandidate = null;
@@ -290,7 +300,36 @@ export const useAdminVideoRoom = ({
       };
 
       connection.onconnectionstatechange = () => {
-        if (['failed', 'closed', 'disconnected'].includes(connection.connectionState)) {
+        const state = connection.connectionState;
+        const existingTimer = disconnectTimersRef.current.get(participantId);
+
+        if (state === 'connected') {
+          if (existingTimer) {
+            window.clearTimeout(existingTimer);
+            disconnectTimersRef.current.delete(participantId);
+          }
+          return;
+        }
+
+        if (state === 'disconnected') {
+          if (!existingTimer) {
+            const timeoutId = window.setTimeout(() => {
+              if (connection.connectionState === 'disconnected' || connection.connectionState === 'failed') {
+                removePeer(participantId);
+              }
+              disconnectTimersRef.current.delete(participantId);
+            }, 6000);
+
+            disconnectTimersRef.current.set(participantId, timeoutId);
+          }
+          return;
+        }
+
+        if (state === 'failed' || state === 'closed') {
+          if (existingTimer) {
+            window.clearTimeout(existingTimer);
+            disconnectTimersRef.current.delete(participantId);
+          }
           removePeer(participantId);
         }
       };
@@ -349,6 +388,10 @@ export const useAdminVideoRoom = ({
   }, [isScreenSharing, rebuildLocalStream, replaceOutgoingVideoTrack]);
 
   const startScreenShare = useCallback(async () => {
+    if (roomType === 'audio') {
+      throw new Error('Partage d’écran indisponible pendant un appel audio.');
+    }
+
     if (!navigator.mediaDevices?.getDisplayMedia) {
       throw new Error('Partage d’écran indisponible sur cet appareil.');
     }
@@ -373,7 +416,7 @@ export const useAdminVideoRoom = ({
     screenTrack.onended = () => {
       void stopScreenShare();
     };
-  }, [rebuildLocalStream, replaceOutgoingVideoTrack, stopScreenShare]);
+  }, [rebuildLocalStream, replaceOutgoingVideoTrack, roomType, stopScreenShare]);
 
   const handleIncomingSignal = useCallback(
     async (signal: VideoSignalRecord) => {
@@ -533,6 +576,8 @@ export const useAdminVideoRoom = ({
   }, [micEnabled]);
 
   const toggleCamera = useCallback(() => {
+    if (roomType === 'audio') return;
+
     const videoTrack = originalVideoTrackRef.current;
     if (!videoTrack) return;
 
@@ -545,7 +590,7 @@ export const useAdminVideoRoom = ({
       }
     }
     setCameraEnabled(nextValue);
-  }, [cameraEnabled, isScreenSharing]);
+  }, [cameraEnabled, isScreenSharing, roomType]);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -638,8 +683,10 @@ export const useAdminVideoRoom = ({
         originalVideoTrackRef.current = media.getVideoTracks()[0] || null;
         localStreamRef.current = media;
         setLocalStream(media);
-        setMicEnabled(true);
-        setCameraEnabled(Boolean(originalVideoTrackRef.current?.enabled));
+        setMicEnabled(media.getAudioTracks().some((track) => track.enabled));
+        setCameraEnabled(
+          currentRoom.room_type !== 'audio' && Boolean(originalVideoTrackRef.current?.enabled)
+        );
 
         await joinRoom();
         await activateRoom(currentRoom);
@@ -735,6 +782,8 @@ export const useAdminVideoRoom = ({
       peerConnectionsRef.current.clear();
       initiatedPeersRef.current.clear();
       pendingIceCandidatesRef.current.clear();
+      disconnectTimersRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+      disconnectTimersRef.current.clear();
       setRemoteStreams([]);
       screenTrackRef.current?.stop();
       screenTrackRef.current = null;
