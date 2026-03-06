@@ -19,6 +19,8 @@ interface Station {
   prayer: string;
 }
 
+const mergeCheminContent = (rawContent: any) => ({ ...cheminDeCroixData, ...rawContent, intro: { ...cheminDeCroixData.intro, ...(rawContent?.intro || {}) }, conclusion: { ...cheminDeCroixData.conclusion, ...(rawContent?.conclusion || {}) }, stations: Array.isArray(rawContent?.stations) && rawContent.stations.length > 0 ? rawContent.stations : cheminDeCroixData.stations, adoration: rawContent?.adoration || cheminDeCroixData.adoration });
+
 const CheminDeCroix = memo(() => {
   const [selectedStation, setSelectedStation] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState('intro');
