@@ -107,9 +107,9 @@ export const useAdminVideoRoom = ({
   const participantsRef = useRef<VideoParticipantRecord[]>([]);
   const disconnectTimersRef = useRef<Map<string, number>>(new Map());
 
-  const roomType = room?.room_type ?? 'video';
+  const roomType = room?.room_type ?? 'unknown';
   const canShareScreen =
-    roomType !== 'audio' && typeof navigator !== 'undefined' && Boolean(navigator.mediaDevices?.getDisplayMedia);
+    roomType === 'video' && typeof navigator !== 'undefined' && Boolean(navigator.mediaDevices?.getDisplayMedia);
 
   const activeParticipants = useMemo(
     () => participants.filter((participant) => participant.is_active && !participant.left_at),

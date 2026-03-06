@@ -268,7 +268,7 @@ const AdminVideoRoom = () => {
               {micEnabled ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
               {micEnabled ? 'Micro activé' : 'Micro coupé'}
             </Button>
-            {roomType !== 'audio' && (
+            {roomType === 'video' && (
               <Button variant="outline" onClick={toggleCamera}>
                 {cameraEnabled ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
                 {cameraEnabled ? 'Caméra active' : 'Caméra coupée'}
