@@ -177,8 +177,8 @@ const CheminDeCroix = memo(() => {
             filter: `page_key=eq.chemin-de-croix`
           },
           (payload: any) => {
-            if (payload.new?.content?.stations) {
-              setContentData(payload.new.content);
+            if (payload.new?.content) {
+              setContentData(mergeCheminContent(payload.new.content));
             } else {
               void loadContent();
             }
