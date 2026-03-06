@@ -683,8 +683,10 @@ export const useAdminVideoRoom = ({
         originalVideoTrackRef.current = media.getVideoTracks()[0] || null;
         localStreamRef.current = media;
         setLocalStream(media);
-        setMicEnabled(true);
-        setCameraEnabled(Boolean(originalVideoTrackRef.current?.enabled));
+        setMicEnabled(media.getAudioTracks().some((track) => track.enabled));
+        setCameraEnabled(
+          currentRoom.room_type !== 'audio' && Boolean(originalVideoTrackRef.current?.enabled)
+        );
 
         await joinRoom();
         await activateRoom(currentRoom);
