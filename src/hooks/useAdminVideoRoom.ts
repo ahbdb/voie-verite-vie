@@ -104,22 +104,26 @@ export const useAdminVideoRoom = ({
   const pendingIceCandidatesRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
   const originalVideoTrackRef = useRef<MediaStreamTrack | null>(null);
   const screenTrackRef = useRef<MediaStreamTrack | null>(null);
+  const participantsRef = useRef<VideoParticipantRecord[]>([]);
+  const disconnectTimersRef = useRef<Map<string, number>>(new Map());
 
   const roomType = room?.room_type ?? 'video';
-  const canShareScreen = typeof navigator !== 'undefined' && Boolean(navigator.mediaDevices?.getDisplayMedia);
+  const canShareScreen =
+    roomType !== 'audio' && typeof navigator !== 'undefined' && Boolean(navigator.mediaDevices?.getDisplayMedia);
 
   const activeParticipants = useMemo(
     () => participants.filter((participant) => participant.is_active && !participant.left_at),
     [participants]
   );
 
-  const getParticipantLabel = useCallback(
-    (participantId: string) => {
-      const participant = participants.find((entry) => entry.user_id === participantId);
-      return participant?.display_name || 'Participant';
-    },
-    [participants]
-  );
+  useEffect(() => {
+    participantsRef.current = participants;
+  }, [participants]);
+
+  const getParticipantLabel = useCallback((participantId: string) => {
+    const participant = participantsRef.current.find((entry) => entry.user_id === participantId);
+    return participant?.display_name || 'Participant';
+  }, []);
 
   const loadRoom = useCallback(async () => {
     if (!roomId) return null;
