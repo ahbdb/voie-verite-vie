@@ -208,7 +208,7 @@ const CheminDeCroix = memo(() => {
 
             if (data?.content && !error) {
               console.log('✅ [CheminDeCroix] Content reloaded on visibility');
-              setContentData(data.content);
+              setContentData(mergeCheminContent(data.content));
             }
           } catch (err) {
             console.warn('⚠️ [CheminDeCroix] Reload failed:', err);
