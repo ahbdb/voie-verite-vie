@@ -576,6 +576,8 @@ export const useAdminVideoRoom = ({
   }, [micEnabled]);
 
   const toggleCamera = useCallback(() => {
+    if (roomType === 'audio') return;
+
     const videoTrack = originalVideoTrackRef.current;
     if (!videoTrack) return;
 
@@ -588,7 +590,7 @@ export const useAdminVideoRoom = ({
       }
     }
     setCameraEnabled(nextValue);
-  }, [cameraEnabled, isScreenSharing]);
+  }, [cameraEnabled, isScreenSharing, roomType]);
 
   const sendMessage = useCallback(
     async (content: string) => {
