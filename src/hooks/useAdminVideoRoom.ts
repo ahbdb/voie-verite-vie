@@ -111,6 +111,7 @@ export const useAdminVideoRoom = ({
   const disconnectTimersRef = useRef<Map<string, number>>(new Map());
   const displayNameRef = useRef(displayName || 'Participant');
   const canManageRoomRef = useRef(canManageRoom);
+  const roomRef = useRef<VideoRoomRecord | null>(null);
 
   const roomType = room?.room_type ?? 'unknown';
   const canShareScreen =
