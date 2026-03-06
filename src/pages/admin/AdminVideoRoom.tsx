@@ -279,21 +279,27 @@ const AdminVideoRoom = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            {!isConnected && (
+              <Button onClick={() => void handleJoinCall()} disabled={isJoining || loading}>
+                {isJoining ? <Loader2 className="h-4 w-4 animate-spin" /> : roomType === 'audio' ? <Mic className="h-4 w-4" /> : <Video className="h-4 w-4" />}
+                {isJoining ? 'Connexion...' : "Rejoindre l’appel"}
+              </Button>
+            )}
             <Button variant="outline" onClick={handleCopyLink}>
               <Link2 className="h-4 w-4" /> Copier le lien
             </Button>
-            <Button variant="outline" onClick={toggleMicrophone}>
+            <Button variant="outline" onClick={toggleMicrophone} disabled={!isConnected || isJoining}>
               {micEnabled ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
               {micEnabled ? 'Micro activé' : 'Micro coupé'}
             </Button>
             {roomType === 'video' && (
-              <Button variant="outline" onClick={toggleCamera}>
+              <Button variant="outline" onClick={toggleCamera} disabled={!isConnected || isJoining}>
                 {cameraEnabled ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
                 {cameraEnabled ? 'Caméra active' : 'Caméra coupée'}
               </Button>
             )}
             {canShareScreen && (
-              <Button variant="outline" onClick={() => void handleToggleScreenShare()}>
+              <Button variant="outline" onClick={() => void handleToggleScreenShare()} disabled={!isConnected || isJoining}>
                 <MonitorUp className="h-4 w-4" />
                 {isScreenSharing ? 'Arrêter le partage' : 'Partager l’écran'}
               </Button>
