@@ -289,9 +289,25 @@ export const useAdminVideoRoom = ({
 
       const connection = new RTCPeerConnection(RTC_CONFIGURATION);
 
-      localStreamRef.current?.getTracks().forEach((track) => {
-        connection.addTrack(track, localStreamRef.current as MediaStream);
+      const stream = localStreamRef.current;
+      const audioTracks = stream?.getAudioTracks() || [];
+      const videoTracks = stream?.getVideoTracks() || [];
+
+      audioTracks.forEach((track) => {
+        connection.addTrack(track, stream as MediaStream);
       });
+
+      videoTracks.forEach((track) => {
+        connection.addTrack(track, stream as MediaStream);
+      });
+
+      if (audioTracks.length === 0) {
+        connection.addTransceiver('audio', { direction: 'recvonly' });
+      }
+
+      if (roomType !== 'audio' && videoTracks.length === 0) {
+        connection.addTransceiver('video', { direction: 'recvonly' });
+      }
 
       connection.onicecandidate = (event) => {
         if (event.candidate) {
