@@ -126,7 +126,8 @@ export const useAdminVideoRoom = ({
     participantsRef.current = participants;
     displayNameRef.current = displayName || 'Participant';
     canManageRoomRef.current = canManageRoom;
-  }, [participants, displayName, canManageRoom]);
+    roomRef.current = room;
+  }, [participants, displayName, canManageRoom, room]);
 
   const getParticipantLabel = useCallback((participantId: string) => {
     const participant = participantsRef.current.find((entry) => entry.user_id === participantId);
