@@ -12,10 +12,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import {
   ArrowLeft,
+  Camera,
+  Edit2,
   Link2,
   Loader2,
   Mic,
@@ -23,70 +25,74 @@ import {
   MonitorUp,
   PhoneOff,
   Radio,
+  RotateCcw,
+  Send,
+  SwitchCamera,
+  Trash2,
   Video,
   VideoOff,
+  VolumeX,
+  Volume2,
 } from 'lucide-react';
 
-const QUICK_REACTIONS = ['👍', '❤️', '🙏', '😂'];
+const QUICK_REACTIONS = ['👍', '❤️', '🙏', '😂', '🔥', '👏'];
 
 const VideoPanel = ({
   stream,
   title,
   subtitle,
   muted = false,
+  isMutedByAdmin = false,
 }: {
   stream: MediaStream | null;
   title: string;
   subtitle: string;
   muted?: boolean;
+  isMutedByAdmin?: boolean;
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const hasVideo = Boolean(stream?.getVideoTracks().some((track) => track.readyState === 'live'));
-  const hasAudio = Boolean(stream?.getAudioTracks().some((track) => track.readyState === 'live'));
+  const hasVideo = Boolean(stream?.getVideoTracks().some((t) => t.readyState === 'live' && t.enabled));
+  const hasAudio = Boolean(stream?.getAudioTracks().some((t) => t.readyState === 'live'));
 
   useEffect(() => {
-    if (videoRef.current) {
+    if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
     }
   }, [stream]);
 
   return (
-    <Card className="overflow-hidden border-border/70 bg-card">
-      <CardContent className="p-0">
-        <div className="aspect-video bg-muted">
-          {stream && hasVideo ? (
-            <video ref={videoRef} autoPlay playsInline muted={muted} className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground">
-              <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-                {hasAudio ? <Mic className="h-6 w-6" /> : <VideoOff className="h-6 w-6" />}
-              </div>
-              <div>
-                <p className="font-medium text-foreground">{hasAudio ? 'Participant audio' : 'Flux vidéo indisponible'}</p>
-                <p className="text-xs text-muted-foreground">{subtitle}</p>
-              </div>
+    <div className="relative overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      <div className="aspect-video bg-muted">
+        {stream && hasVideo ? (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted={muted || isMutedByAdmin}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              {hasAudio ? <Mic className="h-5 w-5 text-primary" /> : <VideoOff className="h-5 w-5 text-primary" />}
             </div>
-          )}
-        </div>
-        <div className="flex items-center justify-between gap-3 border-t border-border bg-card px-4 py-3">
-          <div>
-            <p className="font-medium text-foreground">{title}</p>
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
+            <p className="text-xs font-medium">{title}</p>
           </div>
-          <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-            {hasAudio ? <Mic className="h-4 w-4" /> : <Video className="h-4 w-4" />}
-          </div>
+        )}
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between bg-gradient-to-t from-black/60 to-transparent px-3 py-2">
+        <span className="text-xs font-medium text-white drop-shadow">{title}</span>
+        <div className="flex items-center gap-1">
+          {hasAudio && <Mic className="h-3 w-3 text-white" />}
+          {isMutedByAdmin && <VolumeX className="h-3 w-3 text-destructive" />}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
-const formatTime = (value: string) =>
-  new Date(value).toLocaleTimeString('fr-FR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+const formatTime = (v: string) =>
+  new Date(v).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
 const AdminVideoRoom = () => {
   const navigate = useNavigate();
@@ -94,50 +100,35 @@ const AdminVideoRoom = () => {
   const { roomId } = useParams();
   const { user } = useAuth();
   const { adminRole } = useAdmin();
-  const hasManagementAccess = adminRole === 'admin' || adminRole === 'admin_principal';
+  const hasManagement = adminRole === 'admin' || adminRole === 'admin_principal';
   const displayName = user?.user_metadata?.full_name || user?.email || 'Participant';
   const [draftMessage, setDraftMessage] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const {
-    room,
-    roomType,
-    participants,
-    remoteStreams,
-    messages,
-    reactions,
-    localStream,
-    loading,
-    mediaError,
-    micEnabled,
-    cameraEnabled,
-    isScreenSharing,
-    isJoining,
-    isConnected,
-    canShareScreen,
-    requestJoin,
-    toggleMicrophone,
-    toggleCamera,
-    startScreenShare,
-    stopScreenShare,
-    sendMessage,
-    toggleReaction,
-    leaveRoom,
-    endRoom,
+    room, roomType, participants, remoteStreams, messages, reactions,
+    localStream, loading, mediaError, micEnabled, cameraEnabled,
+    isScreenSharing, isJoining, isConnected, canShareScreen, mutedParticipants,
+    requestJoin, toggleMicrophone, toggleCamera, flipCamera,
+    startScreenShare, stopScreenShare,
+    sendMessage, editMessage, deleteMessage, toggleReaction,
+    muteParticipant, leaveRoom, endRoom,
   } = useAdminVideoRoom({
     roomId,
     userId: user?.id,
     displayName,
     enabled: Boolean(roomId && user?.id),
-    canManageRoom: hasManagementAccess,
+    canManageRoom: hasManagement,
   });
 
   const reactionsByMessage = useMemo(() => {
-    return reactions.reduce<Record<string, Record<string, VideoMessageReactionRecord[]>>>((accumulator, reaction) => {
-      accumulator[reaction.message_id] ||= {};
-      accumulator[reaction.message_id][reaction.emoji] ||= [];
-      accumulator[reaction.message_id][reaction.emoji].push(reaction);
-      return accumulator;
+    return reactions.reduce<Record<string, Record<string, VideoMessageReactionRecord[]>>>((acc, r) => {
+      acc[r.message_id] ||= {};
+      acc[r.message_id][r.emoji] ||= [];
+      acc[r.message_id][r.emoji].push(r);
+      return acc;
     }, {});
   }, [reactions]);
 
@@ -147,86 +138,57 @@ const AdminVideoRoom = () => {
 
   const handleCopyLink = async () => {
     try {
-      const shareUrl = `${window.location.origin}/meeting/${roomId}`;
-      await navigator.clipboard.writeText(shareUrl);
-      toast.success('Lien public de la réunion copié.');
-    } catch (error) {
-      console.error('[video-room] Failed to copy link', error);
-      toast.error('Copie du lien impossible.');
-    }
+      await navigator.clipboard.writeText(`${window.location.origin}/meeting/${roomId}`);
+      toast.success('Lien copié');
+    } catch { toast.error('Copie impossible'); }
   };
 
   const handleLeave = async () => {
     await leaveRoom();
-    navigate(hasManagementAccess ? '/admin/video' : '/');
+    navigate(hasManagement ? '/admin/video' : '/');
   };
 
   const handleEndRoom = async () => {
     await endRoom();
-    toast.success('Réunion terminée.');
+    toast.success('Réunion terminée');
     navigate('/admin/video');
   };
 
-  const handleSubmitMessage = async (event: FormEvent) => {
-    event.preventDefault();
-
-    if (!isConnected) {
-      toast.error('Rejoins d’abord l’appel pour envoyer un message.');
-      return;
-    }
-
-    try {
-      await sendMessage(draftMessage);
-      setDraftMessage('');
-    } catch (error) {
-      console.error('[video-room] Failed to send message', error);
-      toast.error('Message non envoyé.');
-    }
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!isConnected) { toast.error('Rejoins l\'appel d\'abord'); return; }
+    try { await sendMessage(draftMessage); setDraftMessage(''); } catch { toast.error('Échec envoi'); }
   };
 
-  const handleJoinCall = async () => {
-    await requestJoin();
+  const handleEdit = async (id: string) => {
+    try { await editMessage(id, editContent); setEditingId(null); setEditContent(''); } catch { toast.error('Modification échouée'); }
+  };
+
+  const handleDelete = async (id: string) => {
+    try { await deleteMessage(id); toast.success('Supprimé'); } catch { toast.error('Suppression échouée'); }
   };
 
   const handleToggleScreenShare = async () => {
-    if (!isConnected) {
-      toast.error('Rejoins d’abord l’appel.');
-      return;
-    }
-
+    if (!isConnected) { toast.error('Rejoins l\'appel'); return; }
     try {
-      if (isScreenSharing) {
-        await stopScreenShare();
-        toast.success('Partage d’écran arrêté.');
-      } else {
-        await startScreenShare();
-        toast.success('Partage d’écran activé.');
-      }
-    } catch (error) {
-      console.error('[video-room] Failed to toggle screen share', error);
-      toast.error("Impossible d'activer le partage d’écran.");
-    }
+      if (isScreenSharing) { await stopScreenShare(); } else { await startScreenShare(); }
+    } catch { toast.error('Partage d\'écran impossible'); }
   };
 
-  const headerBackTarget = location.pathname.startsWith('/admin') ? '/admin/video' : '/';
-  const meetingLabel = roomType === 'audio' ? 'Réunion audio' : 'Réunion vidéo';
+  const headerBack = location.pathname.startsWith('/admin') ? '/admin/video' : '/';
 
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Navigation />
         <main className="container mx-auto flex flex-1 items-center justify-center px-4 py-24">
-          <Card className="max-w-xl border-border/70">
+          <Card className="max-w-md">
             <CardHeader>
               <CardTitle>Connexion requise</CardTitle>
-              <CardDescription>
-                Connecte-toi pour rejoindre cette réunion et participer au chat temps réel.
-              </CardDescription>
+              <CardDescription>Connecte-toi pour rejoindre la réunion.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild>
-                <Link to="/auth">Se connecter</Link>
-              </Button>
+              <Button asChild><Link to="/auth">Se connecter</Link></Button>
             </CardContent>
           </Card>
         </main>
@@ -239,12 +201,10 @@ const AdminVideoRoom = () => {
       <div className="min-h-screen flex flex-col bg-background">
         <Navigation />
         <main className="container mx-auto flex flex-1 items-center justify-center px-4 py-24">
-          <Card className="max-w-xl border-border/70">
+          <Card className="max-w-md">
             <CardHeader>
               <CardTitle>Réunion indisponible</CardTitle>
-              <CardDescription>
-                Cette salle n’existe plus, n’est plus accessible, ou a déjà été terminée.
-              </CardDescription>
+              <CardDescription>Cette salle n'existe plus ou a été terminée.</CardDescription>
             </CardHeader>
           </Card>
         </main>
@@ -256,60 +216,62 @@ const AdminVideoRoom = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navigation />
 
-      <main className="container mx-auto flex-1 space-y-6 px-4 py-8 pt-24">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-          <div>
-            <Button variant="ghost" onClick={() => navigate(headerBackTarget)} className="mb-3 px-0 hover:bg-transparent">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Retour
+      <main className="container mx-auto flex-1 space-y-4 px-4 py-6 pt-20">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={() => navigate(headerBack)}>
+              <ArrowLeft className="h-4 w-4" />
             </Button>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-bold text-foreground">{room?.title || 'Réunion'}</h1>
-              <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                {meetingLabel}
-              </span>
-              {room?.status === 'live' && (
-                <span className="rounded-full bg-secondary/15 px-3 py-1 text-xs font-medium text-secondary">
-                  En direct
-                </span>
-              )}
+            <div>
+              <h1 className="text-lg font-bold text-foreground">{room?.title || 'Réunion'}</h1>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">{roomType === 'audio' ? 'Audio' : 'Vidéo'}</span>
+                {room?.status === 'live' && (
+                  <span className="flex items-center gap-1 text-xs text-secondary">
+                    <span className="h-1.5 w-1.5 rounded-full bg-secondary animate-pulse" /> En direct
+                  </span>
+                )}
+              </div>
             </div>
-            <p className="mt-2 max-w-3xl text-muted-foreground">
-              {room?.description || 'Salle temps réel avec audio, vidéo, partage d’écran et chat persistant.'}
-            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Control bar - icons only */}
+          <div className="flex items-center gap-1">
             {!isConnected && (
-              <Button onClick={() => void handleJoinCall()} disabled={isJoining || loading}>
-                {isJoining ? <Loader2 className="h-4 w-4 animate-spin" /> : roomType === 'audio' ? <Mic className="h-4 w-4" /> : <Video className="h-4 w-4" />}
-                {isJoining ? 'Connexion...' : "Rejoindre l’appel"}
+              <Button size="sm" onClick={() => void requestJoin()} disabled={isJoining || loading}>
+                {isJoining ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                <span className="hidden sm:inline ml-1">Rejoindre</span>
               </Button>
             )}
-            <Button variant="outline" onClick={handleCopyLink}>
-              <Link2 className="h-4 w-4" /> Copier le lien
+            <Button variant="ghost" size="icon" onClick={handleCopyLink} title="Copier le lien">
+              <Link2 className="h-4 w-4" />
             </Button>
-            <Button variant="outline" onClick={toggleMicrophone} disabled={!isConnected || isJoining}>
-              {micEnabled ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
-              {micEnabled ? 'Micro activé' : 'Micro coupé'}
+            <Button variant="ghost" size="icon" onClick={toggleMicrophone} disabled={!isConnected} title={micEnabled ? 'Couper micro' : 'Activer micro'}>
+              {micEnabled ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4 text-destructive" />}
             </Button>
             {roomType === 'video' && (
-              <Button variant="outline" onClick={toggleCamera} disabled={!isConnected || isJoining}>
-                {cameraEnabled ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
-                {cameraEnabled ? 'Caméra active' : 'Caméra coupée'}
-              </Button>
+              <>
+                <Button variant="ghost" size="icon" onClick={toggleCamera} disabled={!isConnected} title={cameraEnabled ? 'Couper caméra' : 'Activer caméra'}>
+                  {cameraEnabled ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4 text-destructive" />}
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => void flipCamera()} disabled={!isConnected || isScreenSharing} title="Tourner caméra">
+                  <SwitchCamera className="h-4 w-4" />
+                </Button>
+              </>
             )}
             {canShareScreen && (
-              <Button variant="outline" onClick={() => void handleToggleScreenShare()} disabled={!isConnected || isJoining}>
-                <MonitorUp className="h-4 w-4" />
-                {isScreenSharing ? 'Arrêter le partage' : 'Partager l’écran'}
+              <Button variant="ghost" size="icon" onClick={() => void handleToggleScreenShare()} disabled={!isConnected} title="Partager l'écran">
+                <MonitorUp className={`h-4 w-4 ${isScreenSharing ? 'text-primary' : ''}`} />
               </Button>
             )}
-            <Button variant="outline" onClick={() => void handleLeave()}>
-              <PhoneOff className="h-4 w-4" /> Quitter
+            <Button variant="ghost" size="icon" onClick={() => void handleLeave()} title="Quitter">
+              <PhoneOff className="h-4 w-4 text-destructive" />
             </Button>
-            {hasManagementAccess && (
-              <Button onClick={() => void handleEndRoom()}>
-                <Radio className="h-4 w-4" /> Terminer
+            {hasManagement && (
+              <Button variant="destructive" size="sm" onClick={() => void handleEndRoom()}>
+                <Radio className="h-4 w-4" />
+                <span className="hidden sm:inline ml-1">Terminer</span>
               </Button>
             )}
           </div>
@@ -318,155 +280,95 @@ const AdminVideoRoom = () => {
         {mediaError && (
           <Alert>
             <Radio className="h-4 w-4" />
-            <AlertTitle>Connexion média partielle</AlertTitle>
+            <AlertTitle>Média</AlertTitle>
             <AlertDescription>{mediaError}</AlertDescription>
           </Alert>
         )}
 
-        <div className="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
-          <section className="space-y-4">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <VideoPanel
-                stream={localStream}
-                title="Vous"
-                subtitle={
-                  isScreenSharing
-                    ? 'Partage d’écran en cours'
-                    : roomType === 'audio'
-                      ? micEnabled
-                        ? 'Audio actif'
-                        : 'Micro coupé'
-                      : cameraEnabled
-                        ? 'Caméra active'
-                        : 'Caméra coupée'
-                }
-                muted
-              />
-              {remoteStreams.length > 0 ? (
-                remoteStreams.map((remoteStream) => (
-                  <VideoPanel
-                    key={remoteStream.userId}
-                    stream={remoteStream.stream}
-                    title={remoteStream.displayName}
-                    subtitle="Participant distant"
-                  />
-                ))
-              ) : (
-                <Card className="border-dashed border-border/70">
-                  <CardContent className="flex aspect-video items-center justify-center p-6 text-center text-muted-foreground">
-                    En attente d’autres participants dans la réunion.
-                  </CardContent>
-                </Card>
+        {/* Main grid */}
+        <div className="grid gap-4 lg:grid-cols-[1fr_380px]">
+          {/* Video grid */}
+          <section>
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+              <VideoPanel stream={localStream} title="Vous" subtitle="" muted />
+              {remoteStreams.map((rs) => (
+                <VideoPanel
+                  key={rs.userId}
+                  stream={rs.stream}
+                  title={rs.displayName}
+                  subtitle=""
+                  isMutedByAdmin={mutedParticipants.has(rs.userId)}
+                />
+              ))}
+              {remoteStreams.length === 0 && (
+                <div className="flex aspect-video items-center justify-center rounded-xl border border-dashed border-border text-sm text-muted-foreground">
+                  En attente de participants...
+                </div>
               )}
             </div>
           </section>
 
-          <aside className="space-y-4">
-            <Card className="border-border/70">
-              <CardHeader>
-                <CardTitle>État de la salle</CardTitle>
-                <CardDescription>Présence, appel en direct et accès partageable.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-sm text-primary">
-                  <Radio className="h-4 w-4" />
-                  {room?.status === 'ended' ? 'Réunion terminée' : room?.status === 'live' ? 'Appel en direct' : 'Salle prête'}
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4">
-                  <p className="text-sm text-muted-foreground">Participants connectés</p>
-                  <p className="mt-1 text-3xl font-bold text-foreground">{participants.length}</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Tabs defaultValue="participants" className="w-full">
+          {/* Sidebar */}
+          <aside>
+            <Tabs defaultValue="chat" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="participants">Présence</TabsTrigger>
-                <TabsTrigger value="chat">Chat</TabsTrigger>
+                <TabsTrigger value="chat">💬 Chat</TabsTrigger>
+                <TabsTrigger value="participants">👥 ({participants.length})</TabsTrigger>
               </TabsList>
-
-              <TabsContent value="participants">
-                <Card className="border-border/70">
-                  <CardHeader>
-                    <CardTitle>Participants</CardTitle>
-                    <CardDescription>Présence temps réel dans cette réunion.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {participants.map((participant) => (
-                      <div
-                        key={participant.user_id}
-                        className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-3"
-                      >
-                        <div>
-                          <p className="font-medium text-foreground">{participant.display_name || 'Participant'}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {participant.user_id === user.id ? 'Vous' : `Connecté depuis ${formatTime(participant.joined_at)}`}
-                          </p>
-                        </div>
-                        <span className="rounded-full bg-secondary/15 px-3 py-1 text-xs font-medium text-secondary">
-                          En ligne
-                        </span>
-                      </div>
-                    ))}
-
-                    {!loading && participants.length === 0 && (
-                      <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
-                        Aucun participant actif pour le moment.
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
 
               <TabsContent value="chat">
                 <Card className="border-border/70">
-                  <CardHeader>
-                    <CardTitle>Chat de salle</CardTitle>
-                    <CardDescription>Commentaires persistants, likes et emojis en direct.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <ScrollArea className="h-[360px] rounded-lg border border-border bg-muted/30 p-3">
-                      <div className="space-y-3 pr-3">
+                  <CardContent className="p-3 space-y-3">
+                    <ScrollArea className="h-[50vh] rounded-lg border border-border bg-muted/20 p-2">
+                      <div className="space-y-2 pr-2">
                         {messages.length === 0 ? (
-                          <div className="rounded-lg border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
-                            Aucun message pour l’instant. Lance la conversation ci-dessous.
-                          </div>
+                          <p className="py-8 text-center text-xs text-muted-foreground">Aucun message</p>
                         ) : (
-                          messages.map((message) => {
-                            const groupedReactions = reactionsByMessage[message.id] || {};
+                          messages.map((msg) => {
+                            const grouped = reactionsByMessage[msg.id] || {};
+                            const isOwn = msg.user_id === user.id;
 
                             return (
-                              <div key={message.id} className="rounded-xl border border-border bg-card p-3 shadow-sm">
-                                <div className="flex items-start justify-between gap-3">
-                                  <div>
-                                    <p className="font-medium text-foreground">{message.display_name || 'Participant'}</p>
-                                    <p className="text-xs text-muted-foreground">{formatTime(message.created_at)}</p>
+                              <div key={msg.id} className={`rounded-lg border border-border p-2 text-sm ${isOwn ? 'bg-primary/5' : 'bg-card'}`}>
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-medium text-foreground text-xs">{msg.display_name || 'Participant'}</span>
+                                    <span className="text-[10px] text-muted-foreground">{formatTime(msg.created_at)}</span>
+                                    {msg.updated_at !== msg.created_at && <span className="text-[10px] text-muted-foreground">(modifié)</span>}
                                   </div>
-                                  {message.user_id === user.id && (
-                                    <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-medium text-primary">
-                                      Vous
-                                    </span>
+                                  {isOwn && editingId !== msg.id && (
+                                    <div className="flex items-center gap-0.5">
+                                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setEditingId(msg.id); setEditContent(msg.content); }}>
+                                        <Edit2 className="h-3 w-3" />
+                                      </Button>
+                                      <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => void handleDelete(msg.id)}>
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
+                                    </div>
                                   )}
                                 </div>
-                                <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                                  {message.content}
-                                </p>
-                                <div className="mt-3 flex flex-wrap gap-2">
+                                {editingId === msg.id ? (
+                                  <div className="mt-1 flex gap-1">
+                                    <Input value={editContent} onChange={(e) => setEditContent(e.target.value)} className="h-7 text-xs" />
+                                    <Button size="sm" className="h-7 px-2" onClick={() => void handleEdit(msg.id)}>OK</Button>
+                                    <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setEditingId(null)}>✕</Button>
+                                  </div>
+                                ) : (
+                                  <p className="mt-1 whitespace-pre-wrap text-foreground text-xs leading-relaxed">{msg.content}</p>
+                                )}
+                                <div className="mt-1.5 flex flex-wrap gap-1">
                                   {QUICK_REACTIONS.map((emoji) => {
-                                    const count = groupedReactions[emoji]?.length || 0;
-                                    const active = groupedReactions[emoji]?.some((reaction) => reaction.user_id === user.id);
-
+                                    const count = grouped[emoji]?.length || 0;
+                                    const active = grouped[emoji]?.some((r) => r.user_id === user.id);
+                                    if (count === 0 && !active) return null;
                                     return (
-                                      <Button
-                                        key={`${message.id}-${emoji}`}
-                                        type="button"
-                                        variant={active ? 'default' : 'outline'}
-                                        size="sm"
-                                        onClick={() => void toggleReaction(message.id, emoji)}
+                                      <button
+                                        key={`${msg.id}-${emoji}`}
+                                        onClick={() => void toggleReaction(msg.id, emoji)}
+                                        className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] border ${active ? 'border-primary bg-primary/10' : 'border-border bg-muted/50'}`}
                                       >
-                                        <span>{emoji}</span>
-                                        <span>{count}</span>
-                                      </Button>
+                                        {emoji} {count}
+                                      </button>
                                     );
                                   })}
                                 </div>
@@ -478,32 +380,67 @@ const AdminVideoRoom = () => {
                       </div>
                     </ScrollArea>
 
-                    <form onSubmit={handleSubmitMessage} className="space-y-3">
-                      <Textarea
+                    {/* Quick emoji bar */}
+                    <div className="flex flex-wrap gap-1">
+                      {QUICK_REACTIONS.map((emoji) => (
+                        <button
+                          key={emoji}
+                          onClick={() => setDraftMessage((c) => c + emoji)}
+                          className="rounded-md border border-border px-2 py-1 text-sm hover:bg-muted"
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="flex gap-2">
+                      <Input
                         value={draftMessage}
-                        onChange={(event) => setDraftMessage(event.target.value)}
-                        placeholder="Écris un commentaire pour la réunion..."
-                        rows={3}
+                        onChange={(e) => setDraftMessage(e.target.value)}
+                        placeholder="Message..."
+                        className="flex-1 h-9 text-sm"
                       />
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex flex-wrap gap-2">
-                          {QUICK_REACTIONS.map((emoji) => (
-                            <Button
-                              key={`draft-${emoji}`}
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setDraftMessage((current) => `${current}${emoji}`)}
-                            >
-                              {emoji}
-                            </Button>
-                          ))}
-                        </div>
-                        <Button type="submit" disabled={!draftMessage.trim()}>
-                          Envoyer
-                        </Button>
-                      </div>
+                      <Button type="submit" size="icon" className="h-9 w-9" disabled={!draftMessage.trim()}>
+                        <Send className="h-4 w-4" />
+                      </Button>
                     </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="participants">
+                <Card className="border-border/70">
+                  <CardContent className="p-3 space-y-2">
+                    {participants.map((p) => {
+                      const isSelf = p.user_id === user.id;
+                      const isMuted = mutedParticipants.has(p.user_id);
+
+                      return (
+                        <div key={p.user_id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{p.display_name || 'Participant'}</p>
+                            <p className="text-[10px] text-muted-foreground">{isSelf ? 'Vous' : formatTime(p.joined_at)}</p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="h-2 w-2 rounded-full bg-secondary" />
+                            {hasManagement && !isSelf && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => muteParticipant(p.user_id)}
+                                title={isMuted ? 'Rétablir le son' : 'Couper le son'}
+                              >
+                                {isMuted ? <VolumeX className="h-3.5 w-3.5 text-destructive" /> : <Volume2 className="h-3.5 w-3.5" />}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {participants.length === 0 && (
+                      <p className="py-6 text-center text-xs text-muted-foreground">Aucun participant</p>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>

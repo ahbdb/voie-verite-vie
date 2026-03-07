@@ -17,23 +17,25 @@ export type AppNotificationType =
 
 export const useBroadcastNotifications = () => {
   const { user } = useAuth();
-  const unsubscribeRef = useRef<(() => void) | null>(null);
+  const ringIntervalRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
+
+    const stopRinging = () => {
+      if (ringIntervalRef.current) {
+        window.clearInterval(ringIntervalRef.current);
+        ringIntervalRef.current = null;
+      }
+    };
 
     const channel = supabase
       .channel(`notifications-toast:${user.id}`)
       .on(
         'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`,
-        },
+        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
         (payload) => {
-          const notification = payload.new as {
+          const n = payload.new as {
             id: string;
             title: string;
             message: string;
@@ -41,49 +43,54 @@ export const useBroadcastNotifications = () => {
             link: string | null;
           };
 
-          if (notification.type === 'call') {
+          if (n.type === 'call') {
+            // Ring continuously (every 3s) for 30s max
             void playAttentionTone();
+            let ringCount = 0;
+            ringIntervalRef.current = window.setInterval(() => {
+              ringCount++;
+              if (ringCount >= 10) { stopRinging(); return; }
+              void playAttentionTone();
+            }, 3000);
+
             void sendVisibleNotification({
-              title: notification.title,
-              body: notification.message,
-              tag: `call-${notification.id}`,
+              title: n.title,
+              body: n.message,
+              tag: `call-${n.id}`,
               action: 'call',
               silent: false,
-              data: {
-                url: notification.link || '/',
-              },
+              data: { url: n.link || '/' },
             });
 
-            toast(notification.title, {
-              description: notification.message,
-              duration: 10000,
+            toast(n.title, {
+              description: n.message,
+              duration: 15000,
+              action: n.link ? {
+                label: 'Rejoindre',
+                onClick: () => {
+                  stopRinging();
+                  window.location.href = n.link!;
+                },
+              } : undefined,
+              onDismiss: stopRinging,
             });
             return;
           }
 
           if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification(notification.title, {
-              body: notification.message,
-              icon: '/logo-3v.png',
-            });
+            new Notification(n.title, { body: n.message, icon: '/logo-3v.png' });
           }
 
-          if (notification.type === 'greeting' || notification.type === 'reminder') {
-            toast(notification.title, {
-              description: notification.message,
-              duration: 5000,
-            });
+          if (n.type === 'greeting' || n.type === 'reminder') {
+            toast(n.title, { description: n.message, duration: 5000 });
           }
         }
       )
       .subscribe();
 
-    unsubscribeRef.current = () => {
-      supabase.removeChannel(channel);
-    };
-
     return () => {
-      unsubscribeRef.current?.();
+      stopRinging();
+      supabase.removeChannel(channel);
     };
   }, [user?.id]);
 };
@@ -96,13 +103,12 @@ export const broadcastNotificationService = {
     _icon?: string,
     link: string | null = null
   ) {
-    const { data: profiles, error: profilesError } = await supabase.from('profiles').select('id');
-
-    if (profilesError) throw profilesError;
+    const { data: profiles, error: pe } = await supabase.from('profiles').select('id');
+    if (pe) throw pe;
     if (!profiles || profiles.length === 0) return { inserted: 0 };
 
-    const payload = profiles.map((profile) => ({
-      user_id: profile.id,
+    const payload = profiles.map((p) => ({
+      user_id: p.id,
       title,
       message,
       type,
@@ -112,7 +118,6 @@ export const broadcastNotificationService = {
 
     const { error } = await supabase.from('notifications').insert(payload);
     if (error) throw error;
-
     return { inserted: payload.length };
   },
 
@@ -125,18 +130,16 @@ export const broadcastNotificationService = {
     link: string | null = null
   ) {
     const roleFilter = role === 'admin' ? ['admin', 'admin_principal'] : ['user'];
-
-    const { data: roleRows, error: roleError } = await supabase
+    const { data: roleRows, error: re } = await supabase
       .from('user_roles')
       .select('user_id, role')
       .in('role', roleFilter as any);
-
-    if (roleError) throw roleError;
+    if (re) throw re;
     if (!roleRows || roleRows.length === 0) return { inserted: 0 };
 
-    const uniqueUserIds = [...new Set(roleRows.map((entry) => entry.user_id))];
-    const payload = uniqueUserIds.map((userId) => ({
-      user_id: userId,
+    const uniqueIds = [...new Set(roleRows.map((e) => e.user_id))];
+    const payload = uniqueIds.map((uid) => ({
+      user_id: uid,
       title,
       message,
       type,
@@ -146,7 +149,6 @@ export const broadcastNotificationService = {
 
     const { error } = await supabase.from('notifications').insert(payload);
     if (error) throw error;
-
     return { inserted: payload.length };
   },
 };
