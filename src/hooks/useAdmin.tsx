@@ -15,7 +15,7 @@ if (typeof window !== 'undefined') {
   (window as any).__DEBUG_resetAdminCache = resetAdminCache;
 }
 
-const promiseWithTimeout = <T,>(promise: Promise<T>, ms = 5000) =>
+const promiseWithTimeout = <T,>(promise: Promise<T>, ms = 12000) =>
   new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('timeout')), ms);
     promise
