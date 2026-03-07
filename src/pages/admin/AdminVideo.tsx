@@ -10,11 +10,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, Radio, Video, Mic } from 'lucide-react';
+import { ArrowLeft, Phone, Plus, Radio, RefreshCw, Users, Video, Mic } from 'lucide-react';
 import type { VideoParticipantRecord, VideoRoomRecord } from '@/hooks/useAdminVideoRoom';
 
 const db = supabase as any;
+
+interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string | null;
+}
 
 const AdminVideo = () => {
   const navigate = useNavigate();
@@ -22,8 +30,11 @@ const AdminVideo = () => {
   const hasVideoAccess = adminRole === 'admin' || adminRole === 'admin_principal';
   const [rooms, setRooms] = useState<VideoRoomRecord[]>([]);
   const [participants, setParticipants] = useState<VideoParticipantRecord[]>([]);
+  const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [callMode, setCallMode] = useState<'all' | 'select'>('all');
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -31,68 +42,63 @@ const AdminVideo = () => {
   });
 
   const activeParticipantsByRoom = useMemo(() => {
-    return participants.reduce<Record<string, number>>((accumulator, participant) => {
-      if (participant.is_active && !participant.left_at) {
-        accumulator[participant.room_id] = (accumulator[participant.room_id] || 0) + 1;
-      }
-      return accumulator;
+    return participants.reduce<Record<string, number>>((acc, p) => {
+      if (p.is_active && !p.left_at) acc[p.room_id] = (acc[p.room_id] || 0) + 1;
+      return acc;
     }, {});
   }, [participants]);
 
   const loadRooms = async () => {
     try {
-      const [{ data: roomsData, error: roomsError }, { data: participantsData, error: participantsError }] =
-        await Promise.all([
-          db.from('video_rooms').select('*').order('created_at', { ascending: false }),
-          db.from('video_room_participants').select('*'),
-        ]);
-
-      if (roomsError) throw roomsError;
-      if (participantsError) throw participantsError;
-
+      const [{ data: roomsData, error: re }, { data: partsData, error: pe }] = await Promise.all([
+        db.from('video_rooms').select('*').order('created_at', { ascending: false }),
+        db.from('video_room_participants').select('*'),
+      ]);
+      if (re) throw re;
+      if (pe) throw pe;
       setRooms((roomsData || []) as VideoRoomRecord[]);
-      setParticipants((participantsData || []) as VideoParticipantRecord[]);
-    } catch (error) {
-      console.error('[admin-video] Failed to load rooms', error);
-      toast.error('Impossible de charger les salles vidéo.');
+      setParticipants((partsData || []) as VideoParticipantRecord[]);
+    } catch (err) {
+      console.error('[admin-video]', err);
+      toast.error('Impossible de charger les salles.');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (!hasVideoAccess) {
-      setLoading(false);
-      return;
-    }
+  const loadUsers = async () => {
+    try {
+      const { data, error } = await supabase.from('profiles').select('id, email, full_name');
+      if (error) throw error;
+      setAllUsers((data || []) as UserProfile[]);
+    } catch {}
+  };
 
+  useEffect(() => {
+    if (!hasVideoAccess) { setLoading(false); return; }
     void loadRooms();
+    void loadUsers();
 
     const channel = db
       .channel('admin-video-lobby')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'video_rooms' }, () => {
-        void loadRooms();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'video_room_participants' }, () => {
-        void loadRooms();
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'video_rooms' }, () => void loadRooms())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'video_room_participants' }, () => void loadRooms())
       .subscribe();
 
-    return () => {
-      channel.unsubscribe();
-    };
+    return () => { channel.unsubscribe(); };
   }, [hasVideoAccess]);
 
-  const handleCreateRoom = async (event: FormEvent) => {
-    event.preventDefault();
+  const adminDisplayName = () => {
+    const name = user?.user_metadata?.full_name || user?.email || 'Un administrateur';
+    if (adminRole === 'admin_principal') return `L'administrateur principal ${name}`;
+    return `L'administrateur ${name}`;
+  };
 
-    if (!user?.id || !formData.title.trim()) {
-      toast.error('Ajoute au moins un titre pour créer la salle.');
-      return;
-    }
+  const handleCreateRoom = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!user?.id || !formData.title.trim()) { toast.error('Titre requis.'); return; }
 
     setCreating(true);
-
     try {
       const { data, error } = await db
         .from('video_rooms')
@@ -110,27 +116,52 @@ const AdminVideo = () => {
       if (error) throw error;
 
       const meetingPath = `/meeting/${data.id}`;
+      const callLabel = formData.roomType === 'audio' ? 'audio' : 'vidéo';
+      const notifTitle = `📞 ${formData.title.trim()}`;
+      const notifBody = `${adminDisplayName()} a lancé un appel ${callLabel}. Rejoins maintenant !`;
 
       try {
-        await broadcastNotificationService.sendToAll(
-          `📞 ${formData.title.trim()}`,
-          `${displayName(user)} a lancé une réunion ${formData.roomType === 'audio' ? 'audio' : 'vidéo'}. Rejoins-la maintenant.`,
-          'call',
-          undefined,
-          meetingPath
-        );
-      } catch (notificationError) {
-        console.error('[admin-video] Failed to broadcast call notification', notificationError);
+        if (callMode === 'all') {
+          await broadcastNotificationService.sendToAll(notifTitle, notifBody, 'call', undefined, meetingPath);
+        } else {
+          // Send only to selected users
+          const ids = Array.from(selectedUserIds);
+          if (ids.length > 0) {
+            const payload = ids.map((uid) => ({
+              user_id: uid,
+              title: notifTitle,
+              message: notifBody,
+              type: 'call',
+              link: meetingPath,
+              is_read: false,
+            }));
+            await supabase.from('notifications').insert(payload);
+          }
+        }
+      } catch (err) {
+        console.error('[admin-video] notification error', err);
       }
 
       toast.success('Salle créée, appel envoyé.');
       setFormData({ title: '', description: '', roomType: 'video' });
+      setSelectedUserIds(new Set());
       navigate(meetingPath);
-    } catch (error) {
-      console.error('[admin-video] Failed to create room', error);
-      toast.error('La création de la salle a échoué.');
+    } catch (err) {
+      console.error('[admin-video]', err);
+      toast.error('Création échouée.');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleRecall = async (roomId: string, roomTitle: string, roomType: string) => {
+    try {
+      const notifTitle = `📞 Rappel : ${roomTitle}`;
+      const notifBody = `${adminDisplayName()} vous rappelle pour l'appel ${roomType === 'audio' ? 'audio' : 'vidéo'}. Rejoignez maintenant !`;
+      await broadcastNotificationService.sendToAll(notifTitle, notifBody, 'call', undefined, `/meeting/${roomId}`);
+      toast.success('Rappel envoyé à tous');
+    } catch {
+      toast.error('Rappel échoué');
     }
   };
 
@@ -140,13 +171,17 @@ const AdminVideo = () => {
         .from('video_rooms')
         .update({ status: 'ended', ended_at: new Date().toISOString() })
         .eq('id', roomId);
-
       if (error) throw error;
       toast.success('Salle terminée.');
-    } catch (error) {
-      console.error('[admin-video] Failed to end room', error);
-      toast.error("Impossible de terminer cette salle.");
-    }
+    } catch { toast.error('Erreur.'); }
+  };
+
+  const toggleUserSelection = (uid: string) => {
+    setSelectedUserIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(uid)) next.delete(uid); else next.add(uid);
+      return next;
+    });
   };
 
   if (!hasVideoAccess) {
@@ -155,14 +190,7 @@ const AdminVideo = () => {
         <div className="min-h-screen flex flex-col bg-background">
           <Navigation />
           <main className="flex-1 container mx-auto px-4 py-8 pt-24">
-            <Card className="max-w-xl border-border/70">
-              <CardHeader>
-                <CardTitle>Accès restreint</CardTitle>
-                <CardDescription>
-                  Cette fonctionnalité vidéo est réservée aux comptes admin et admin principal.
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <Card><CardHeader><CardTitle>Accès restreint</CardTitle></CardHeader></Card>
           </main>
         </div>
       </AdminPageWrapper>
@@ -173,161 +201,144 @@ const AdminVideo = () => {
     <AdminPageWrapper>
       <div className="min-h-screen flex flex-col bg-background">
         <Navigation />
-
-        <main className="flex-1 container mx-auto px-4 py-8 pt-24 space-y-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <Button variant="ghost" onClick={() => navigate('/admin')} className="mb-3 px-0 hover:bg-transparent">
-                <ArrowLeft className="h-4 w-4 mr-2" /> Retour à l'administration
-              </Button>
-              <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <Video className="h-5 w-5" />
-                </span>
-                Salles maison ouvertes aux participants
-              </h1>
-              <p className="mt-2 max-w-2xl text-muted-foreground">
-                Crée une réunion audio ou vidéo, déclenche l’appel, puis partage le lien public de participation.
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
-              Création réservée aux administrateurs connectés.
-            </div>
+        <main className="flex-1 container mx-auto px-4 py-8 pt-24 space-y-6">
+          <div>
+            <Button variant="ghost" onClick={() => navigate('/admin')} className="mb-3 px-0">
+              <ArrowLeft className="h-4 w-4 mr-2" /> Retour
+            </Button>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <Video className="h-5 w-5 text-primary" /> Réunions & Appels
+            </h1>
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+          <div className="grid gap-6 xl:grid-cols-2">
             <Card className="border-border/70">
               <CardHeader>
-                <CardTitle>Créer une salle</CardTitle>
-                <CardDescription>
-                  Lance une conférence avec appel entrant, chat persistant et présence temps réel.
-                </CardDescription>
+                <CardTitle>Nouvelle réunion</CardTitle>
+                <CardDescription>Crée un appel audio ou vidéo et notifie les participants.</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleCreateRoom} className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Titre</label>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Titre</label>
                     <Input
                       value={formData.title}
-                      onChange={(event) => setFormData((current) => ({ ...current, title: event.target.value }))}
-                      placeholder="Réunion de coordination 3V"
+                      onChange={(e) => setFormData((c) => ({ ...c, title: e.target.value }))}
+                      placeholder="Réunion de coordination"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Type de réunion</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        type="button"
-                        variant={formData.roomType === 'video' ? 'default' : 'outline'}
-                        onClick={() => setFormData((current) => ({ ...current, roomType: 'video' }))}
-                      >
-                        <Video className="h-4 w-4" /> Vidéo
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Type</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button type="button" variant={formData.roomType === 'video' ? 'default' : 'outline'} onClick={() => setFormData((c) => ({ ...c, roomType: 'video' }))}>
+                        <Video className="h-4 w-4 mr-1" /> Vidéo
                       </Button>
-                      <Button
-                        type="button"
-                        variant={formData.roomType === 'audio' ? 'default' : 'outline'}
-                        onClick={() => setFormData((current) => ({ ...current, roomType: 'audio' }))}
-                      >
-                        <Mic className="h-4 w-4" /> Audio
+                      <Button type="button" variant={formData.roomType === 'audio' ? 'default' : 'outline'} onClick={() => setFormData((c) => ({ ...c, roomType: 'audio' }))}>
+                        <Mic className="h-4 w-4 mr-1" /> Audio
                       </Button>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Description</label>
-                    <Textarea
-                      value={formData.description}
-                      onChange={(event) =>
-                        setFormData((current) => ({ ...current, description: event.target.value }))
-                      }
-                      placeholder="Objectif, ordre du jour, consignes rapides..."
-                    />
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Qui appeler ?</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button type="button" variant={callMode === 'all' ? 'default' : 'outline'} onClick={() => setCallMode('all')}>
+                        <Users className="h-4 w-4 mr-1" /> Tout le monde
+                      </Button>
+                      <Button type="button" variant={callMode === 'select' ? 'default' : 'outline'} onClick={() => setCallMode('select')}>
+                        <Phone className="h-4 w-4 mr-1" /> Sélection
+                      </Button>
+                    </div>
                   </div>
-                  <Button type="submit" disabled={creating} className="w-full sm:w-auto">
-                    <Plus className="h-4 w-4" />
-                    {creating ? 'Création...' : 'Créer et appeler'}
+
+                  {callMode === 'select' && (
+                    <ScrollArea className="h-40 rounded-lg border border-border p-2">
+                      <div className="space-y-1">
+                        {allUsers.filter((u) => u.id !== user?.id).map((u) => (
+                          <label key={u.id} className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-muted cursor-pointer text-sm">
+                            <Checkbox
+                              checked={selectedUserIds.has(u.id)}
+                              onCheckedChange={() => toggleUserSelection(u.id)}
+                            />
+                            <span>{u.full_name || u.email}</span>
+                          </label>
+                        ))}
+                        {allUsers.length <= 1 && <p className="text-xs text-muted-foreground py-2">Aucun autre utilisateur</p>}
+                      </div>
+                    </ScrollArea>
+                  )}
+
+                  <Textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData((c) => ({ ...c, description: e.target.value }))}
+                    placeholder="Description (optionnel)"
+                    rows={2}
+                  />
+                  <Button type="submit" disabled={creating} className="w-full">
+                    <Plus className="h-4 w-4 mr-1" /> {creating ? 'Création...' : 'Créer et appeler'}
                   </Button>
                 </form>
               </CardContent>
             </Card>
 
-            <Card className="border-border/70 bg-gradient-to-br from-card via-card to-muted/40">
+            <Card className="border-border/70">
               <CardHeader>
-                <CardTitle>Ce module inclut</CardTitle>
-                <CardDescription>Base 100% maison, gratuite et évolutive.</CardDescription>
+                <CardTitle>Fonctionnalités</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 text-sm text-muted-foreground">
-                <div className="rounded-lg border border-border bg-background/70 p-3">Réunions audio et vidéo</div>
-                <div className="rounded-lg border border-border bg-background/70 p-3">Partage d’écran et salle ouverte aux participants</div>
-                <div className="rounded-lg border border-border bg-background/70 p-3">Chat persistant, likes, emojis et présence temps réel</div>
-                <Alert>
-                  <Radio className="h-4 w-4" />
-                  <AlertTitle>Important</AlertTitle>
-                  <AlertDescription>
-                    Les utilisateurs reçoivent maintenant un appel entrant via le système de notifications de l’application.
-                  </AlertDescription>
-                </Alert>
+              <CardContent className="space-y-2 text-sm text-muted-foreground">
+                <p>✅ Appels audio & vidéo WebRTC</p>
+                <p>✅ Sonnerie & notification d'appel entrant</p>
+                <p>✅ Rappeler les participants absents</p>
+                <p>✅ Appel sélectif ou pour tout le monde</p>
+                <p>✅ Chat persistant avec emojis & réactions</p>
+                <p>✅ Modification/suppression de messages</p>
+                <p>✅ Partage d'écran & rotation caméra</p>
+                <p>✅ Contrôle admin : couper le son des participants</p>
+                <p>✅ Bannière d'appel actif sur la page d'accueil</p>
               </CardContent>
             </Card>
           </div>
 
           <section className="space-y-4">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-2xl font-semibold text-foreground">Salles existantes</h2>
-              <Button variant="outline" onClick={() => void loadRooms()} disabled={loading}>
-                Actualiser
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Salles existantes</h2>
+              <Button variant="outline" size="sm" onClick={() => void loadRooms()} disabled={loading}>
+                <RefreshCw className="h-3.5 w-3.5 mr-1" /> Actualiser
               </Button>
             </div>
 
             {rooms.length === 0 && !loading ? (
-              <Card>
-                <CardContent className="pt-6 text-muted-foreground">
-                  Aucune salle pour le moment. Crée la première réunion ci-dessus.
-                </CardContent>
-              </Card>
+              <Card><CardContent className="pt-6 text-muted-foreground text-sm">Aucune salle.</CardContent></Card>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-3 md:grid-cols-2">
                 {rooms.map((room) => {
-                  const activeCount = activeParticipantsByRoom[room.id] || 0;
-                  const statusLabel = room.status === 'ended' ? 'Terminée' : room.status === 'live' ? 'En direct' : 'En attente';
-                  const statusClassName =
-                    room.status === 'ended'
-                      ? 'bg-destructive/10 text-destructive'
-                      : room.status === 'live'
-                        ? 'bg-secondary/15 text-secondary'
-                        : 'bg-primary/10 text-primary';
+                  const count = activeParticipantsByRoom[room.id] || 0;
+                  const ended = room.status === 'ended';
+                  const live = room.status === 'live';
 
                   return (
                     <Card key={room.id} className="border-border/70">
-                      <CardHeader className="space-y-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <CardTitle className="text-xl">{room.title}</CardTitle>
-                            <CardDescription className="mt-1">
-                              {room.description || 'Aucune description fournie.'}
-                            </CardDescription>
-                          </div>
-                          <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusClassName}`}>
-                            {statusLabel}
+                      <CardHeader className="pb-2">
+                        <div className="flex items-start justify-between">
+                          <CardTitle className="text-base">{room.title}</CardTitle>
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${ended ? 'bg-destructive/10 text-destructive' : live ? 'bg-secondary/15 text-secondary' : 'bg-primary/10 text-primary'}`}>
+                            {ended ? 'Terminée' : live ? 'En direct' : 'En attente'}
                           </span>
                         </div>
                       </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-2">
-                            <Radio className="h-4 w-4 text-primary" /> {activeCount} participant(s)
-                          </span>
-                          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                            {room.room_type === 'audio' ? 'Audio' : 'Vidéo'}
-                          </span>
+                      <CardContent className="space-y-3">
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {count}</span>
+                          <span>{room.room_type === 'audio' ? '🎙️ Audio' : '📹 Vidéo'}</span>
                         </div>
-                        <div className="flex flex-wrap gap-3">
-                          <Button asChild>
-                            <Link to={`/meeting/${room.id}`}>Ouvrir la salle</Link>
-                          </Button>
-                          {room.status !== 'ended' && (
-                            <Button variant="outline" onClick={() => void handleCloseRoom(room.id)}>
-                              Terminer
-                            </Button>
+                        <div className="flex flex-wrap gap-2">
+                          <Button size="sm" asChild><Link to={`/meeting/${room.id}`}>Ouvrir</Link></Button>
+                          {!ended && (
+                            <>
+                              <Button size="sm" variant="outline" onClick={() => void handleRecall(room.id, room.title, room.room_type)}>
+                                <Phone className="h-3.5 w-3.5 mr-1" /> Rappeler
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => void handleCloseRoom(room.id)}>Terminer</Button>
+                            </>
                           )}
                         </div>
                       </CardContent>
@@ -343,8 +354,4 @@ const AdminVideo = () => {
   );
 };
 
-const displayName = (user: { email?: string | null; user_metadata?: { full_name?: string } }) =>
-  user.user_metadata?.full_name || user.email || 'Un administrateur';
-
 export default AdminVideo;
-
