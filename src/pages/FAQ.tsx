@@ -22,12 +22,12 @@ const FAQ = () => {
   const [loading, setLoading] = useState(true);
 
   const faqCategories = [
-    { id: 'general', name: 'Général', icon: HelpCircle, color: 'bg-blue-500/10 text-blue-700' },
-    { id: 'spiritualite', name: 'Spiritualité', icon: Heart, color: 'bg-red-500/10 text-red-700' },
-    { id: 'activites', name: 'Activités', icon: Calendar, color: 'bg-green-500/10 text-green-700' },
-    { id: 'lecture', name: 'Lecture biblique', icon: Book, color: 'bg-purple-500/10 text-purple-700' },
-    { id: 'communaute', name: 'Communauté', icon: Users, color: 'bg-orange-500/10 text-orange-700' },
-    { id: 'contact', name: 'Contact', icon: HelpCircle, color: 'bg-cyan-500/10 text-cyan-700' }
+    { id: 'general', name: t('faq.categories.general'), icon: HelpCircle, color: 'bg-blue-500/10 text-blue-700' },
+    { id: 'spiritualite', name: t('faq.categories.spiritualite'), icon: Heart, color: 'bg-red-500/10 text-red-700' },
+    { id: 'activites', name: t('faq.categories.activites'), icon: Calendar, color: 'bg-green-500/10 text-green-700' },
+    { id: 'lecture', name: t('faq.categories.lecture'), icon: Book, color: 'bg-purple-500/10 text-purple-700' },
+    { id: 'communaute', name: t('faq.categories.communaute'), icon: Users, color: 'bg-orange-500/10 text-orange-700' },
+    { id: 'contact', name: t('faq.categories.contact'), icon: HelpCircle, color: 'bg-cyan-500/10 text-cyan-700' }
   ];
 
   useEffect(() => {
