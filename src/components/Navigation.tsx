@@ -39,7 +39,7 @@ const ICONS: Record<string, any> = {
 };
 import { useAuth } from '@/hooks/useAuth';
 import { useAdmin } from '@/hooks/useAdmin';
-import { useSettings } from '@/hooks/useSettings';
+import { useSettings, type TextSize } from '@/hooks/useSettings';
 import siteLinks from '@/data/site-links';
 import { useToast } from '@/components/ui/use-toast';
 import { NotificationBell } from './NotificationBell';
