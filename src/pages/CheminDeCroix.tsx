@@ -23,7 +23,8 @@ interface Station {
 const mergeCheminContent = (rawContent: any, baseData: any) => ({ ...baseData, ...rawContent, intro: { ...baseData.intro, ...(rawContent?.intro || {}) }, conclusion: { ...baseData.conclusion, ...(rawContent?.conclusion || {}) }, stations: Array.isArray(rawContent?.stations) && rawContent.stations.length > 0 ? rawContent.stations : baseData.stations, adoration: rawContent?.adoration || baseData.adoration });
 
 const CheminDeCroix = memo(() => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const cheminDeCroixData = getCheminDeCroixData(i18n.language);
   const [selectedStation, setSelectedStation] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState('intro');
   const [sharingProgress, setSharingProgress] = useState<{ current: number, total: number } | null>(null);
