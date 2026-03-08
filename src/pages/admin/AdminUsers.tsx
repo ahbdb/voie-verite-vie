@@ -419,7 +419,7 @@ const AdminUsers = () => {
                         htmlFor={permission.id}
                         className="text-sm cursor-pointer flex-1"
                       >
-                        {permission.label}
+                        {t(permission.labelKey)}
                       </label>
                     </div>
                   ))}
