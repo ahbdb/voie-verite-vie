@@ -244,17 +244,16 @@ const AdminUsers = () => {
       const deleteProfileRes = await supabase.from('profiles').delete().eq('id', selectedUserId);
       if (deleteProfileRes.error) {
         console.error('❌ Delete profile error:', deleteProfileRes.error);
-        toast.error('Erreur: ' + deleteProfileRes.error.message);
-        return;
-      }
+        toast.error(t('admin.genericError') + ': ' + deleteProfileRes.error.message);
+          return;
+        }
       
-      console.log('✅ User deleted successfully');
-      toast.success('Utilisateur supprimé');
+      toast.success(t('admin.deleted'));
       setDeleteDialogOpen(false);
       loadData();
     } catch (error) {
       console.error('❌ Exception:', error);
-      toast.error('Erreur lors de la suppression');
+      toast.error(t('admin.deleteError'));
     }
   };
 
