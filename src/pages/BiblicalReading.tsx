@@ -407,10 +407,10 @@ const BiblicalReading = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <BookOpen className="w-5 h-5" />
-                      Explorez les 73 Livres Bibliques
+                      {t('biblicalReading.exploreBooks')}
                     </CardTitle>
                     <p className="text-sm text-muted-foreground mt-2">
-                      Accédez à tous les livres de la Bible catholique avec leurs chapitres et abréviations
+                      {t('biblicalReading.exploreBooksDesc')}
                     </p>
                   </CardHeader>
                   <CardContent>
