@@ -630,3 +630,12 @@ Toutes les couleurs DOIVENT être en HSL.
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
 }
+
+/* Text scaling from Settings */
+:root {
+  --text-scale: 1;
+}
+
+html {
+  font-size: calc(16px * var(--text-scale));
+}
