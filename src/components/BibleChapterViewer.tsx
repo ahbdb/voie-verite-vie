@@ -244,7 +244,7 @@ export const BibleChapterViewer = ({
           </ScrollArea>
         )}
 
-        {verses.length === 0 && !loading && !error && (
+        {verses.length === 0 && initialLoadDone && !error && (
           <div className="text-center py-8 text-muted-foreground">
             <p>{t('bibleChapter.noVerses')}</p>
           </div>
