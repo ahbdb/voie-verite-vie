@@ -521,7 +521,7 @@ const Careme2026 = memo(() => {
               <CardContent className="pt-6">
                 <div className="mb-3">
                   <div className="flex justify-between mb-2">
-                    <span className="font-semibold text-sm">Votre progression</span>
+                    <span className="font-semibold text-sm">{t('careme.yourProgress')}</span>
                     <span className="text-sm font-bold text-green-600">{completionRate}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
