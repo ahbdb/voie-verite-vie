@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, BookOpen, Calendar, Heart, MessageCircle, Youtube } from 'lucide-react';
@@ -86,6 +86,7 @@ const ActivitiesSection = () => {
 
 const CTASection = () => {
   const ref = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
   const scale = useTransform(scrollYProgress, [0, 0.5], [1.08, 1]);
 
@@ -105,15 +106,19 @@ const CTASection = () => {
           Un sanctuaire spirituel pour la jeunesse, fondé sur les valeurs de l'Évangile
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <Button size="default" className="bg-white text-foreground hover:bg-white/90 shadow-lg" asChild>
-            <Link to="/auth">Créer un compte</Link>
+          <Button
+            size="default"
+            className="bg-white text-black font-semibold hover:bg-white/90 shadow-lg rounded-full"
+            onClick={() => navigate('/auth')}
+          >
+            Créer un compte
           </Button>
-          <Button size="default" className="bg-green-600 hover:bg-green-700 text-white" asChild>
+          <Button size="default" className="bg-green-600 hover:bg-green-700 text-white rounded-full" asChild>
             <a href="https://chat.whatsapp.com/FfvCe9nHwpj5OYoDZBfGER" target="_blank" rel="noopener noreferrer">
               <MessageCircle className="mr-1.5 w-4 h-4" />WhatsApp
             </a>
           </Button>
-          <Button size="default" variant="outline" className="border-white/40 text-white hover:bg-white/10" asChild>
+          <Button size="default" variant="outline" className="border-white/40 text-white hover:bg-white/10 rounded-full" asChild>
             <a href="https://youtube.com/@voie-verite-vie?si=qD8LmbyREJdQm1Db" target="_blank" rel="noopener noreferrer">
               <Youtube className="mr-1.5 w-4 h-4" />YouTube
             </a>
