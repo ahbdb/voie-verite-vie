@@ -180,10 +180,10 @@ const Gallery = () => {
                 <div className="text-center py-16">
                   <ImageIcon className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-xl font-playfair font-semibold text-primary mb-2">
-                    Aucune image dans la galerie
+                    {t('gallery.noImages')}
                   </h3>
                   <p className="text-muted-foreground">
-                    Des photos seront bientôt disponibles
+                    {t('gallery.photosSoon')}
                   </p>
                 </div>
               )}

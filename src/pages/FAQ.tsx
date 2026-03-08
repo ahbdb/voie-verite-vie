@@ -166,16 +166,16 @@ const FAQ = () => {
                 <div className="bg-card/50 backdrop-blur-sm rounded-2xl p-8 shadow-elegant border border-border/50">
                   <HelpCircle className="w-12 h-12 text-primary mx-auto mb-4" />
                   <h3 className="text-xl font-playfair font-semibold text-primary mb-3">
-                    Vous ne trouvez pas votre réponse ?
+                    {t('faq.notFound')}
                   </h3>
                   <p className="text-muted-foreground mb-6">
-                    Notre équipe est là pour vous accompagner dans votre cheminement spirituel
+                    {t('faq.notFoundDesc')}
                   </p>
                   <a
                     href="/contact"
                     className="inline-flex items-center px-6 py-3 bg-gradient-peace text-white rounded-lg hover:shadow-glow transition-all duration-300 divine-glow"
                   >
-                    Nous contacter
+                    {t('faq.contactUs')}
                   </a>
                 </div>
               </div>
