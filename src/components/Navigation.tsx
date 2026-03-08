@@ -57,7 +57,14 @@ const Navigation = () => {
   const [isInstallable, setIsInstallable] = useState(false);
   const { user, signOut, loading: authLoading } = useAuth();
   const { isAdmin } = useAdmin();
-  const { settings, setTheme, isDarkMode } = useSettings();
+  const { settings, setTheme, setTextSize, isDarkMode } = useSettings();
+  
+  const textSizes: TextSize[] = ['small', 'normal', 'large', 'extra-large'];
+  const currentSizeIndex = textSizes.indexOf(settings.textSize);
+  const canZoomIn = currentSizeIndex < textSizes.length - 1;
+  const canZoomOut = currentSizeIndex > 0;
+  const handleZoomIn = () => { if (canZoomIn) setTextSize(textSizes[currentSizeIndex + 1]); };
+  const handleZoomOut = () => { if (canZoomOut) setTextSize(textSizes[currentSizeIndex - 1]); };
   const navigate = useNavigate();
   const { toast } = useToast();
 
