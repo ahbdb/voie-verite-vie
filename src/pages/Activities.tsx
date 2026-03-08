@@ -338,10 +338,10 @@ const Activities = () => {
                       <div className="text-center py-16">
                         <CheckCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-xl font-playfair font-semibold text-primary mb-2">
-                          Aucune activité passée
+                          {t('activities.noPast')}
                         </h3>
                         <p className="text-muted-foreground">
-                          Les activités terminées s'afficheront ici
+                          {t('activities.pastWillShow')}
                         </p>
                       </div>
                     )}
