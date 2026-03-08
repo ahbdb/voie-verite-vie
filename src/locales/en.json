@@ -530,7 +530,8 @@
     "updateError": "Unable to update your progress",
     "loading": "Loading...",
     "exploreBooks": "Explore the 73 books of the Catholic Bible",
-    "exploreBooksDesc": "Click on a book to read its chapters"
+    "exploreBooksDesc": "Click on a book to read its chapters",
+    "to": "to"
   },
   "bibleBook": {
     "bookNotFound": "Book not found",
