@@ -46,6 +46,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { NotificationBell } from './NotificationBell';
 import LanguageSelector from './LanguageSelector';
 import logo3v from '@/assets/logo-3v.png';
+import AnimatedLogo from './AnimatedLogo';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -124,12 +125,8 @@ const Navigation = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
-            <img 
-              src={logo3v} 
-              alt="Logo 3V - Voie, Vérité, Vie" 
-              className="h-10 w-auto"
-            />
-            <span className="text-xl font-playfair font-semibold text-primary hidden sm:inline">
+            <AnimatedLogo size="sm" />
+            <span className="text-xl font-cinzel font-semibold text-foreground hidden sm:inline">
               Voie, Vérité, Vie
             </span>
           </Link>
