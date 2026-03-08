@@ -293,10 +293,10 @@ const BiblicalReading = () => {
 
               <TabsContent value="program" className="space-y-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">Progression</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{progressPercentage}%</div></CardContent></Card>
-                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">Complétées</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{completedCount}/358</div></CardContent></Card>
-                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">Affichées</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{filteredReadings.length}</div></CardContent></Card>
-                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">Restants</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{358 - completedCount}</div></CardContent></Card>
+                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">{t('biblicalReading.progressLabel')}</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{progressPercentage}%</div></CardContent></Card>
+                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">{t('biblicalReading.completedLabel')}</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{completedCount}/358</div></CardContent></Card>
+                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">{t('biblicalReading.displayedLabel')}</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{filteredReadings.length}</div></CardContent></Card>
+                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">{t('biblicalReading.remainingLabel')}</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{358 - completedCount}</div></CardContent></Card>
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-6">
