@@ -193,7 +193,7 @@ const BiblicalReading = () => {
         { readingId: reading.id, userId: user.id }, 
         error instanceof Error ? error : new Error(String(error))
       );
-      toast({ title: "Erreur", description: "Impossible de mettre à jour votre progression", variant: "destructive" });
+      toast({ title: t('common.error'), description: t('biblicalReading.updateError'), variant: "destructive" });
     }
     
     await loadUserProgress();
