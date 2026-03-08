@@ -492,7 +492,7 @@ const Careme2026 = memo(() => {
                 <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100/50 dark:bg-gradient-to-r dark:from-blue-950 dark:to-blue-900/50">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Calendar className="w-5 h-5 text-blue-600" />
-                    Rythme quotidien
+                    {t('careme.dailyRhythm')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-2 text-sm">
