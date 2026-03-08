@@ -115,7 +115,12 @@ Nel nome del Padre, del Figlio e dello Spirito Santo. Amen.`,
 
 const allData: Record<string, CheminData> = { fr, en, it };
 
-export const getCheminDeCroixData = (lang: string): CheminData => allData[lang] || fr;
+const normalizeLang = (lang: string) => (lang || 'fr').toLowerCase().split('-')[0];
+
+export const getCheminDeCroixData = (lang: string): CheminData => {
+  const key = normalizeLang(lang);
+  return allData[key] || fr;
+};
 
 // Keep default export for backward compatibility
 export const cheminDeCroixData = fr;
