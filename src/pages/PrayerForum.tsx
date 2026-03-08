@@ -356,7 +356,7 @@ const PrayerForum = () => {
                           onCheckedChange={(checked) => setIsAnonymous(checked as boolean)}
                         />
                         <label htmlFor="anonymous" className="text-sm text-muted-foreground">
-                          Anonyme
+                          {t('common.anonymous')}
                         </label>
                       </div>
                       <Button type="submit" disabled={submitting} className="w-full" size="sm">
