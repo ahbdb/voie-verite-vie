@@ -23,9 +23,10 @@ interface BookData {
 
 export const BibleBookSelector = ({ onBookSelect }: { onBookSelect?: (book: BookData) => void }) => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTestament, setSelectedTestament] = useState<'all' | 'old' | 'new'>('all');
+  const lang = i18n.language;
 
   const handleBookClick = (book: BookData) => {
     navigate(`/bible-book/${book.fileName}`);
@@ -40,12 +41,13 @@ export const BibleBookSelector = ({ onBookSelect }: { onBookSelect?: (book: Book
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(book =>
-        book.name.toLowerCase().includes(term) ||
-        book.abbreviation.toLowerCase().includes(term)
+        getBookName(book, lang).toLowerCase().includes(term) ||
+        getBookAbbreviation(book, lang).toLowerCase().includes(term) ||
+        book.name.toLowerCase().includes(term)
       );
     }
     return filtered;
-  }, [searchTerm, selectedTestament]);
+  }, [searchTerm, selectedTestament, lang]);
 
   const oldTestamentBooks = (bibleBooks.books as BookData[]).filter((b: BookData) => b.testament === 'old' && !b.apocrypha);
   const apocryphaBooks = (bibleBooks.books as BookData[]).filter((b: BookData) => b.apocrypha);
