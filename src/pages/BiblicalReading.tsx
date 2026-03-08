@@ -374,7 +374,7 @@ const BiblicalReading = () => {
                               onClick={() => openDayReading(reading)}
                             >
                               {reading.books} {reading.chapters.includes('-') 
-                                ? `${reading.chapters.split('-')[0]} à ${reading.chapters.split('-')[1]}`
+                                ? `${reading.chapters.split('-')[0]} ${t('biblicalReading.to', { defaultValue: 'à' })} ${reading.chapters.split('-')[1]}`
                                 : reading.chapters}
                             </Button>
                             <p className="text-xs md:text-sm text-muted-foreground">
