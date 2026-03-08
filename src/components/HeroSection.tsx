@@ -88,9 +88,8 @@ const HeroSection = () => {
   }, [user]);
 
   const todayPrayer = useMemo(() => {
-    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-    return prayers[dayOfYear % prayers.length];
-  }, []);
+    return getPersonalPrayer(userName || null);
+  }, [userName]);
 
   // Fetch today's reading + load actual verses
   const loadTodayVerses = useCallback(async () => {
