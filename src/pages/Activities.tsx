@@ -320,10 +320,10 @@ const Activities = () => {
                       <div className="text-center py-16">
                         <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-xl font-playfair font-semibold text-primary mb-2">
-                          Aucune activité à venir
+                          {t('activities.noUpcoming')}
                         </h3>
                         <p className="text-muted-foreground">
-                          De nouvelles activités seront bientôt disponibles
+                          {t('activities.newSoon')}
                         </p>
                       </div>
                     )}
