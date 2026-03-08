@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import logo3v from '@/assets/logo-3v.png';
 
 interface AnimatedLogoProps {
