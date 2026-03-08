@@ -60,12 +60,26 @@
     "helpContact": "Help & Contact",
     "tools": "Tools"
   },
+  "brand": {
+    "word1": "Way,",
+    "word2": "Truth,",
+    "word3": "Life",
+    "fullName": "Way, Truth, Life",
+    "logoAlt": "Logo 3V - Way, Truth, Life"
+  },
   "hero": {
     "subtitle": "A spiritual sanctuary for Catholic youth",
     "readingOfDay": "Today's reading: {{books}} {{chapters}} (Day {{day}})",
     "goodMorning": "Good morning",
     "goodAfternoon": "Good afternoon",
     "goodEvening": "Good evening"
+  },
+  "prayerIntentions": {
+    "sectionTitle": "Prayer Intentions",
+    "sectionSubtitle": "Share your intentions and pray together as a community",
+    "cta": "Share an intention",
+    "verse": "\"For where two or three gather in my name, there am I with them.\"",
+    "verseRef": "Matthew 18:20"
   },
   "mission": {
     "ourMission": "Our Mission",
