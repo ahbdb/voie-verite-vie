@@ -29,17 +29,40 @@ if (import.meta.env.PROD) {
         onOfflineReady() {
           logger.info('App prête pour utilisation hors-ligne');
         },
-        onRegisteredSW(swUrl: string) {
+        onRegisteredSW(swUrl: string, registration?: ServiceWorkerRegistration) {
           logger.info('Service Worker enregistré', { swUrl });
-          // Check for updates every 60 minutes
-          setInterval(() => {
-            fetch(swUrl, { cache: 'no-store' }).catch(() => {});
-          }, 60 * 60 * 1000);
+
+          const checkForUpdates = async () => {
+            try {
+              await registration?.update();
+            } catch {
+              // silent: we'll retry on next trigger
+            }
+          };
+
+          // If an update is already waiting at startup, show prompt immediately
+          if (registration?.waiting) {
+            window.__pwaUpdateAvailable = true;
+            window.__pwaUpdateSW = updateSW;
+            window.__pwaUpdateListeners?.forEach((fn) => fn());
+          }
+
+          // Check for updates periodically + when app regains connectivity/focus
+          setInterval(checkForUpdates, 30 * 60 * 1000);
+          window.addEventListener('online', checkForUpdates);
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') checkForUpdates();
+          });
+
+          // Initial update check after registration
+          checkForUpdates();
         },
         onRegisterError(error: Error) {
           logger.error("Erreur d'enregistrement du SW", {}, error instanceof Error ? error : new Error(String(error)));
         },
       });
+
+      window.__pwaUpdateSW = updateSW;
     } catch (error) {
       logger.warn('PWA non disponible');
     }
