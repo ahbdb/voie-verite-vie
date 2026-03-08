@@ -86,6 +86,7 @@ export default function DayReadingViewer({ reading, onClose }: DayReadingViewerP
     year: 'numeric'
   });
 
+  const translatedBookName = translateBookName(reading.books, i18n.language);
   const chaptersDisplay = reading.chapters.includes('-')
     ? `${reading.chapters.split('-')[0]} ${t('biblicalReading.to', { defaultValue: 'à' })} ${reading.chapters.split('-')[1]}`
     : reading.chapters;
