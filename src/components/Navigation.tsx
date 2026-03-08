@@ -185,7 +185,27 @@ const Navigation = () => {
               )}
             </Button>
 
-            {/* Install button */}
+            {/* Zoom Controls */}
+            <div className="flex items-center gap-0.5">
+              <Button
+                onClick={handleZoomOut}
+                variant="ghost"
+                size="sm"
+                disabled={!canZoomOut}
+                title="Réduire le texte"
+              >
+                <ZoomOut className="w-4 h-4" />
+              </Button>
+              <Button
+                onClick={handleZoomIn}
+                variant="ghost"
+                size="sm"
+                disabled={!canZoomIn}
+                title="Agrandir le texte"
+              >
+                <ZoomIn className="w-4 h-4" />
+              </Button>
+            </div>
             <Button
               onClick={handleInstall}
               variant="ghost"
