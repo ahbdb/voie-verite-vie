@@ -86,6 +86,7 @@ const AVAILABLE_PERMISSIONS: { id: UserPermission; labelKey: string; categoryKey
 ];
 
 const AdminUsers = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user, isAdmin, adminRole, loading: authLoading } = useAdmin();
   const [profiles, setProfiles] = useState<Profile[]>([]);
