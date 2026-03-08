@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import i18n from '@/i18n';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -32,16 +33,18 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   render() {
     if (this.state.hasError) {
+      const t = (key: string) => i18n.t(key);
+
       return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
           <div className="max-w-md w-full bg-card border border-destructive/50 rounded-lg shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
               <AlertCircle className="h-6 w-6 text-destructive" />
-              <h1 className="text-lg font-bold text-destructive">Une erreur s'est produite</h1>
+              <h1 className="text-lg font-bold text-destructive">{t('errorBoundary.title')}</h1>
             </div>
             
             <p className="text-sm text-muted-foreground mb-4">
-              L'application a rencontré un problème inattendu. Vos données ne sont pas perdues.
+              {t('errorBoundary.description')}
             </p>
             
             {process.env.NODE_ENV === 'development' && this.state.error && (
@@ -56,14 +59,14 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                 className="flex-1"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Réessayer
+                {t('errorBoundary.retry')}
               </Button>
               <Button
                 onClick={() => window.location.href = '/'}
                 variant="outline"
                 className="flex-1"
               >
-                Accueil
+                {t('errorBoundary.home')}
               </Button>
             </div>
           </div>
