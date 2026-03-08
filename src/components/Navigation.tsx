@@ -192,9 +192,9 @@ const Navigation = () => {
               title={isDarkMode ? t('common.lightMode') : t('common.darkMode')}
             >
               {isDarkMode ? (
-                <Sun className="w-4 h-4 text-amber-500" />
+                <Sun className="w-4 h-4 text-primary" />
               ) : (
-                <Moon className="w-4 h-4 text-slate-600" />
+                <Moon className="w-4 h-4 text-muted-foreground" />
               )}
             </Button>
 
