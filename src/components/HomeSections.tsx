@@ -86,7 +86,7 @@ const ActivitiesSection = () => {
 
 const CTASection = () => {
   const ref = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
+  
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
   const scale = useTransform(scrollYProgress, [0, 0.5], [1.08, 1]);
 
