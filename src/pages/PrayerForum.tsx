@@ -312,10 +312,10 @@ const PrayerForum = () => {
           <div className="container mx-auto px-4">
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-4xl md:text-5xl font-playfair font-bold text-primary mb-4">
-                Forum de Prière
+                {t('prayer.title')}
               </h1>
               <p className="text-lg text-muted-foreground">
-                Partagez vos intentions et priez ensemble en communauté. « Car là où deux ou trois sont assemblés en mon nom, je suis au milieu d'eux. » (Matthieu 18:20)
+                {t('prayer.subtitle')} {t('prayer.verse')}
               </p>
             </div>
           </div>
