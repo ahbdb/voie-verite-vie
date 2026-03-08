@@ -133,6 +133,7 @@ const App = () => {
                     <Route path="/admin/debug-careme" element={<AdminDebugCareme />} />
                     <Route path="/admin/test-save" element={<AdminTestSave />} />
                     <Route path="/admin/chemin-de-croix" element={<AdminCheminDeCroix />} />
+                    <Route path="/admin/neuvaines" element={<AdminNeuvaines />} />
                     <Route path="/admin/activities" element={<AdminActivities />} />
                     <Route path="/admin/readings" element={<AdminReadings />} />
                     <Route path="/admin/prayers" element={<AdminPrayers />} />
