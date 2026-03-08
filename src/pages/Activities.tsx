@@ -32,6 +32,7 @@ const defaultImages: Record<string, string> = {
 };
 
 const Activities = () => {
+  const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [activities, setActivities] = useState<Activity[]>([]);
   const [registrationCounts, setRegistrationCounts] = useState<Record<string, number>>({});
