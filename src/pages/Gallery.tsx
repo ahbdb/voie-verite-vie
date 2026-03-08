@@ -24,6 +24,7 @@ interface GalleryGroup {
 }
 
 const Gallery = () => {
+  const { t } = useTranslation();
   const [selectedGroup, setSelectedGroup] = useState<GalleryGroup | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [galleryGroups, setGalleryGroups] = useState<GalleryGroup[]>([]);
