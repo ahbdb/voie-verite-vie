@@ -214,11 +214,6 @@ export const BibleChapterViewer = ({
           </Button>
           <CardTitle className="text-2xl">{bookName} {chapterNumber}</CardTitle>
         </div>
-        {translating && (
-          <p className="text-xs text-muted-foreground text-center animate-pulse">
-            {t('bibleChapter.translating', { defaultValue: lang === 'it' ? 'Traduzione in corso...' : 'Translating...' })}
-          </p>
-        )}
       </CardHeader>
 
       <CardContent className="pt-0 px-2 md:px-4">
