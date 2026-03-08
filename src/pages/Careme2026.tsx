@@ -407,10 +407,10 @@ const Careme2026 = memo(() => {
         <div className="container mx-auto relative z-10">
           <div className="flex items-center gap-3 mb-4">
             <Flame className="w-8 h-8 text-violet-200" />
-            <span className="text-sm font-semibold text-violet-200">Entreprendre votre chemin</span>
+            <span className="text-sm font-semibold text-violet-200">{t('careme.undertakeJourney')}</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3">Carême 2026</h1>
-          <p className="text-base sm:text-lg text-violet-100 max-w-2xl">40 jours de transformation spirituelle : prière, pénitence et partage. Un parcours vers la Pâques.</p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3">{t('careme.title')}</h1>
+          <p className="text-base sm:text-lg text-violet-100 max-w-2xl">{t('careme.subtitle')}</p>
         </div>
       </header>
 
