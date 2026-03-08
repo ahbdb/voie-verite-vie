@@ -102,7 +102,7 @@ const Install = () => {
                     <Card key={index} className="bg-card/50 backdrop-blur-sm border-border/50">
                       <CardHeader>
                         <div className="flex items-start space-x-4">
-                          <div className="bg-gradient-peace rounded-full w-12 h-12 flex items-center justify-center shadow-glow flex-shrink-0"><Icon className="w-6 h-6 text-white" /></div>
+                          <div className="bg-gradient-peace rounded-full w-12 h-12 flex items-center justify-center shadow-glow flex-shrink-0"><Icon className="w-6 h-6 text-primary-foreground" /></div>
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-2">
                               <span className="text-sm font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">{t('common.step', { defaultValue: 'Étape' })} {index + 1}</span>
