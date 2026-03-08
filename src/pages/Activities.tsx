@@ -119,14 +119,15 @@ const Activities = () => {
   };
 
   const formatDateRange = (activity: Activity) => {
-    const startDate = new Date(activity.start_date || activity.date).toLocaleDateString('fr-FR', {
+    const locale = i18n.language === 'it' ? 'it-IT' : i18n.language === 'en' ? 'en-US' : 'fr-FR';
+    const startDate = new Date(activity.start_date || activity.date).toLocaleDateString(locale, {
       day: 'numeric',
       month: 'short',
       year: 'numeric'
     });
     
     if (activity.end_date) {
-      const endDate = new Date(activity.end_date).toLocaleDateString('fr-FR', {
+      const endDate = new Date(activity.end_date).toLocaleDateString(locale, {
         day: 'numeric',
         month: 'short',
         year: 'numeric'
