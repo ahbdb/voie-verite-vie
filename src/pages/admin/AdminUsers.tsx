@@ -382,14 +382,14 @@ const AdminUsers = () => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmation de suppression</AlertDialogTitle>
+            <AlertDialogTitle>{t('admin.usersPage.deleteUser')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.
+              {t('admin.usersPage.deleteUserDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogCancel>Annuler</AlertDialogCancel>
+          <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
           <AlertDialogAction onClick={deleteUser} className="bg-destructive">
-            Supprimer
+            {t('common.delete')}
           </AlertDialogAction>
         </AlertDialogContent>
       </AlertDialog>
