@@ -5,6 +5,7 @@ import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
 import BibleChapterViewer from './BibleChapterViewer';
 import bibleBooks from '@/data/bible-books.json';
+import { translateBookName, getBookAbbreviation } from '@/lib/bible-utils';
 
 interface Reading {
   id: string;
