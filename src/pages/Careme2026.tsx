@@ -653,7 +653,7 @@ const Careme2026 = memo(() => {
                     className="flex-1 gap-2 bg-violet-600 hover:bg-violet-700"
                   >
                     <Share2 className="w-4 h-4" />
-                    <span className="hidden sm:inline">Partager</span>
+                    <span className="hidden sm:inline">{t('careme.share')}</span>
                   </Button>
                   <Button
                     className="flex-1 gap-2"
