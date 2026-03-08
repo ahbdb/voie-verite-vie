@@ -1,187 +1,116 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import Navigation from '@/components/Navigation';
 import { Input } from '@/components/ui/input';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Badge } from '@/components/ui/badge';
 import { Search, Book, Heart, Users, Calendar, HelpCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-interface FAQItem {
-  id: string;
-  question: string;
-  answer: string;
-  category: string;
-  sort_order: number;
-}
+interface FAQItem { id: string; question: string; answer: string; category: string; sort_order: number; }
+
+const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
 
 const FAQ = () => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [faqData, setFaqData] = useState<FAQItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openId, setOpenId] = useState<string | null>(null);
 
-  const faqCategories = [
-    { id: 'general', name: t('faq.categories.general'), icon: HelpCircle, color: 'bg-blue-500/10 text-blue-700' },
-    { id: 'spiritualite', name: t('faq.categories.spiritualite'), icon: Heart, color: 'bg-red-500/10 text-red-700' },
-    { id: 'activites', name: t('faq.categories.activites'), icon: Calendar, color: 'bg-green-500/10 text-green-700' },
-    { id: 'lecture', name: t('faq.categories.lecture'), icon: Book, color: 'bg-purple-500/10 text-purple-700' },
-    { id: 'communaute', name: t('faq.categories.communaute'), icon: Users, color: 'bg-orange-500/10 text-orange-700' },
-    { id: 'contact', name: t('faq.categories.contact'), icon: HelpCircle, color: 'bg-cyan-500/10 text-cyan-700' }
+  const categories = [
+    { id: 'general', name: t('faq.categories.general'), icon: HelpCircle },
+    { id: 'spiritualite', name: t('faq.categories.spiritualite'), icon: Heart },
+    { id: 'activites', name: t('faq.categories.activites'), icon: Calendar },
+    { id: 'lecture', name: t('faq.categories.lecture'), icon: Book },
+    { id: 'communaute', name: t('faq.categories.communaute'), icon: Users },
+    { id: 'contact', name: t('faq.categories.contact'), icon: HelpCircle },
   ];
 
-  useEffect(() => {
-    loadFAQ();
-  }, []);
+  useEffect(() => { loadFAQ(); }, []);
 
   const loadFAQ = async () => {
-    const { data } = await supabase
-      .from('faq_items')
-      .select('*')
-      .eq('is_published', true)
-      .order('sort_order', { ascending: true });
-    
+    const { data } = await supabase.from('faq_items').select('*').eq('is_published', true).order('sort_order', { ascending: true });
     if (data) setFaqData(data);
     setLoading(false);
   };
 
-  const filteredFAQ = faqData.filter(item =>
-    item.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.answer.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const groupedFAQ = faqCategories.reduce((acc, category) => {
-    acc[category.id] = filteredFAQ.filter(item => item.category === category.id);
-    return acc;
-  }, {} as Record<string, FAQItem[]>);
+  const filtered = faqData.filter(i => i.question.toLowerCase().includes(searchTerm.toLowerCase()) || i.answer.toLowerCase().includes(searchTerm.toLowerCase()));
+  const grouped = categories.reduce((a, c) => { a[c.id] = filtered.filter(i => i.category === c.id); return a; }, {} as Record<string, FAQItem[]>);
 
   if (loading) {
-    return (
-      <div className="min-h-screen">
-        <Navigation />
-        <main className="pt-16 flex items-center justify-center min-h-[60vh]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </main>
-      </div>
-    );
+    return (<div className="min-h-screen bg-background"><Navigation /><main className="pt-16 flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-10 w-10 border-2 border-cathedral-gold border-t-transparent" /></main></div>);
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Navigation />
-      <main className="pt-16">
-        {/* Hero Section */}
-        <section className="py-8 bg-gradient-subtle">
-          <div className="container mx-auto px-4">
-            <div className="text-center max-w-4xl mx-auto">
-              <h1 className="text-4xl md:text-6xl font-playfair font-bold text-primary mb-4">
-                {t('faq.title')}
-              </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed mb-6">
-                {t('faq.subtitle')}
-              </p>
-              
-              {/* Search Bar */}
-              <div className="relative max-w-md mx-auto">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  placeholder={t('faq.searchPlaceholder')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-12 bg-card/50 backdrop-blur-sm border-border/50"
-                />
-              </div>
+      <main className="pt-20 pb-16">
+        <div className="container mx-auto px-4 max-w-3xl">
+          {/* Header */}
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} className="mb-8">
+            <p className="text-xs tracking-[0.3em] uppercase text-cathedral-gold/70 mb-2 font-inter">FAQ</p>
+            <h1 className="text-3xl md:text-5xl font-cinzel font-bold text-foreground mb-3">{t('faq.title')}</h1>
+            <p className="text-sm text-muted-foreground font-inter mb-6">{t('faq.subtitle')}</p>
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 w-4 h-4" />
+              <Input placeholder={t('faq.searchPlaceholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10 border-border/40" />
             </div>
-          </div>
-        </section>
+          </motion.div>
 
-        {/* FAQ Content */}
-        <section className="py-8">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              {faqCategories.map((category) => {
-                const categoryFAQs = groupedFAQ[category.id] || [];
-                const Icon = category.icon;
-                
-                if (categoryFAQs.length === 0) return null;
+          <div className="cathedral-line w-full mb-8" />
 
-                return (
-                  <div key={category.id} className="mb-12">
-                    <div className="flex items-center mb-6">
-                      <div className="bg-gradient-peace rounded-full w-12 h-12 flex items-center justify-center mr-4 shadow-glow">
-                        <Icon className="w-6 h-6 text-white" />
+          {/* Categories */}
+          <div className="space-y-10">
+            {categories.map(cat => {
+              const items = grouped[cat.id] || [];
+              if (items.length === 0) return null;
+              const Icon = cat.icon;
+              return (
+                <motion.div key={cat.id} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+                  <h2 className="text-lg font-cinzel font-bold text-foreground mb-4 flex items-center gap-2">
+                    <Icon className="w-4 h-4 text-cathedral-gold" />{cat.name}
+                    <span className="text-[10px] text-muted-foreground/50 font-inter ml-1">({items.length})</span>
+                  </h2>
+                  <div className="space-y-1">
+                    {items.map(faq => (
+                      <div key={faq.id} className="border-b border-border/20">
+                        <button onClick={() => setOpenId(openId === faq.id ? null : faq.id)}
+                          className="w-full text-left py-4 flex justify-between items-center gap-4 hover:text-foreground transition-colors">
+                          <span className="text-sm font-inter font-medium text-foreground">{faq.question}</span>
+                          <span className={`text-cathedral-gold transition-transform ${openId === faq.id ? 'rotate-45' : ''}`}>+</span>
+                        </button>
+                        {openId === faq.id && (
+                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="pb-4">
+                            <p className="text-sm text-muted-foreground font-inter leading-relaxed whitespace-pre-wrap">{faq.answer}</p>
+                          </motion.div>
+                        )}
                       </div>
-                      <h2 className="text-2xl md:text-3xl font-playfair font-bold text-primary">
-                        {category.name}
-                      </h2>
-                      <Badge className={`ml-3 ${category.color}`}>
-                        {categoryFAQs.length} {t('faq.questions')}
-                      </Badge>
-                    </div>
-
-                    <Accordion type="single" collapsible className="space-y-4">
-                      {categoryFAQs.map((faq) => (
-                        <AccordionItem 
-                          key={faq.id} 
-                          value={`item-${faq.id}`}
-                          className="bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 px-6 shadow-subtle hover:shadow-elegant transition-all duration-300"
-                        >
-                          <AccordionTrigger className="text-left hover:no-underline py-6">
-                            <span className="font-playfair font-semibold text-primary pr-4">
-                              {faq.question}
-                            </span>
-                          </AccordionTrigger>
-                          <AccordionContent className="pb-6">
-                            <div className="text-muted-foreground leading-relaxed">
-                              <p className="whitespace-pre-wrap">{faq.answer}</p>
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
+                    ))}
                   </div>
-                );
-              })}
-
-              {filteredFAQ.length === 0 && (
-                <div className="text-center py-16">
-                  <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-xl font-playfair font-semibold text-primary mb-2">
-                    {t('faq.noResults')}
-                  </h3>
-                  <p className="text-muted-foreground mb-6">
-                    {t('faq.noResultsDesc')}
-                  </p>
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="text-primary hover:underline"
-                  >
-                    {t('faq.seeAll')}
-                  </button>
-                </div>
-              )}
-
-              {/* Contact for more questions */}
-              <div className="mt-16 text-center">
-                <div className="bg-card/50 backdrop-blur-sm rounded-2xl p-8 shadow-elegant border border-border/50">
-                  <HelpCircle className="w-12 h-12 text-primary mx-auto mb-4" />
-                  <h3 className="text-xl font-playfair font-semibold text-primary mb-3">
-                    {t('faq.notFound')}
-                  </h3>
-                  <p className="text-muted-foreground mb-6">
-                    {t('faq.notFoundDesc')}
-                  </p>
-                  <a
-                    href="/contact"
-                    className="inline-flex items-center px-6 py-3 bg-gradient-peace text-white rounded-lg hover:shadow-glow transition-all duration-300 divine-glow"
-                  >
-                    {t('faq.contactUs')}
-                  </a>
-                </div>
-              </div>
-            </div>
+                </motion.div>
+              );
+            })}
           </div>
-        </section>
+
+          {filtered.length === 0 && (
+            <div className="text-center py-16">
+              <Search className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground font-inter">{t('faq.noResults')}</p>
+              <button onClick={() => setSearchTerm('')} className="text-cathedral-gold text-sm mt-2 hover:underline font-inter">{t('faq.seeAll')}</button>
+            </div>
+          )}
+
+          {/* Contact CTA */}
+          <div className="cathedral-line w-full my-10" />
+          <div className="text-center">
+            <HelpCircle className="w-8 h-8 text-cathedral-gold/40 mx-auto mb-3" />
+            <h3 className="text-lg font-cinzel font-bold text-foreground mb-2">{t('faq.notFound')}</h3>
+            <p className="text-sm text-muted-foreground font-inter mb-4">{t('faq.notFoundDesc')}</p>
+            <a href="/contact" className="inline-flex items-center px-5 py-2 bg-cathedral-gold hover:bg-cathedral-gold/90 text-cathedral-navy text-sm font-inter rounded-lg transition-colors">
+              {t('faq.contactUs')}
+            </a>
+          </div>
+        </div>
       </main>
     </div>
   );

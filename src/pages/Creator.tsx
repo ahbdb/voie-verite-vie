@@ -1,16 +1,18 @@
 import { memo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import Navigation from '@/components/Navigation';
 import { 
   Users, Calendar, GraduationCap, Briefcase, Globe, Mail, Phone, MapPin, 
   Heart, Cross, Book, Target, Award, Mic, Radio, Code, PenTool, 
   MessageSquare, Star, ChevronRight, ExternalLink
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import creatorPhoto from '@/assets/creator-photo.webp';
+
+const fadeUp = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } };
 
 const Creator = memo(() => {
   const { t, i18n } = useTranslation();
@@ -120,7 +122,7 @@ const Creator = memo(() => {
       { role: 'Docente di Informatica', company: 'Collegio Cattolico Saint Nicolas & Collegio BAHO', description: "Trasmissione del sapere informatico ai giovani nel contesto dell'educazione cattolica", since: '2023', icon: Book },
       { role: 'Responsabile IT e Comunicazione', company: 'ONG GEN Cameroon & Youth Business Cameroon', description: 'Sviluppo di strumenti digitali e strategie di comunicazione per impatto sociale', since: '2023', icon: MessageSquare },
       { role: 'Formatore', company: 'PI Startup (Progress Intelligent Startup)', description: 'Formazione nello sviluppo di applicazioni e tecnologie digitali', since: '2021', icon: Award },
-      { role: 'Presentatore e Cronista', company: 'Radio e TV cattolica VERITAS - Trasmissione Canal Campus', description: 'Conduzione di programmi dedicati ai giovani cattolici e all’evangelizzazione', since: '2022', icon: Radio },
+      { role: 'Presentatore e Cronista', company: 'Radio e TV cattolica VERITAS - Trasmissione Canal Campus', description: "Conduzione di programmi dedicati ai giovani cattolici e all'evangelizzazione", since: '2022', icon: Radio },
     ],
     skills: [
       { name: 'Insegnamento', icon: GraduationCap },
@@ -149,18 +151,14 @@ const Creator = memo(() => {
     "jobTitle": founder.title,
     "birthDate": "2001-09-14",
     "birthPlace": { "@type": "Place", "name": founder.birthPlace },
-    "address": { "@type": "PostalAddress", "addressLocality": "Cameroun", "addressCountry": "Cameroon" },
     "sameAs": [founder.socialLinks.youtube],
     "knowsLanguage": founder.languages.map(l => l.name),
-    "alumniOf": founder.education.map(e => ({ "@type": "EducationalOrganization", "name": e.institution })),
-    "worksFor": founder.experience.map(e => ({ "@type": "Organization", "name": e.company })),
-    "founder": { "@type": "Organization", "name": "Voie, Vérité, Vie (3V)", "description": "Association spirituelle catholique pour la lecture biblique" }
   };
 
   return (
     <>
       <Helmet>
-        <title>AHOUFACK Dylanne Baudouin - Fondateur de Voie, Vérité, Vie (3V) | Cameroun</title>
+        <title>AHOUFACK Dylanne Baudouin - Fondateur de Voie, Vérité, Vie (3V)</title>
         <meta name="description" content="Découvrez AHOUFACK Dylanne Baudouin, fondateur de l'application 3V (Voie, Vérité, Vie)." />
         <link rel="canonical" href="https://voie-verite-vie.lovable.app/createur" />
         <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
@@ -169,174 +167,181 @@ const Creator = memo(() => {
       <div className="min-h-screen bg-background">
         <Navigation />
         <main className="pt-16">
-          {/* Hero */}
-          <section className="py-12 bg-gradient-subtle relative overflow-hidden">
-            <div className="absolute inset-0 opacity-5">
-              <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-primary blur-3xl"></div>
-              <div className="absolute bottom-10 right-10 w-40 h-40 rounded-full bg-secondary blur-3xl"></div>
-            </div>
-            <div className="container mx-auto px-4 relative z-10">
-              <div className="max-w-4xl mx-auto text-center">
-                <div className="w-28 h-28 bg-gradient-peace rounded-full flex items-center justify-center mx-auto mb-6 shadow-glow">
-                  <Users className="w-14 h-14 text-white" />
-                </div>
-                <h1 className="text-3xl md:text-5xl font-playfair font-bold text-primary mb-3">{founder.name}</h1>
-                <p className="text-lg md:text-xl text-muted-foreground mb-4">{founder.title}</p>
-                <div className="flex flex-wrap gap-3 justify-center mb-6">
-                  <Badge variant="secondary" className="text-sm py-1 px-3"><Calendar className="w-4 h-4 mr-2" />{founder.birthDate}</Badge>
-                  <Badge variant="secondary" className="text-sm py-1 px-3"><MapPin className="w-4 h-4 mr-2" />{founder.birthPlace}</Badge>
-                </div>
+          {/* Hero with photo */}
+          <section className="relative py-16 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-cathedral-navy/5 to-transparent" />
+            <div className="container mx-auto px-4 relative">
+              <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-10">
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7 }} className="flex-shrink-0">
+                  <div className="w-48 h-48 md:w-56 md:h-56 rounded-full overflow-hidden border-4 border-cathedral-gold/30 shadow-[0_0_40px_hsl(var(--cathedral-gold)/0.15)]">
+                    <img src={creatorPhoto} alt={founder.name} className="w-full h-full object-cover" />
+                  </div>
+                </motion.div>
+                <motion.div initial="hidden" animate="visible" variants={fadeUp} transition={{ duration: 0.6, delay: 0.2 }}>
+                  <h1 className="text-3xl md:text-5xl font-cinzel font-bold text-foreground mb-2">{founder.name}</h1>
+                  <p className="text-lg text-cathedral-gold/80 font-inter mb-4">{founder.title}</p>
+                  <div className="flex flex-wrap gap-3">
+                    <Badge variant="outline" className="border-cathedral-gold/30 text-muted-foreground"><Calendar className="w-3 h-3 mr-1" />{founder.birthDate}</Badge>
+                    <Badge variant="outline" className="border-cathedral-gold/30 text-muted-foreground"><MapPin className="w-3 h-3 mr-1" />{founder.birthPlace}</Badge>
+                  </div>
+                </motion.div>
               </div>
             </div>
           </section>
 
-          {/* Bio & Vision */}
+          <div className="cathedral-line w-full" />
+
+          {/* Bio & Vision - flat layout */}
           <section className="py-10">
-            <div className="container mx-auto px-4">
-              <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
-                <Card className="border-border/50 shadow-elegant">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-xl"><Heart className="w-5 h-5 text-primary" />{t('creator.aboutMe')}</CardTitle>
-                  </CardHeader>
-                  <CardContent><p className="text-muted-foreground leading-relaxed text-sm">{founder.bio}</p></CardContent>
-                </Card>
-                <Card className="border-border/50 shadow-elegant">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-xl"><Target className="w-5 h-5 text-primary" />{t('creator.myVision')}</CardTitle>
-                  </CardHeader>
-                  <CardContent><p className="text-muted-foreground leading-relaxed text-sm">{founder.vision}</p></CardContent>
-                </Card>
+            <div className="container mx-auto px-4 max-w-4xl">
+              <div className="grid md:grid-cols-2 gap-12">
+                <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Heart className="w-5 h-5 text-cathedral-gold" />
+                    <h2 className="text-xl font-cinzel font-bold text-foreground">{t('creator.aboutMe')}</h2>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed font-inter">{founder.bio}</p>
+                </motion.div>
+                <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} transition={{ delay: 0.15 }}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Target className="w-5 h-5 text-cathedral-gold" />
+                    <h2 className="text-xl font-cinzel font-bold text-foreground">{t('creator.myVision')}</h2>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed font-inter">{founder.vision}</p>
+                </motion.div>
               </div>
             </div>
           </section>
 
-          {/* Education */}
-          <section className="py-10 bg-muted/30">
-            <div className="container mx-auto px-4">
-              <div className="max-w-4xl mx-auto">
-                <h2 className="text-2xl md:text-3xl font-playfair font-bold text-primary text-center mb-8 flex items-center justify-center gap-3">
-                  <GraduationCap className="w-8 h-8" />{t('creator.education')}
-                </h2>
-                <div className="space-y-4">
-                  {founder.education.map((edu, i) => {
-                    const Icon = edu.icon;
-                    return (
-                      <Card key={i} className="border-l-4 border-l-primary hover:shadow-lg transition-shadow">
-                        <CardContent className="py-4">
-                          <div className="flex items-start gap-4">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0"><Icon className="w-5 h-5 text-primary" /></div>
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-foreground">{edu.degree}</h3>
-                              <p className="text-sm text-muted-foreground">{edu.institution}</p>
-                              <Badge variant="outline" className="mt-2 text-xs">{edu.year}</Badge>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </section>
+          <div className="cathedral-line w-full" />
 
-          {/* Experience */}
+          {/* Education - flat timeline */}
           <section className="py-10">
-            <div className="container mx-auto px-4">
-              <div className="max-w-4xl mx-auto">
-                <h2 className="text-2xl md:text-3xl font-playfair font-bold text-primary text-center mb-8 flex items-center justify-center gap-3">
-                  <Briefcase className="w-8 h-8" />{t('creator.experience')}
-                </h2>
-                <div className="space-y-4">
-                  {founder.experience.map((exp, i) => {
-                    const Icon = exp.icon;
-                    return (
-                      <Card key={i} className="hover:shadow-lg transition-shadow">
-                        <CardContent className="py-4">
-                          <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-full bg-gradient-peace flex items-center justify-center flex-shrink-0"><Icon className="w-6 h-6 text-white" /></div>
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-foreground">{exp.role}</h3>
-                              <p className="text-sm text-primary font-medium">{exp.company}</p>
-                              <p className="text-sm text-muted-foreground mt-1">{exp.description}</p>
-                              <Badge className="mt-2 text-xs bg-primary/10 text-primary">{t('creator.since')} {exp.since}</Badge>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+            <div className="container mx-auto px-4 max-w-3xl">
+              <h2 className="text-2xl font-cinzel font-bold text-foreground text-center mb-8 flex items-center justify-center gap-3">
+                <GraduationCap className="w-6 h-6 text-cathedral-gold" />{t('creator.education')}
+              </h2>
+              <div className="relative pl-8">
+                <div className="absolute left-3 top-0 bottom-0 w-px bg-gradient-to-b from-cathedral-gold/60 via-cathedral-gold/20 to-transparent" />
+                {founder.education.map((edu, i) => {
+                  const Icon = edu.icon;
+                  return (
+                    <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} transition={{ delay: i * 0.1 }} className="relative mb-6 last:mb-0">
+                      <div className="absolute -left-5 top-1 w-3 h-3 rounded-full bg-cathedral-gold/80" />
+                      <div className="flex items-start gap-3">
+                        <Icon className="w-4 h-4 text-cathedral-gold/60 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground">{edu.degree}</h3>
+                          <p className="text-xs text-muted-foreground font-inter">{edu.institution}</p>
+                          <span className="text-[10px] text-cathedral-gold/60 font-inter">{edu.year}</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          <div className="cathedral-line w-full" />
+
+          {/* Experience - flat list */}
+          <section className="py-10">
+            <div className="container mx-auto px-4 max-w-3xl">
+              <h2 className="text-2xl font-cinzel font-bold text-foreground text-center mb-8 flex items-center justify-center gap-3">
+                <Briefcase className="w-6 h-6 text-cathedral-gold" />{t('creator.experience')}
+              </h2>
+              <div className="space-y-6">
+                {founder.experience.map((exp, i) => {
+                  const Icon = exp.icon;
+                  return (
+                    <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} transition={{ delay: i * 0.1 }} className="flex gap-4 border-b border-border/30 pb-5 last:border-0">
+                      <div className="w-10 h-10 rounded-full bg-cathedral-gold/10 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-5 h-5 text-cathedral-gold" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-foreground">{exp.role}</h3>
+                        <p className="text-xs text-cathedral-gold/70 font-inter">{exp.company}</p>
+                        <p className="text-xs text-muted-foreground mt-1 font-inter">{exp.description}</p>
+                        <span className="text-[10px] text-muted-foreground/60 font-inter">{t('creator.since')} {exp.since}</span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          <div className="cathedral-line w-full" />
+
+          {/* Skills / Languages / Qualities - flat grid */}
+          <section className="py-10">
+            <div className="container mx-auto px-4 max-w-4xl">
+              <div className="grid md:grid-cols-3 gap-10">
+                <div>
+                  <h3 className="text-lg font-cinzel font-bold text-foreground mb-4 flex items-center gap-2">
+                    <Star className="w-4 h-4 text-cathedral-gold" />{t('creator.skills')}
+                  </h3>
+                  <div className="space-y-2">
+                    {founder.skills.map((s, i) => { const Icon = s.icon; return (
+                      <div key={i} className="flex items-center gap-2 text-sm font-inter text-muted-foreground">
+                        <Icon className="w-3.5 h-3.5 text-cathedral-gold/60" />{s.name}
+                      </div>
+                    ); })}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-cinzel font-bold text-foreground mb-4 flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-cathedral-gold" />{t('creator.languages')}
+                  </h3>
+                  <div className="space-y-2">
+                    {founder.languages.map((l, i) => (
+                      <div key={i} className="flex items-center justify-between text-sm font-inter">
+                        <span className="text-muted-foreground">{l.name}</span>
+                        <span className="text-xs text-cathedral-gold/60">{l.level}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-cinzel font-bold text-foreground mb-4 flex items-center gap-2">
+                    <Heart className="w-4 h-4 text-cathedral-gold" />{t('creator.qualities')}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {founder.qualities.map((q, i) => (
+                      <span key={i} className="text-xs px-3 py-1 rounded-full border border-cathedral-gold/20 text-muted-foreground font-inter">{q}</span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Skills, Languages, Qualities */}
-          <section className="py-10 bg-muted/30">
-            <div className="container mx-auto px-4">
-              <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-6">
-                <Card>
-                  <CardHeader className="pb-3"><CardTitle className="text-lg flex items-center gap-2"><Star className="w-5 h-5 text-primary" />{t('creator.skills')}</CardTitle></CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {founder.skills.map((skill, i) => { const Icon = skill.icon; return (<div key={i} className="flex items-center gap-2 text-sm"><Icon className="w-4 h-4 text-primary" /><span className="text-muted-foreground">{skill.name}</span></div>); })}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-3"><CardTitle className="text-lg flex items-center gap-2"><Globe className="w-5 h-5 text-primary" />{t('creator.languages')}</CardTitle></CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {founder.languages.map((lang, i) => (<div key={i} className="flex items-center justify-between"><span className="text-muted-foreground text-sm">{lang.name}</span><Badge variant="outline" className="text-xs">{lang.level}</Badge></div>))}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-3"><CardTitle className="text-lg flex items-center gap-2"><Heart className="w-5 h-5 text-primary" />{t('creator.qualities')}</CardTitle></CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {founder.qualities.map((q, i) => (<Badge key={i} className="text-xs bg-primary/10 text-primary">{q}</Badge>))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </section>
+          <div className="cathedral-line w-full" />
 
           {/* CTA */}
           <section className="py-12">
-            <div className="container mx-auto px-4">
-              <div className="max-w-3xl mx-auto text-center">
-                <h2 className="text-2xl md:text-3xl font-playfair font-bold text-primary mb-4">{t('creator.joinMovement')}</h2>
-                <p className="text-muted-foreground mb-8">{t('creator.joinMovementDesc')}</p>
-                <div className="flex flex-wrap gap-4 justify-center">
-                  <Button asChild className="gap-2"><a href={founder.socialLinks.youtube} target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4" />{t('creator.youtubeChannel')}</a></Button>
-                  <Button asChild variant="outline" className="gap-2"><a href={founder.socialLinks.whatsappChannel} target="_blank" rel="noopener noreferrer"><ChevronRight className="w-4 h-4" />{t('creator.whatsappChannel')}</a></Button>
-                  <Button asChild variant="secondary" className="gap-2"><a href={founder.socialLinks.whatsappGroup} target="_blank" rel="noopener noreferrer"><Users className="w-4 h-4" />{t('creator.whatsappGroup')}</a></Button>
-                </div>
+            <div className="container mx-auto px-4 max-w-3xl text-center">
+              <h2 className="text-2xl font-cinzel font-bold text-foreground mb-3">{t('creator.joinMovement')}</h2>
+              <p className="text-sm text-muted-foreground mb-8 font-inter">{t('creator.joinMovementDesc')}</p>
+              <div className="flex flex-wrap gap-3 justify-center">
+                <Button asChild className="gap-2 bg-cathedral-gold hover:bg-cathedral-gold/90 text-cathedral-navy"><a href={founder.socialLinks.youtube} target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4" />{t('creator.youtubeChannel')}</a></Button>
+                <Button asChild variant="outline" className="gap-2 border-cathedral-gold/30"><a href={founder.socialLinks.whatsappChannel} target="_blank" rel="noopener noreferrer"><ChevronRight className="w-4 h-4" />{t('creator.whatsappChannel')}</a></Button>
+                <Button asChild variant="outline" className="gap-2 border-cathedral-gold/30"><a href={founder.socialLinks.whatsappGroup} target="_blank" rel="noopener noreferrer"><Users className="w-4 h-4" />{t('creator.whatsappGroup')}</a></Button>
               </div>
             </div>
           </section>
 
-          <Separator />
-
-          {/* About 3V Mini */}
-          <section className="py-10">
-            <div className="container mx-auto px-4">
-              <div className="max-w-4xl mx-auto text-center">
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  <Cross className="w-6 h-6 text-primary" />
-                  <Book className="w-6 h-6 text-primary" />
-                  <Heart className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-playfair font-semibold text-primary mb-3">Voie, Vérité, Vie</h3>
-                <p className="text-muted-foreground text-sm max-w-2xl mx-auto mb-6">
-                  {t('about.mainVerse')}
-                </p>
-                <Button asChild variant="outline">
-                  <a href="/about">{t('common.learnMore')}<ChevronRight className="w-4 h-4 ml-2" /></a>
-                </Button>
+          {/* Footer mini */}
+          <div className="cathedral-line w-full" />
+          <section className="py-8">
+            <div className="container mx-auto px-4 text-center">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <Cross className="w-5 h-5 text-cathedral-gold/50" />
+                <Book className="w-5 h-5 text-cathedral-gold/50" />
+                <Heart className="w-5 h-5 text-cathedral-gold/50" />
               </div>
+              <p className="text-xs text-muted-foreground/60 font-inter italic">{t('about.mainVerse')}</p>
             </div>
           </section>
         </main>
@@ -346,5 +351,4 @@ const Creator = memo(() => {
 });
 
 Creator.displayName = 'Creator';
-
 export default Creator;
