@@ -297,7 +297,7 @@ const Careme2026 = memo(() => {
     }
     
     setSharingProgress(null);
-    toast({ title: '✝️ Les 40 jours ont été téléchargés/partagés!' });
+    toast({ title: `✝️ ${t('careme.allDaysShared')}` });
   };
 
   useEffect(() => {
