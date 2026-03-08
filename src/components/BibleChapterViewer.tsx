@@ -133,7 +133,10 @@ export const BibleChapterViewer = ({
           setError(t('bibleChapter.loadError', { error: String(err) }));
         }
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+          setInitialLoadDone(true);
+        }
       }
     };
 
