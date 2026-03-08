@@ -77,11 +77,15 @@ const About = memo(() => {
               {values.map((v, i) => {
                 const Icon = v.icon;
                 return (
-                  <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} transition={{ delay: i * 0.15 }} className="text-center">
-                    <div className="w-14 h-14 rounded-full bg-cathedral-gold/10 border border-cathedral-gold/30 flex items-center justify-center mx-auto mb-4">
-                      <Icon className="w-6 h-6 text-cathedral-gold" />
-                    </div>
-                    <h3 className="text-xl font-cinzel font-bold text-foreground mb-1">{v.title}</h3>
+                  <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} transition={{ delay: i * 0.15 }} className="text-center group">
+                    <motion.div 
+                      className="w-16 h-16 rounded-full bg-cathedral-gold/10 border border-cathedral-gold/30 flex items-center justify-center mx-auto mb-4"
+                      whileHover={{ scale: 1.15, rotate: 5, boxShadow: '0 0 30px hsl(43 65% 52% / 0.3)' }}
+                      transition={{ type: 'spring', stiffness: 300 }}
+                    >
+                      <Icon className="w-7 h-7 text-cathedral-gold" />
+                    </motion.div>
+                    <h3 className="text-xl font-cinzel font-bold text-foreground mb-1 group-hover:text-gradient-gold transition-all">{v.title}</h3>
                     <p className="text-xs text-cathedral-gold/70 font-inter mb-3">{v.verse}</p>
                     <p className="text-sm text-muted-foreground font-inter leading-relaxed">{v.description}</p>
                   </motion.div>
