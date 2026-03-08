@@ -328,6 +328,22 @@ const Navigation = () => {
                     )}
                   </Button>
 
+                  {/* Zoom Controls Mobile */}
+                  <div className="flex items-center justify-between px-4">
+                    <span className="text-sm text-muted-foreground">Taille texte</span>
+                    <div className="flex items-center gap-1">
+                      <Button onClick={handleZoomOut} variant="ghost" size="sm" disabled={!canZoomOut}>
+                        <ZoomOut className="w-4 h-4" />
+                      </Button>
+                      <span className="text-xs text-muted-foreground w-8 text-center">
+                        {settings.textSize === 'extra-large' ? 'XL' : settings.textSize === 'large' ? 'L' : settings.textSize === 'small' ? 'S' : 'M'}
+                      </span>
+                      <Button onClick={handleZoomIn} variant="ghost" size="sm" disabled={!canZoomIn}>
+                        <ZoomIn className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+
                   {/* Install button mobile */}
                   <Button
                     onClick={() => {
