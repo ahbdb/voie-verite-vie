@@ -108,9 +108,7 @@ const Index = () => {
       <Navigation />
       <main>
         <HeroSection />
-        <SymbolicAnimations />
         <MissionSection />
-        <PrayerIntentionsSection />
         <ActivitiesSection />
         <CTASection />
       </main>
