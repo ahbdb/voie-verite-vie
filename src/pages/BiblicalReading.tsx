@@ -348,7 +348,7 @@ const BiblicalReading = () => {
                             <div className="flex items-center gap-2">
                               <Calendar className="w-4 h-4 text-primary" />
                               <span className="text-sm font-medium text-primary">
-                                Jour {reading.day_number}
+                                {t('biblicalReading.day')} {reading.day_number}
                               </span>
                             </div>
                             {isCompleted && (
