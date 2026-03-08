@@ -57,13 +57,13 @@ const Install = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-2xl mx-auto">
               {isInstalled ? (
-                <Card className="bg-green-50 border-green-200">
+                <Card className="bg-muted/30 border-border/50">
                   <CardContent className="pt-6">
                     <div className="flex items-center space-x-4">
-                      <CheckCircle className="w-12 h-12 text-green-600" />
+                      <CheckCircle className="w-12 h-12 text-primary" />
                       <div>
-                        <h3 className="text-xl font-semibold text-green-900">{t('install.installed')}</h3>
-                        <p className="text-green-700">{t('install.installedDesc')}</p>
+                        <h3 className="text-xl font-semibold text-foreground">{t('install.installed')}</h3>
+                        <p className="text-muted-foreground">{t('install.installedDesc')}</p>
                       </div>
                     </div>
                   </CardContent>
