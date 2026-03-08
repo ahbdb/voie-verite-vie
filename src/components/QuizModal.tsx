@@ -318,7 +318,7 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
               </Badge>
               <Badge variant="secondary">
                 {currentSection === 'mc' 
-                  ? `QCM (${currentIndex + 1}/${quizData.multipleChoice.length})` 
+                  ? `${t('quiz.mcqLabel')} (${currentIndex + 1}/${quizData.multipleChoice.length})` 
                   : `${t('quiz.openLabel')} (${currentIndex + 1}/${quizData.openEnded.length})`}
               </Badge>
             </div>
