@@ -1,134 +1,257 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { User, BookOpen, Heart, Activity, Mail, LogOut, Clock } from 'lucide-react';
+import { User, BookOpen, Heart, Activity, Mail, LogOut, Clock, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
-
-interface UserProfile { id: string; email: string; full_name: string | null; created_at: string; }
+interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string | null;
+  created_at: string;
+  birth_date: string | null;
+  avatar_url: string | null;
+}
 
 const Profile = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [stats, setStats] = useState({ prayersCount: 0, favoritesCount: 0, readingDays: 0 });
 
+  const [fullName, setFullName] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+
   useEffect(() => {
-    if (!authLoading) {
-      if (!user) { navigate('/'); return; }
-      loadUserData();
+    if (authLoading) return;
+    if (!user) {
+      navigate('/');
+      return;
     }
+    void loadUserData();
   }, [user, authLoading, navigate]);
 
   const loadUserData = async () => {
+    if (!user) return;
+
     try {
       setLoading(true);
-      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user?.id).single();
-      if (profileData) setProfile(profileData);
-      const { count: prayersCount } = await supabase.from('prayer_requests').select('*', { count: 'exact', head: true }).eq('user_id', user?.id);
-      setStats(s => ({ ...s, prayersCount: prayersCount || 0 }));
+
+      const [{ data: profileData }, { count: prayersCount }, { count: readingDays }] = await Promise.all([
+        supabase.from('profiles').select('id, email, full_name, created_at, birth_date, avatar_url').eq('id', user.id).single(),
+        supabase.from('prayer_requests').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('user_reading_progress').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('completed', true),
+      ]);
+
+      if (profileData) {
+        setProfile(profileData);
+        setFullName(profileData.full_name || '');
+        setBirthDate(profileData.birth_date || '');
+      }
+
+      setStats({
+        prayersCount: prayersCount || 0,
+        favoritesCount: 0,
+        readingDays: readingDays || 0,
+      });
     } catch (error) {
       console.error('Error loading user data:', error);
-    } finally { setLoading(false); }
+      toast.error('Impossible de charger le profil');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleLogout = async () => { await supabase.auth.signOut(); navigate('/'); };
+  const handleSaveProfile = async () => {
+    if (!user) return;
+
+    try {
+      setSaving(true);
+
+      const payload = {
+        id: user.id,
+        email: user.email || profile?.email || '',
+        full_name: fullName.trim() || null,
+        birth_date: birthDate || null,
+      };
+
+      const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' });
+      if (error) throw error;
+
+      toast.success('Profil mis à jour');
+      await loadUserData();
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast.error('Échec de sauvegarde du profil');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file || !user) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Veuillez choisir une image');
+      return;
+    }
+
+    try {
+      setUploadingAvatar(true);
+      const ext = file.name.split('.').pop() || 'jpg';
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, file, {
+        upsert: true,
+        cacheControl: '3600',
+      });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(path);
+      const avatarUrl = publicUrlData.publicUrl;
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: avatarUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      setProfile((prev) => (prev ? { ...prev, avatar_url: avatarUrl } : prev));
+      toast.success('Photo de profil mise à jour');
+    } catch (error) {
+      console.error('Avatar upload failed:', error);
+      toast.error('Échec de l’upload de la photo');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
 
   const formatDate = (date: string) => {
     const locale = i18n.language === 'it' ? 'it-IT' : i18n.language === 'en' ? 'en-US' : 'fr-FR';
-    return new Date(date).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
+    return new Date(date).toLocaleDateString(locale, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   };
 
   if (authLoading || loading) {
-    return (<div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-10 w-10 border-2 border-cathedral-gold border-t-transparent"></div></div>);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent" />
+      </div>
+    );
   }
+
   if (!user || !profile) return null;
 
   const statItems = [
-    { icon: Activity, value: stats.prayersCount, label: t('profile.prayerRequests'), color: 'text-cathedral-gold' },
-    { icon: Heart, value: stats.favoritesCount, label: t('profile.savedPrayers'), color: 'text-stained-ruby' },
-    { icon: BookOpen, value: stats.readingDays, label: t('profile.readingDays'), color: 'text-stained-blue' },
+    { icon: Activity, value: stats.prayersCount, label: t('profile.prayerRequests') },
+    { icon: Heart, value: stats.favoritesCount, label: t('profile.savedPrayers') },
+    { icon: BookOpen, value: stats.readingDays, label: t('profile.readingDays') },
   ];
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
+
       <main className="pt-20 pb-16">
-        <div className="container mx-auto px-4 max-w-2xl">
-          {/* Header with glow */}
-          <motion.div initial="hidden" animate="visible" variants={fadeUp} className="flex items-center justify-between mb-8 relative">
-            <motion.div className="absolute -top-8 -left-8 w-32 h-32 rounded-full bg-cathedral-gold/5 blur-3xl" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 5, repeat: Infinity }} />
-            <div className="relative">
-              <h1 className="text-3xl font-cinzel font-bold text-gradient-gold">{t('profile.title')}</h1>
-              <p className="text-sm text-muted-foreground font-inter">{t('profile.subtitle')}</p>
+        <div className="container mx-auto px-4 max-w-3xl space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-cinzel font-bold text-foreground">{t('profile.title')}</h1>
+              <p className="text-sm text-muted-foreground">{t('profile.subtitle')}</p>
             </div>
-            <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 relative">
-              <LogOut className="h-4 w-4" />{t('common.logout')}
+
+            <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2">
+              <LogOut className="h-4 w-4" />
+              {t('common.logout')}
             </Button>
-          </motion.div>
+          </div>
 
-          {/* Profile info - flat */}
-          <motion.div initial="hidden" animate="visible" variants={fadeUp} transition={{ delay: 0.1 }} className="mb-8">
-            <div className="flex items-center gap-4 mb-6">
-              <motion.div 
-                className="w-16 h-16 rounded-full bg-cathedral-gold/10 border border-cathedral-gold/30 flex items-center justify-center animate-glow-pulse"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-              >
-                <User className="w-8 h-8 text-cathedral-gold" />
-              </motion.div>
-              <div>
-                <h2 className="text-xl font-cinzel font-semibold text-foreground">{profile.full_name || t('profile.notProvided')}</h2>
-                <p className="text-sm text-muted-foreground font-inter flex items-center gap-1"><Mail className="w-3 h-3" />{profile.email}</p>
-                <p className="text-xs text-muted-foreground/60 font-inter flex items-center gap-1"><Clock className="w-3 h-3" />{t('profile.memberSince')} {formatDate(profile.created_at || '')}</p>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Informations personnelles</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="flex flex-wrap items-center gap-4">
+                <Avatar className="w-20 h-20 border border-border">
+                  <AvatarImage src={profile.avatar_url || undefined} alt="Avatar" />
+                  <AvatarFallback>
+                    <User className="w-8 h-8 text-muted-foreground" />
+                  </AvatarFallback>
+                </Avatar>
+
+                <div className="space-y-2">
+                  <label className="inline-flex items-center gap-2 text-sm font-medium text-primary cursor-pointer">
+                    <Upload className="w-4 h-4" />
+                    {uploadingAvatar ? 'Upload en cours...' : 'Changer la photo'}
+                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
+                  </label>
+                  <p className="text-xs text-muted-foreground">PNG, JPG, WEBP</p>
+                </div>
               </div>
-            </div>
-            <div className="cathedral-line w-full" />
-          </motion.div>
 
-          {/* Stats - flat row */}
-          <motion.div initial="hidden" animate="visible" variants={fadeUp} transition={{ delay: 0.2 }} className="grid grid-cols-3 gap-6 mb-10">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Nom complet</label>
+                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder={t('profile.notProvided')} />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Date de naissance</label>
+                  <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4 text-sm">
+                <p className="text-muted-foreground flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  {profile.email}
+                </p>
+                <p className="text-muted-foreground flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  {t('profile.memberSince')} {formatDate(profile.created_at || '')}
+                </p>
+              </div>
+
+              <Button onClick={handleSaveProfile} disabled={saving}>
+                {saving ? 'Sauvegarde...' : t('common.save')}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-3 gap-4">
             {statItems.map((s, i) => (
-              <div key={i} className="text-center">
-                <s.icon className={`w-5 h-5 mx-auto mb-2 ${s.color}`} />
-                <p className="text-2xl font-cinzel font-bold text-foreground">{s.value}</p>
-                <p className="text-[10px] text-muted-foreground font-inter uppercase tracking-wider">{s.label}</p>
-              </div>
+              <Card key={i}>
+                <CardContent className="pt-6 text-center">
+                  <s.icon className="w-5 h-5 mx-auto mb-2 text-primary" />
+                  <p className="text-2xl font-cinzel font-bold text-foreground">{s.value}</p>
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{s.label}</p>
+                </CardContent>
+              </Card>
             ))}
-          </motion.div>
-
-          <div className="cathedral-line w-full mb-8" />
-
-          {/* Tabs - flat sections */}
-          <div className="space-y-8">
-            <div>
-              <h3 className="text-lg font-cinzel font-bold text-foreground mb-4 flex items-center gap-2">
-                <Heart className="w-4 h-4 text-cathedral-gold" />{t('profile.savedPrayersTab')}
-              </h3>
-              <p className="text-sm text-muted-foreground/60 font-inter italic">{t('profile.noSavedPrayers')}</p>
-            </div>
-            <div className="cathedral-line w-full" />
-            <div>
-              <h3 className="text-lg font-cinzel font-bold text-foreground mb-4 flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-cathedral-gold" />{t('profile.biblicalReadingTab')}
-              </h3>
-              <p className="text-sm text-muted-foreground/60 font-inter italic">{t('profile.noReadings')}</p>
-            </div>
-            <div className="cathedral-line w-full" />
-            <div>
-              <h3 className="text-lg font-cinzel font-bold text-foreground mb-4 flex items-center gap-2">
-                <Activity className="w-4 h-4 text-cathedral-gold" />{t('profile.recentActivity')}
-              </h3>
-              <p className="text-sm text-muted-foreground/60 font-inter">{t('profile.noActivity')}</p>
-              <p className="text-xs text-muted-foreground/40 font-inter mt-1">{t('profile.startParticipating')}</p>
-            </div>
           </div>
         </div>
       </main>
