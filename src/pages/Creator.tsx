@@ -59,6 +59,9 @@ const Creator = memo(() => {
       youtube: 'https://youtube.com/@voie-verite-vie?si=qD8LmbyREJdQm1Db',
       whatsappChannel: 'https://whatsapp.com/channel/0029VbB0GplLY6d6hkP5930J',
       whatsappGroup: 'https://chat.whatsapp.com/FfvCe9nHwpj5OYoDZBfGER',
+      portfolio: 'https://ahdybau.netlify.app',
+      email: 'ahdybau@gmail.com',
+      whatsapp: '+39 351 434 0349',
     }
   };
 
@@ -324,10 +327,15 @@ const Creator = memo(() => {
             <div className="container mx-auto px-4 max-w-3xl text-center">
               <h2 className="text-2xl font-cinzel font-bold text-foreground mb-3">{t('creator.joinMovement')}</h2>
               <p className="text-sm text-muted-foreground mb-8 font-inter">{t('creator.joinMovementDesc')}</p>
+              <div className="flex flex-wrap gap-3 justify-center mb-6">
+                <Button asChild className="gap-2 bg-cathedral-gold hover:bg-cathedral-gold/90 text-cathedral-navy"><a href={founder.socialLinks.portfolio} target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4" />Portfolio</a></Button>
+                <Button asChild variant="outline" className="gap-2 border-cathedral-gold/30"><a href={`mailto:${founder.socialLinks.email}`}><Mail className="w-4 h-4" />{founder.socialLinks.email}</a></Button>
+                <Button asChild variant="outline" className="gap-2 border-cathedral-gold/30"><a href={`https://wa.me/${founder.socialLinks.whatsapp.replace(/\s/g, '')}`} target="_blank" rel="noopener noreferrer"><Phone className="w-4 h-4" />{founder.socialLinks.whatsapp}</a></Button>
+              </div>
               <div className="flex flex-wrap gap-3 justify-center">
-                <Button asChild className="gap-2 bg-cathedral-gold hover:bg-cathedral-gold/90 text-cathedral-navy"><a href={founder.socialLinks.youtube} target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4" />{t('creator.youtubeChannel')}</a></Button>
-                <Button asChild variant="outline" className="gap-2 border-cathedral-gold/30"><a href={founder.socialLinks.whatsappChannel} target="_blank" rel="noopener noreferrer"><ChevronRight className="w-4 h-4" />{t('creator.whatsappChannel')}</a></Button>
-                <Button asChild variant="outline" className="gap-2 border-cathedral-gold/30"><a href={founder.socialLinks.whatsappGroup} target="_blank" rel="noopener noreferrer"><Users className="w-4 h-4" />{t('creator.whatsappGroup')}</a></Button>
+                <Button asChild variant="outline" size="sm" className="gap-2 border-cathedral-gold/30"><a href={founder.socialLinks.youtube} target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4" />{t('creator.youtubeChannel')}</a></Button>
+                <Button asChild variant="outline" size="sm" className="gap-2 border-cathedral-gold/30"><a href={founder.socialLinks.whatsappChannel} target="_blank" rel="noopener noreferrer"><ChevronRight className="w-4 h-4" />{t('creator.whatsappChannel')}</a></Button>
+                <Button asChild variant="outline" size="sm" className="gap-2 border-cathedral-gold/30"><a href={founder.socialLinks.whatsappGroup} target="_blank" rel="noopener noreferrer"><Users className="w-4 h-4" />{t('creator.whatsappGroup')}</a></Button>
               </div>
             </div>
           </section>
