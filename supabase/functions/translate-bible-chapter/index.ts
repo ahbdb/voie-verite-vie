@@ -30,7 +30,7 @@ const fileNameToUSFM: Record<string, string> = {
   '3-john': '3JN', 'jude': 'JUD', 'revelation': 'REV',
 };
 
-// Deuterocanonical books — not available in ita_riv (Riveduta), need laparola.net for Italian
+// Deuterocanonical books — not in fra_lsg or ita_riv
 const deuterocanonicalFileNames = new Set([
   'tobit', 'judith', '1-maccabees', '2-maccabees', 'wisdom', 'sirach', 'baruch'
 ]);
@@ -44,6 +44,19 @@ const fileNameToItalianCEI: Record<string, string> = {
   'wisdom': 'Sapienza',
   'sirach': 'Siracide',
   'baruch': 'Baruc',
+};
+
+// Map fileName to French name for Crampon-style references
+const fileNameToFrenchName: Record<string, string> = {
+  'tobit': 'Tobie',
+  'judith': 'Judith',
+  '1-maccabees': '1 Maccabées',
+  '2-maccabees': '2 Maccabées',
+  'wisdom': 'Sagesse',
+  'sirach': 'Siracide (Ecclésiastique)',
+  'baruch': 'Baruch',
+  'daniel': 'Daniel',
+  'esther': 'Esther',
 };
 
 /**
@@ -64,22 +77,21 @@ function extractVerseText(content: any[]): string {
 
 /**
  * Fetch chapter from bible.helloao.org API
- * @param translationId - e.g. 'eng_dra' for Douay-Rheims, 'ita_riv' for Riveduta
  */
 async function fetchBibleAPIChapter(
-  translationId: string, 
-  usfmCode: string, 
+  translationId: string,
+  usfmCode: string,
   chapter: number
 ): Promise<{ number: number; text: string }[] | null> {
   try {
     const url = `https://bible.helloao.org/api/${translationId}/${usfmCode}/${chapter}.json`;
     console.log(`Fetching ${translationId}: ${url}`);
-    
-    const resp = await fetch(url, { 
+
+    const resp = await fetch(url, {
       headers: { 'Accept': 'application/json' },
-      signal: AbortSignal.timeout(15000) 
+      signal: AbortSignal.timeout(15000)
     });
-    
+
     if (!resp.ok) {
       console.warn(`API returned ${resp.status} for ${translationId}/${usfmCode}/${chapter}`);
       return null;
@@ -87,7 +99,7 @@ async function fetchBibleAPIChapter(
 
     const data = await resp.json();
     const chapterContent = data?.chapter?.content;
-    
+
     if (!chapterContent || !Array.isArray(chapterContent)) {
       console.warn(`No chapter content for ${translationId}/${usfmCode}/${chapter}`);
       return null;
@@ -120,34 +132,29 @@ async function fetchItalianCEIChapter(
   try {
     const url = `https://www.laparola.net/testo.php?riferimento=${encodeURIComponent(bookName)}+${chapter}&versioni[]=C.E.I.`;
     console.log(`Fetching Italian CEI: ${url}`);
-    
+
     const resp = await fetch(url, {
-      headers: { 
+      headers: {
         'Accept': 'text/html',
         'User-Agent': 'Mozilla/5.0 (compatible; BibleReader/1.0)'
       },
       signal: AbortSignal.timeout(15000)
     });
-    
+
     if (!resp.ok) {
       console.warn(`laparola.net returned ${resp.status}`);
       return null;
     }
-    
+
     const html = await resp.text();
-    
-    // Parse verses from HTML: pattern is <b>number</b> text
     const verses: { number: number; text: string }[] = [];
-    
-    // Match verse patterns: **number** text (the HTML has <b>number</b> followed by text)
-    // The structure is: <b>1</b> verse text <b>2</b> verse text...
     const verseRegex = /<b>(\d+)<\/b>\s*([\s\S]*?)(?=<b>\d+<\/b>|<\/p>|<br\s*\/?>.*?<b>\d|$)/gi;
     let match;
-    
+
     while ((match = verseRegex.exec(html)) !== null) {
       const num = parseInt(match[1]);
       let text = match[2]
-        .replace(/<[^>]+>/g, '') // strip HTML tags
+        .replace(/<[^>]+>/g, '')
         .replace(/&[a-z]+;/gi, (entity: string) => {
           const map: Record<string, string> = {
             '&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>',
@@ -158,23 +165,92 @@ async function fetchItalianCEIChapter(
         })
         .replace(/\s+/g, ' ')
         .trim();
-      
+
       if (num > 0 && text) {
         verses.push({ number: num, text });
       }
     }
-    
+
     if (verses.length > 0) {
       console.log(`✅ Parsed ${verses.length} Italian CEI verses for ${bookName} ${chapter}`);
       return verses;
     }
-    
-    console.warn(`No verses parsed from laparola.net for ${bookName} ${chapter}`);
     return null;
   } catch (err) {
     console.error(`Error fetching Italian CEI for ${bookName} ${chapter}:`, err);
     return null;
   }
+}
+
+/**
+ * Use AI to fill in specific missing French verses (only for deuterocanonical books)
+ */
+async function fillMissingVersesWithAI(
+  emptyVerseNumbers: number[],
+  bookName: string,
+  chapterNumber: number,
+  existingVerses: any[]
+): Promise<{ number: number; text: string }[]> {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) {
+    throw new Error("LOVABLE_API_KEY is not configured");
+  }
+
+  // Build context from surrounding verses
+  const contextVerses = existingVerses
+    .filter((v: any) => v.text && v.text.trim())
+    .map((v: any) => `[${v.number}] ${v.text}`)
+    .join('\n');
+
+  const missingList = emptyVerseNumbers.join(', ');
+
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        {
+          role: "system",
+          content: `Tu es un spécialiste de la Bible catholique en français (traduction Crampon). On te donne un chapitre avec des versets manquants. Tu dois fournir UNIQUEMENT les versets manquants dans le style de la Bible Crampon.
+
+RÈGLES CRITIQUES:
+- Fournis UNIQUEMENT les versets dont les numéros sont demandés
+- Utilise le style de la traduction Crampon (français classique, révérent)
+- Retourne un tableau JSON: [{"number": N, "text": "texte du verset"}]
+- Aucun commentaire, juste le JSON`
+        },
+        {
+          role: "user",
+          content: `Livre: ${bookName}, Chapitre ${chapterNumber}
+Versets manquants à fournir: ${missingList}
+
+Contexte (versets existants du même chapitre):
+${contextVerses}
+
+Retourne les versets manquants en JSON:`
+        }
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`AI error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error("No AI content");
+
+  let jsonStr = content.trim();
+  if (jsonStr.startsWith("```json")) jsonStr = jsonStr.slice(7);
+  if (jsonStr.startsWith("```")) jsonStr = jsonStr.slice(3);
+  if (jsonStr.endsWith("```")) jsonStr = jsonStr.slice(0, -3);
+
+  return JSON.parse(jsonStr.trim());
 }
 
 serve(async (req) => {
@@ -183,8 +259,70 @@ serve(async (req) => {
   }
 
   try {
-    const { verses, bookName, chapterNumber, targetLang, bookFileName } = await req.json();
-    
+    const { verses, bookName, chapterNumber, targetLang, bookFileName, patchEmptyVerses } = await req.json();
+
+    // === MODE: Patch empty French verses ===
+    if (patchEmptyVerses && bookFileName && verses) {
+      const emptyVerseNumbers: number[] = verses
+        .filter((v: any) => !v.text || v.text.trim() === '')
+        .map((v: any) => v.number || v.verse);
+
+      if (emptyVerseNumbers.length === 0) {
+        return new Response(JSON.stringify({ verses, source: 'original', patched: 0 }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      console.log(`🔧 Patching ${emptyVerseNumbers.length} empty French verses in ${bookFileName} ch.${chapterNumber}`);
+
+      const isDeuterocanonical = deuterocanonicalFileNames.has(bookFileName);
+      const usfmCode = fileNameToUSFM[bookFileName];
+      let patchedVerses: { number: number; text: string }[] = [];
+
+      // Try Louis Segond (fra_lsg) for canonical books
+      if (!isDeuterocanonical && usfmCode) {
+        const lsgChapter = await fetchBibleAPIChapter('fra_lsg', usfmCode, chapterNumber);
+        if (lsgChapter) {
+          patchedVerses = lsgChapter.filter(v => emptyVerseNumbers.includes(v.number));
+          console.log(`📖 Found ${patchedVerses.length}/${emptyVerseNumbers.length} verses from Louis Segond`);
+        }
+      }
+
+      // For remaining empty verses (deuterocanonical or not found in LSG), use AI
+      const foundNumbers = new Set(patchedVerses.map(v => v.number));
+      const stillMissing = emptyVerseNumbers.filter(n => !foundNumbers.has(n));
+
+      if (stillMissing.length > 0) {
+        try {
+          const frenchName = fileNameToFrenchName[bookFileName] || bookName;
+          const aiVerses = await fillMissingVersesWithAI(stillMissing, frenchName, chapterNumber, verses);
+          patchedVerses = [...patchedVerses, ...aiVerses];
+          console.log(`🤖 AI filled ${aiVerses.length} remaining verses`);
+        } catch (aiErr) {
+          console.error('AI patching failed:', aiErr);
+        }
+      }
+
+      // Merge patched verses back into original
+      const patchMap = new Map(patchedVerses.map(v => [v.number, v.text]));
+      const mergedVerses = verses.map((v: any) => {
+        const num = v.number || v.verse;
+        if ((!v.text || v.text.trim() === '') && patchMap.has(num)) {
+          return { ...v, text: patchMap.get(num) };
+        }
+        return v;
+      });
+
+      const patchedCount = patchedVerses.length;
+      console.log(`✅ Patched ${patchedCount}/${emptyVerseNumbers.length} empty verses in ${bookFileName} ch.${chapterNumber}`);
+
+      return new Response(JSON.stringify({ verses: mergedVerses, source: 'patched', patched: patchedCount }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // === MODE: Translation (English / Italian) ===
+
     // No translation needed for French
     if (!verses || !targetLang || targetLang === 'fr') {
       return new Response(JSON.stringify({ verses, source: 'original' }), {
@@ -207,10 +345,9 @@ serve(async (req) => {
       console.warn(`⚠️ Douay-Rheims failed for ${usfmCode}/${chapterNumber}`);
     }
 
-    // === ITALIAN: Riveduta (ita_riv) for canonical books, CEI via laparola.net for deuterocanonical ===
+    // === ITALIAN: Riveduta (ita_riv) for canonical, CEI via laparola.net for deuterocanonical ===
     if (targetLang === 'it') {
       if (isDeuterocanonical && bookFileName) {
-        // Deuterocanonical: fetch from laparola.net CEI
         const italianName = fileNameToItalianCEI[bookFileName];
         if (italianName) {
           const ceiVerses = await fetchItalianCEIChapter(italianName, chapterNumber);
@@ -221,9 +358,8 @@ serve(async (req) => {
             });
           }
         }
-        console.warn(`⚠️ Italian CEI failed for deuterocanonical ${bookFileName}`);
+        console.warn(`⚠️ Italian CEI failed for ${bookFileName}`);
       } else if (usfmCode) {
-        // Canonical: fetch from Riveduta
         const rivVerses = await fetchBibleAPIChapter('ita_riv', usfmCode, chapterNumber);
         if (rivVerses && rivVerses.length > 0) {
           console.log(`✅ Served Italian Riveduta for ${bookFileName} ch.${chapterNumber} (${rivVerses.length} verses)`);
@@ -236,13 +372,13 @@ serve(async (req) => {
     }
 
     // === FALLBACK: return original French verses ===
-    console.warn(`⚠️ No source found for ${bookFileName} ch.${chapterNumber} in ${targetLang}, returning French`);
+    console.warn(`⚠️ No source found for ${bookFileName} ch.${chapterNumber} in ${targetLang}`);
     return new Response(JSON.stringify({ verses, source: 'fallback-french' }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
   } catch (error: unknown) {
-    console.error("Translation error:", error);
+    console.error("Error:", error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
