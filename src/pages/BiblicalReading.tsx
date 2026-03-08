@@ -271,8 +271,8 @@ const BiblicalReading = () => {
         <section className="py-6 md:py-10 bg-gradient-subtle">
           <div className="container mx-auto px-4">
             <div className="text-center max-w-4xl mx-auto">
-              <h1 className="text-2xl md:text-5xl font-playfair font-bold text-primary mb-3">Programme de Lecture Biblique</h1>
-              <p className="text-base md:text-lg text-muted-foreground">Parcourez les 73 livres de la Bible catholique en 354 jours</p>
+              <h1 className="text-2xl md:text-5xl font-playfair font-bold text-primary mb-3">{t('biblicalReading.title')}</h1>
+              <p className="text-base md:text-lg text-muted-foreground">{t('biblicalReading.subtitle')}</p>
             </div>
           </div>
         </section>
