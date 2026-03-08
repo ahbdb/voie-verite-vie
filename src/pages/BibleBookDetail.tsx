@@ -148,11 +148,11 @@ const BibleBookDetail = () => {
                     <CardContent className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">{t('bibleBook.fullName')}:</span>
-                        <span className="font-semibold">{book.name}</span>
+                        <span className="font-semibold">{localizedName}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">{t('bibleBook.abbreviation')}:</span>
-                        <span className="font-semibold">{book.abbreviation}</span>
+                        <span className="font-semibold">{localizedAbbr}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">{t('bibleBook.chaptersCount')}:</span>
