@@ -337,7 +337,7 @@ const PrayerForum = () => {
                   <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-3">
                       <Input
-                        placeholder="Titre de votre intention"
+                        placeholder={t('prayer.intentionTitle')}
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         maxLength={100}
