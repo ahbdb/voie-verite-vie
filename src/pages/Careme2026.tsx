@@ -506,7 +506,7 @@ const Careme2026 = memo(() => {
                   </div>
                   <div className="flex justify-between py-2 border-b border-slate-100">
                     <span className="text-gray-600">18:00</span>
-                    <span className="font-medium">Rupture / Prière</span>
+                    <span className="font-medium">{t('careme.breakPrayer')}</span>
                   </div>
                   <div className="flex justify-between py-2">
                     <span className="text-gray-600">Soir</span>
