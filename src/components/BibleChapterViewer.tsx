@@ -27,7 +27,6 @@ export const BibleChapterViewer = ({
   const { t, i18n } = useTranslation();
   const [verses, setVerses] = useState<BibleVerse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [translating, setTranslating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -41,9 +40,8 @@ export const BibleChapterViewer = ({
         setLoading(true);
         setError(null);
 
-        // Load French verses first
+        // Load French verses from local data
         let chapterVerses = await loadBibleChapterCached(bookId, chapterNumber);
-
         if (!chapterVerses) {
           clearBibleCache();
           chapterVerses = await loadBibleChapterCached(bookId, chapterNumber);
@@ -54,111 +52,83 @@ export const BibleChapterViewer = ({
         if (!chapterVerses) {
           setError(t('bibleChapter.chapterNotAvailable', { chapter: chapterNumber, book: bookName }));
           setVerses([]);
+          setLoading(false);
           return;
         }
 
-        // Check for empty verses in French content and patch them
-        const hasEmptyVerses = chapterVerses.some((v: any) => !v.text || v.text.trim() === '');
-        
-        if (lang === 'fr' && hasEmptyVerses) {
-          // Check cache for patched version
-          const patchCacheKey = `bible_patched_fr_${bookId}_${chapterNumber}`;
-          const cachedPatched = localStorage.getItem(patchCacheKey);
-          if (cachedPatched) {
+        // === FRENCH: Show instantly, patch empty verses silently ===
+        if (lang === 'fr') {
+          // Check patch cache first
+          const patchKey = `bible_patched_fr_${bookId}_${chapterNumber}`;
+          const cached = localStorage.getItem(patchKey);
+          if (cached) {
             try {
-              const parsed = JSON.parse(cachedPatched);
-              if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+              const parsed = JSON.parse(cached);
+              if (parsed?.length > 0) {
                 setVerses(parsed);
+                setLoading(false);
                 return;
               }
             } catch { /* ignore */ }
           }
 
-          // Patch empty verses via edge function
-          setTranslating(true);
-          try {
-            const { data, error: fnError } = await supabase.functions.invoke('translate-bible-chapter', {
-              body: {
-                verses: chapterVerses,
-                bookName,
-                chapterNumber,
-                bookFileName: bookId,
-                patchEmptyVerses: true
-              }
-            });
+          // Show non-empty verses IMMEDIATELY
+          const nonEmpty = chapterVerses.filter((v: any) => v.text && v.text.trim());
+          setVerses(nonEmpty);
+          setLoading(false);
 
-            if (!isMounted) return;
-
-            if (!fnError && data?.verses && Array.isArray(data.verses)) {
-              setVerses(data.verses);
-              if (data.patched > 0) {
-                localStorage.setItem(patchCacheKey, JSON.stringify(data.verses));
+          // Patch empty verses silently in background
+          const hasEmpty = chapterVerses.some((v: any) => !v.text || v.text.trim() === '');
+          if (hasEmpty) {
+            supabase.functions.invoke('translate-bible-chapter', {
+              body: { verses: chapterVerses, bookName, chapterNumber, bookFileName: bookId, patchEmptyVerses: true }
+            }).then(({ data }) => {
+              if (isMounted && data?.verses?.length > 0) {
+                const patched = data.verses.filter((v: any) => v.text && v.text.trim());
+                setVerses(patched);
+                if (data.patched > 0) {
+                  localStorage.setItem(patchKey, JSON.stringify(patched));
+                }
               }
-            } else {
-              // Show what we have (with empty gaps)
-              setVerses(chapterVerses);
-            }
-          } catch {
-            if (isMounted) setVerses(chapterVerses);
-          } finally {
-            if (isMounted) setTranslating(false);
+            }).catch(() => {});
           }
           return;
         }
 
-        // If language is French and no empty verses, use directly
-        if (lang === 'fr') {
-          setVerses(chapterVerses);
-          return;
-        }
-
-        // Check localStorage cache for translation
+        // === ENGLISH / ITALIAN: Check cache first, show instantly if available ===
         const cacheKey = `bible_${lang}_${bookId}_${chapterNumber}`;
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
           try {
             const parsed = JSON.parse(cached);
-            if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+            if (parsed?.length > 0) {
               setVerses(parsed);
+              setLoading(false);
               return;
             }
           } catch { /* ignore */ }
         }
 
-        // Don't show French text — keep loading state while translating
-        setTranslating(true);
+        // Fetch from API — show loading briefly
+        setLoading(false); // Don't show loading, just empty then fill
+        
+        const { data, error: fnError } = await supabase.functions.invoke('translate-bible-chapter', {
+          body: { verses: chapterVerses, bookName, chapterNumber, targetLang: lang, bookFileName: bookId }
+        });
 
-        try {
-          const { data, error: fnError } = await supabase.functions.invoke('translate-bible-chapter', {
-            body: {
-              verses: chapterVerses,
-              bookName,
-              chapterNumber,
-              targetLang: lang,
-              bookFileName: bookId
-            }
-          });
+        if (!isMounted) return;
 
-          if (!isMounted) return;
-
-          if (!fnError && data?.verses && Array.isArray(data.verses) && data.verses.length > 0) {
-            setVerses(data.verses);
-            localStorage.setItem(cacheKey, JSON.stringify(data.verses));
-          } else {
-            console.warn('Translation failed, showing French as fallback');
-            setVerses(chapterVerses);
-          }
-        } catch (translateErr) {
-          console.warn('Translation failed, showing French fallback:', translateErr);
-          if (isMounted) setVerses(chapterVerses);
-        } finally {
-          if (isMounted) setTranslating(false);
+        if (!fnError && data?.verses?.length > 0) {
+          setVerses(data.verses);
+          localStorage.setItem(cacheKey, JSON.stringify(data.verses));
+        } else {
+          // Show French as fallback (non-empty only)
+          setVerses(chapterVerses.filter((v: any) => v.text && v.text.trim()));
         }
 
       } catch (err) {
         if (isMounted) {
           setError(t('bibleChapter.loadError', { error: String(err) }));
-          console.error(err);
         }
       } finally {
         if (isMounted) setLoading(false);
@@ -177,15 +147,12 @@ export const BibleChapterViewer = ({
   const shareVerse = useCallback((verseNumber: number) => {
     const reference = `${abbreviation} ${chapterNumber}:${verseNumber}`;
     const text = verses.find((v) => Number(v.number) === Number(verseNumber))?.text || '';
-
     if (navigator.share) {
-      navigator.share({
-        title: `${bookName} ${chapterNumber}:${verseNumber}`,
-        text: `${reference}\n\n${text}`,
-      }).catch(() => {
-        navigator.clipboard.writeText(`${reference}\n\n${text}`);
-        toast({ title: t('bibleChapter.copied'), description: t('bibleChapter.refCopied', { ref: reference }) });
-      });
+      navigator.share({ title: `${bookName} ${chapterNumber}:${verseNumber}`, text: `${reference}\n\n${text}` })
+        .catch(() => {
+          navigator.clipboard.writeText(`${reference}\n\n${text}`);
+          toast({ title: t('bibleChapter.copied'), description: t('bibleChapter.refCopied', { ref: reference }) });
+        });
     } else {
       navigator.clipboard.writeText(`${reference}\n\n${text}`);
       toast({ title: t('bibleChapter.copied'), description: t('bibleChapter.refCopied', { ref: reference }) });
@@ -197,7 +164,6 @@ export const BibleChapterViewer = ({
     const text = verses.find((v) => Number(v.number) === Number(verseNumber))?.text || '';
     const savedVerses = JSON.parse(localStorage.getItem('saved_verses') || '[]');
     const verseData = { reference, text, bookName, savedAt: new Date().toISOString() };
-    
     const isAlreadySaved = savedVerses.some((v: any) => v.reference === reference);
     if (!isAlreadySaved) {
       savedVerses.push(verseData);
@@ -207,28 +173,6 @@ export const BibleChapterViewer = ({
       toast({ title: t('bibleChapter.alreadySaved'), description: t('bibleChapter.alreadySavedDesc', { ref: reference }) });
     }
   }, [abbreviation, chapterNumber, verses, bookName, toast, t]);
-
-  if (loading || (translating && verses.length === 0)) {
-    const loadingMsg = translating 
-      ? (lang === 'it' ? 'Caricamento della Bibbia in italiano...' : lang === 'en' ? 'Loading Bible in English...' : t('bibleChapter.loading'))
-      : t('bibleChapter.loading', { defaultValue: 'Chargement...' });
-    return (
-      <Card className="w-full bg-card/50 backdrop-blur-sm border-primary/20">
-        <CardHeader className="space-y-0 pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl">{bookName} {chapterNumber}</CardTitle>
-            <Button variant="ghost" size="sm" onClick={onBack} title={t('bibleChapter.back')}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center py-12 gap-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-          <p className="text-sm text-muted-foreground animate-pulse">{loadingMsg}</p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   if (error) {
     return (
@@ -242,7 +186,7 @@ export const BibleChapterViewer = ({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 text-yellow-700 dark:text-yellow-400">
+          <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 text-destructive">
             {error}
           </div>
           <Button variant="outline" onClick={() => window.location.reload()}>{t('bibleChapter.retry')}</Button>
@@ -282,7 +226,7 @@ export const BibleChapterViewer = ({
                           <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-muted-foreground hover:text-primary transition-colors inline-flex" onClick={() => shareVerse(verse.number)} title={t('bibleChapter.shareVerse')}>
                             <Share2 className="w-3 h-3" />
                           </Button>
-                          <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-muted-foreground hover:text-rose-500 transition-colors inline-flex" onClick={() => saveVerse(verse.number)} title={t('bibleChapter.saveVerse')}>
+                          <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive transition-colors inline-flex" onClick={() => saveVerse(verse.number)} title={t('bibleChapter.saveVerse')}>
                             <Heart className="w-3 h-3" />
                           </Button>
                         </span>
@@ -295,7 +239,7 @@ export const BibleChapterViewer = ({
           </ScrollArea>
         )}
 
-        {verses.length === 0 && !error && (
+        {verses.length === 0 && !loading && !error && (
           <div className="text-center py-8 text-muted-foreground">
             <p>{t('bibleChapter.noVerses')}</p>
           </div>
