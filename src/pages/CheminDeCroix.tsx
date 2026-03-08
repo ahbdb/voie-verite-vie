@@ -133,7 +133,7 @@ const CheminDeCroix = memo(() => {
         const { data, error } = await supabase.from('page_content').select('*').eq('page_key', 'chemin-de-croix').single();
         if (error) { console.warn('⚠️ [CheminDeCroix] Error loading content:', error.message); return; }
         const content = data.content as { stations?: Station[] } | null;
-        if (content) setContentData(mergeCheminContent(content));
+        if (content) setContentData(mergeCheminContent(content, cheminDeCroixData));
       } catch (err) { console.error('❌ [CheminDeCroix] Failed to load content:', err); }
     };
     void loadContent();
