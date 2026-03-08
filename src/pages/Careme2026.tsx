@@ -623,7 +623,7 @@ const Careme2026 = memo(() => {
               <div className="rounded-lg border-2 border-violet-200 p-4 bg-gradient-to-br from-violet-50 to-violet-100/30 dark:bg-gradient-to-br dark:from-violet-950 dark:to-violet-900/30 dark:border-violet-700 dark:text-slate-100">
                 <div className="flex items-center gap-2 mb-2">
                   <BookOpen className="w-5 h-5 text-violet-600" />
-                  <h3 className="font-semibold text-sm text-violet-700">🪞 Soi</h3>
+                  <h3 className="font-semibold text-sm text-violet-700">🪞 {t('careme.self')}</h3>
                 </div>
                 <p className="text-sm text-gray-700">{selectedDay?.actions?.soi}</p>
               </div>
