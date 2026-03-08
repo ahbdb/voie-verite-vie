@@ -27,6 +27,7 @@ export const BibleChapterViewer = ({
   const { t, i18n } = useTranslation();
   const [verses, setVerses] = useState<BibleVerse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -37,7 +38,8 @@ export const BibleChapterViewer = ({
 
     const loadChapter = async () => {
       try {
-        setLoading(true);
+      setLoading(true);
+        setInitialLoadDone(false);
         setError(null);
 
         // Load French verses from local data
@@ -131,7 +133,10 @@ export const BibleChapterViewer = ({
           setError(t('bibleChapter.loadError', { error: String(err) }));
         }
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+          setInitialLoadDone(true);
+        }
       }
     };
 
@@ -239,7 +244,7 @@ export const BibleChapterViewer = ({
           </ScrollArea>
         )}
 
-        {verses.length === 0 && !loading && !error && (
+        {verses.length === 0 && initialLoadDone && !error && (
           <div className="text-center py-8 text-muted-foreground">
             <p>{t('bibleChapter.noVerses')}</p>
           </div>
