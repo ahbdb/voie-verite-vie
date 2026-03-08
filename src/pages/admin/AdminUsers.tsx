@@ -167,11 +167,11 @@ const AdminUsers = () => {
       }
 
       console.log('✅ Rôle mis à jour');
-      toast.success('Rôle mis à jour');
+      toast.success(t('admin.usersPage.roleUpdated'));
       loadData();
     } catch (error) {
       console.error('❌ Exception:', error);
-      toast.error('Erreur lors de la mise à jour');
+      toast.error(t('admin.usersPage.roleUpdateError'));
     }
   };
 
