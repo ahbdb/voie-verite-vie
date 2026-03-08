@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { X, Image as ImageIcon, ChevronLeft, ChevronRight, Grid } from 'lucide-react';
