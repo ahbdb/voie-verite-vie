@@ -170,7 +170,7 @@ const Careme2026 = memo(() => {
       const todayDayNum = today.getDate();
       await notifyCareme(todayDayNum, `Jour complété! 🙏`);
     } catch (err) {
-      toast({ title: 'Erreur', description: 'Impossible de sauvegarder', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('careme.saveError'), variant: 'destructive' });
     }
   };
 
