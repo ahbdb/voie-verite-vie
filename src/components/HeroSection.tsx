@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Users } from 'lucide-react';
@@ -22,7 +22,6 @@ const biblicalVerses = [
 
 const HeroSection = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [currentVerse, setCurrentVerse] = useState(0);
 
   const userName = useMemo(() => {
@@ -49,8 +48,7 @@ const HeroSection = () => {
           animate={{ scale: 1 }}
           transition={{ duration: 12, ease: 'easeOut' }}
         />
-        {/* Dark overlay for contrast */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/45 to-black/75" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
       </div>
 
       {/* Content */}
@@ -68,7 +66,7 @@ const HeroSection = () => {
         {/* Greeting for logged-in users */}
         {user && (
           <motion.p
-            className="text-white/70 text-sm tracking-widest uppercase mb-3"
+            className="text-[#ffffffb3] text-sm tracking-widest uppercase mb-3"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
@@ -97,7 +95,7 @@ const HeroSection = () => {
 
         {/* Subtitle */}
         <motion.p
-          className="text-white/80 text-sm sm:text-base mb-6 max-w-md leading-relaxed"
+          className="text-[#ffffffcc] text-sm sm:text-base mb-6 max-w-md leading-relaxed"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
@@ -110,7 +108,7 @@ const HeroSection = () => {
           <AnimatePresence mode="wait">
             <motion.p
               key={currentVerse}
-              className="text-white/85 text-sm md:text-base font-playfair italic max-w-lg"
+              className="text-[#ffffffd9] text-sm md:text-base font-playfair italic max-w-lg"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
@@ -124,7 +122,7 @@ const HeroSection = () => {
           </AnimatePresence>
         </div>
 
-        {/* CTA Buttons */}
+        {/* CTA Buttons — using Link for reliable navigation */}
         <motion.div
           className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full"
           initial={{ opacity: 0, y: 15 }}
@@ -133,20 +131,24 @@ const HeroSection = () => {
         >
           <Button
             size="lg"
-            className="w-full sm:w-auto px-8 py-5 bg-white text-black font-semibold hover:bg-white/90 shadow-xl rounded-full"
-            onClick={() => navigate('/auth')}
+            asChild
+            className="w-full sm:w-auto px-8 py-5 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-xl rounded-full"
           >
-            <Users className="mr-2 w-5 h-5" />
-            Rejoignez-nous
+            <Link to="/auth">
+              <Users className="mr-2 w-5 h-5" />
+              Rejoignez-nous
+            </Link>
           </Button>
           <Button
             variant="outline"
             size="lg"
-            className="w-full sm:w-auto px-8 py-5 border-white/50 text-white hover:bg-white/15 backdrop-blur-sm rounded-full"
-            onClick={() => navigate('/about')}
+            asChild
+            className="w-full sm:w-auto px-8 py-5 border-white/50 text-white bg-white/10 hover:bg-white/20 rounded-full"
           >
-            En savoir plus
-            <ArrowRight className="ml-2 w-4 h-4" />
+            <Link to="/about">
+              En savoir plus
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Link>
           </Button>
         </motion.div>
       </div>

@@ -108,10 +108,10 @@ const CTASection = () => {
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Button
             size="default"
-            className="bg-white text-black font-semibold hover:bg-white/90 shadow-lg rounded-full"
-            onClick={() => navigate('/auth')}
+            asChild
+            className="bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-lg rounded-full"
           >
-            Créer un compte
+            <Link to="/auth">Créer un compte</Link>
           </Button>
           <Button size="default" className="bg-green-600 hover:bg-green-700 text-white rounded-full" asChild>
             <a href="https://chat.whatsapp.com/FfvCe9nHwpj5OYoDZBfGER" target="_blank" rel="noopener noreferrer">
