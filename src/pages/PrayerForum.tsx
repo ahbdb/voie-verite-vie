@@ -36,6 +36,7 @@ interface PrayerResponse {
 }
 
 const PrayerForum = () => {
+  const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
