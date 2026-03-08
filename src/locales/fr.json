@@ -694,6 +694,7 @@
     "chaptersLabel": "chapitres",
     "generating": "Génération du quiz en cours...",
     "brandMessage": "VOIE, VÉRITÉ, VIE vous propose 20 questions (15 QCM + 5 ouvertes)",
+    "mcqLabel": "QCM",
     "generateError": "Impossible de générer le quiz. Veuillez réessayer.",
     "question": "Question",
     "openLabel": "Ouverte",
