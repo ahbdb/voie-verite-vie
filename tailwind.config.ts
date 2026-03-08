@@ -23,12 +23,29 @@ export default {
 				'cinzel': ['Cinzel', 'Playfair Display', 'serif'],
 				'inter': ['Inter', 'sans-serif'],
 			},
-			colors: {
+		colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
+				
+				/* Cathédrale */
+				cathedral: {
+					navy: 'hsl(var(--cathedral-navy))',
+					'navy-light': 'hsl(var(--cathedral-navy-light))',
+					gold: 'hsl(var(--cathedral-gold))',
+					'gold-light': 'hsl(var(--cathedral-gold-light))',
+					'gold-dark': 'hsl(var(--cathedral-gold-dark, 43 70% 38%))',
+					burgundy: 'hsl(var(--cathedral-burgundy, 350 55% 35%))',
+					'burgundy-light': 'hsl(var(--cathedral-burgundy-light, 350 45% 55%))',
+				},
+				stained: {
+					blue: 'hsl(var(--stained-blue, 220 75% 55%))',
+					ruby: 'hsl(var(--stained-ruby, 350 65% 45%))',
+					emerald: 'hsl(var(--stained-emerald, 155 55% 38%))',
+					amber: 'hsl(var(--stained-amber, 38 85% 55%))',
+				},
 				
 				/* Couleurs spirituelles */
 				'sky-blue': {
@@ -55,7 +72,7 @@ export default {
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))',
-					light: 'hsl(var(--secondary-light))'
+					light: 'hsl(var(--secondary-light, 220 40% 40%))'
 				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
@@ -68,7 +85,7 @@ export default {
 				accent: {
 					DEFAULT: 'hsl(var(--accent))',
 					foreground: 'hsl(var(--accent-foreground))',
-					light: 'hsl(var(--accent-light))'
+					light: 'hsl(var(--accent-light, 350 40% 65%))'
 				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
@@ -77,7 +94,7 @@ export default {
 				card: {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))',
-					soft: 'hsl(var(--card-soft))'
+					soft: 'hsl(var(--card-soft, 40 20% 98%))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
