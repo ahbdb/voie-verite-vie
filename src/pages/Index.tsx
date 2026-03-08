@@ -5,8 +5,6 @@ import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import HeroSection from '@/components/HeroSection';
 import MissionSection from '@/components/MissionSection';
-import SymbolicAnimations from '@/components/SymbolicAnimations';
-import PrayerIntentionsSection from '@/components/PrayerIntentionsSection';
 import { ActivitiesSection, CTASection } from '@/components/HomeSections';
 import PostSignupCommunityModal from '@/components/PostSignupCommunityModal';
 import { supabase } from '@/integrations/supabase/client';

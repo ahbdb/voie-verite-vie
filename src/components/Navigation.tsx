@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { 
-  Menu, 
-  Cross, 
-  BookOpen, 
-  Calendar, 
-  Mail, 
+import {
+  Menu,
+  Cross,
+  BookOpen,
+  Calendar,
+  Mail,
   Camera,
   HelpCircle,
   User,
@@ -22,7 +22,7 @@ import {
   Sun,
   Moon,
   ZoomIn,
-  ZoomOut
+  ZoomOut,
 } from 'lucide-react';
 
 const ICONS: Record<string, any> = {
@@ -38,6 +38,7 @@ const ICONS: Record<string, any> = {
   Bot,
   Settings,
 };
+
 import { useAuth } from '@/hooks/useAuth';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useSettings, type TextSize } from '@/hooks/useSettings';
@@ -45,7 +46,6 @@ import siteLinks from '@/data/site-links';
 import { useToast } from '@/components/ui/use-toast';
 import { NotificationBell } from './NotificationBell';
 import LanguageSelector from './LanguageSelector';
-import logo3v from '@/assets/logo-3v.png';
 import AnimatedLogo from './AnimatedLogo';
 
 interface BeforeInstallPromptEvent extends Event {
