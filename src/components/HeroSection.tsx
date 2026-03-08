@@ -17,13 +17,21 @@ function getTimeGreeting() {
   return 'Bonsoir';
 }
 
-const prayers = [
-  "Seigneur, guide mes pas sur ton chemin de lumière.",
-  "Accorde-moi la sagesse de comprendre ta Parole.",
-  "Que ton Esprit Saint m'accompagne en ce jour.",
-  "Ouvre mon cœur à ta vérité, Seigneur.",
-  "Bénis cette journée et ceux que j'aime.",
-];
+/** Generates a personalized prayer using the user's first name */
+function getPersonalPrayer(fullName: string | null): string {
+  const firstName = fullName?.split(' ')[0] || '';
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+  const prayers = [
+    `Seigneur, bénis ${firstName || 'ton enfant'} en ce jour. Accorde-lui ta paix, éclaire son chemin et remplis son cœur de ta joie. Amen.`,
+    `Père céleste, veille sur ${firstName || 'ton enfant'}. Donne-lui la force d'affronter cette journée et la sagesse de suivre ta volonté. Amen.`,
+    `Esprit Saint, accompagne ${firstName || 'ton enfant'} à chaque instant. Que ta lumière dissipe ses doutes et que ton amour le/la fortifie. Amen.`,
+    `Seigneur Jésus, prends ${firstName || 'ton enfant'} par la main aujourd'hui. Que chaque pas soit guidé par ta grâce et chaque parole inspirée par ton Esprit. Amen.`,
+    `Dieu d'amour, entoure ${firstName || 'ton enfant'} de ta protection. Que cette journée soit remplie de bénédictions et de moments de grâce. Amen.`,
+    `Marie, Mère de Dieu, intercède pour ${firstName || 'ton enfant'}. Couvre-le/la de ton manteau maternel et conduis-le/la vers ton Fils. Amen.`,
+    `Seigneur, que ${firstName || 'ton enfant'} ressente ta présence aujourd'hui. Fortifie sa foi, ravive son espérance et embrase son cœur d'amour. Amen.`,
+  ];
+  return prayers[dayOfYear % prayers.length];
+}
 
 // Fallback verses if today's reading can't be loaded
 const fallbackVerses = [
