@@ -639,7 +639,7 @@ const Careme2026 = memo(() => {
               <div className="rounded-lg border-2 border-amber-200 p-4 bg-gradient-to-br from-amber-50 to-amber-100/30 dark:bg-gradient-to-br dark:from-amber-950 dark:to-amber-900/30 dark:border-amber-700 dark:text-slate-100">
                 <div className="flex items-center gap-2 mb-2">
                   <Heart className="w-5 h-5 text-amber-600" />
-                  <h3 className="font-semibold text-sm text-amber-700">🙏 Dieu</h3>
+                  <h3 className="font-semibold text-sm text-amber-700">🙏 {t('careme.god')}</h3>
                 </div>
                 <p className="text-sm text-gray-700">{selectedDay?.actions?.dieu}</p>
               </div>
