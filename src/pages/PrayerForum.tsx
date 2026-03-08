@@ -440,7 +440,7 @@ const PrayerForum = () => {
                         <Card>
                           <CardContent className="py-8 text-center text-muted-foreground">
                             <TrendingUp className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                            <p>Aucune intention populaire.</p>
+                            <p>{t('prayer.noPopular')}</p>
                           </CardContent>
                         </Card>
                       ) : (
