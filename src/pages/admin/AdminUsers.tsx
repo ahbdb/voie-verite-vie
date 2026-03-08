@@ -340,9 +340,9 @@ const AdminUsers = () => {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="user">Utilisateur</SelectItem>
-                                <SelectItem value="moderator">Modérateur</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="user">{t('admin.usersPage.user')}</SelectItem>
+                                <SelectItem value="moderator">{t('admin.usersPage.moderator')}</SelectItem>
+                                <SelectItem value="admin">{t('admin.usersPage.admin')}</SelectItem>
                               </SelectContent>
                             </Select>
                             {role !== 'user' && (
