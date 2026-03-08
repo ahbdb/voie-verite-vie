@@ -183,7 +183,7 @@ const Careme2026 = memo(() => {
         .eq('user_id', user.id)
         .eq('program_key', 'careme-2026')
         .eq('date', dateStr);
-      toast({ title: 'Jour retiré' });
+      toast({ title: t('careme.dayRemoved') });
     } catch (err) {
       console.error(err);
     }
