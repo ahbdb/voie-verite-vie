@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAdmin } from '@/hooks/useAdmin';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
@@ -69,26 +70,23 @@ interface UserPermissionData {
   granted_at: string;
 }
 
-const AVAILABLE_PERMISSIONS: { id: UserPermission; label: string; category: string }[] = [
-  // Content Management
-  { id: 'manage_readings', label: 'Gérer les lectures bibliques', category: 'Contenu' },
-  { id: 'manage_prayers', label: 'Gérer les prières', category: 'Contenu' },
-  { id: 'manage_gallery', label: 'Gérer la galerie', category: 'Contenu' },
-  { id: 'manage_activities', label: 'Gérer les activités', category: 'Contenu' },
-  { id: 'manage_faq', label: 'Gérer la FAQ', category: 'Contenu' },
-  { id: 'manage_about', label: 'Gérer la page À propos', category: 'Contenu' },
-  { id: 'moderate_content', label: 'Modérer les contenus', category: 'Contenu' },
-  // User Management
-  { id: 'manage_users', label: 'Gérer les utilisateurs', category: 'Utilisateurs' },
-  // Communications
-  { id: 'manage_contacts', label: 'Gérer les contacts (voir/supprimer)', category: 'Communications' },
-  { id: 'view_contacts', label: 'Voir les contacts (lecture seule)', category: 'Communications' },
-  { id: 'create_notifications', label: 'Créer des notifications', category: 'Communications' },
-  // Analytics
-  { id: 'view_analytics', label: 'Voir les analytics', category: 'Analytics' },
+const AVAILABLE_PERMISSIONS: { id: UserPermission; labelKey: string; categoryKey: string }[] = [
+  { id: 'manage_readings', labelKey: 'admin.usersPage.perms.manageReadings', categoryKey: 'admin.usersPage.permCategories.content' },
+  { id: 'manage_prayers', labelKey: 'admin.usersPage.perms.managePrayers', categoryKey: 'admin.usersPage.permCategories.content' },
+  { id: 'manage_gallery', labelKey: 'admin.usersPage.perms.manageGallery', categoryKey: 'admin.usersPage.permCategories.content' },
+  { id: 'manage_activities', labelKey: 'admin.usersPage.perms.manageActivities', categoryKey: 'admin.usersPage.permCategories.content' },
+  { id: 'manage_faq', labelKey: 'admin.usersPage.perms.manageFAQ', categoryKey: 'admin.usersPage.permCategories.content' },
+  { id: 'manage_about', labelKey: 'admin.usersPage.perms.manageAbout', categoryKey: 'admin.usersPage.permCategories.content' },
+  { id: 'moderate_content', labelKey: 'admin.usersPage.perms.moderateContent', categoryKey: 'admin.usersPage.permCategories.content' },
+  { id: 'manage_users', labelKey: 'admin.usersPage.perms.manageUsers', categoryKey: 'admin.usersPage.permCategories.users' },
+  { id: 'manage_contacts', labelKey: 'admin.usersPage.perms.manageContacts', categoryKey: 'admin.usersPage.permCategories.communications' },
+  { id: 'view_contacts', labelKey: 'admin.usersPage.perms.viewContacts', categoryKey: 'admin.usersPage.permCategories.communications' },
+  { id: 'create_notifications', labelKey: 'admin.usersPage.perms.createNotifications', categoryKey: 'admin.usersPage.permCategories.communications' },
+  { id: 'view_analytics', labelKey: 'admin.usersPage.perms.viewAnalytics', categoryKey: 'admin.usersPage.permCategories.analytics' },
 ];
 
 const AdminUsers = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user, isAdmin, adminRole, loading: authLoading } = useAdmin();
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -139,10 +137,10 @@ const AdminUsers = () => {
 
   const getRoleLabel = (role: UserRole['role']) => {
     switch (role) {
-      case 'admin_principal': return '👑 Admin Principal';
-      case 'admin': return '🔐 Admin';
-      case 'moderator': return '📋 Modérateur';
-      default: return 'Utilisateur';
+      case 'admin_principal': return t('admin.usersPage.adminPrincipal');
+      case 'admin': return t('admin.usersPage.admin');
+      case 'moderator': return t('admin.usersPage.moderator');
+      default: return t('admin.usersPage.user');
     }
   };
 
@@ -154,7 +152,7 @@ const AdminUsers = () => {
         const deleteRes = await supabase.from('user_roles').delete().eq('user_id', userId);
         if (deleteRes.error) {
           console.error('❌ Delete role error:', deleteRes.error);
-          toast.error('Erreur: ' + deleteRes.error.message);
+          toast.error(t('admin.genericError') + ': ' + deleteRes.error.message);
           return;
         }
       }
@@ -163,17 +161,17 @@ const AdminUsers = () => {
         const insertRes = await supabase.from('user_roles').insert({ user_id: userId, role: newRole });
         if (insertRes.error) {
           console.error('❌ Insert role error:', insertRes.error);
-          toast.error('Erreur: ' + insertRes.error.message);
+          toast.error(t('admin.genericError') + ': ' + insertRes.error.message);
           return;
         }
       }
 
       console.log('✅ Rôle mis à jour');
-      toast.success('Rôle mis à jour');
+      toast.success(t('admin.usersPage.roleUpdated'));
       loadData();
     } catch (error) {
       console.error('❌ Exception:', error);
-      toast.error('Erreur lors de la mise à jour');
+      toast.error(t('admin.usersPage.roleUpdateError'));
     }
   };
 
@@ -203,18 +201,17 @@ const AdminUsers = () => {
         const insertRes = await (supabase as any).from('user_permissions').insert(newPermissions);
         if (insertRes.error) {
           console.error('❌ Insert permissions error:', insertRes.error);
-          toast.error('Erreur: ' + insertRes.error.message);
+          toast.error(t('admin.genericError') + ': ' + insertRes.error.message);
           return;
         }
       }
 
-      console.log('✅ Permissions mises à jour');
-      toast.success('Permissions mises à jour');
+      toast.success(t('admin.updated'));
       setPermissionDialogOpen(false);
       loadData();
     } catch (error) {
       console.error('❌ Exception:', error);
-      toast.error('Erreur lors de la mise à jour des permissions');
+      toast.error(t('admin.genericError'));
     }
   };
 
@@ -247,17 +244,16 @@ const AdminUsers = () => {
       const deleteProfileRes = await supabase.from('profiles').delete().eq('id', selectedUserId);
       if (deleteProfileRes.error) {
         console.error('❌ Delete profile error:', deleteProfileRes.error);
-        toast.error('Erreur: ' + deleteProfileRes.error.message);
-        return;
-      }
+        toast.error(t('admin.genericError') + ': ' + deleteProfileRes.error.message);
+          return;
+        }
       
-      console.log('✅ User deleted successfully');
-      toast.success('Utilisateur supprimé');
+      toast.success(t('admin.deleted'));
       setDeleteDialogOpen(false);
       loadData();
     } catch (error) {
       console.error('❌ Exception:', error);
-      toast.error('Erreur lors de la suppression');
+      toast.error(t('admin.deleteError'));
     }
   };
 
@@ -272,12 +268,12 @@ const AdminUsers = () => {
       <Navigation />
       <main className="flex-1 container mx-auto px-4 py-8 pt-24">
         <Button variant="ghost" onClick={() => navigate('/admin')} className="mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" /> Retour
+          <ArrowLeft className="h-4 w-4 mr-2" /> {t('admin.back')}
         </Button>
 
         <div className="mb-6">
           <h1 className="text-3xl font-bold flex items-center gap-2 mb-2">
-            <Users className="h-8 w-8" /> Gestion des Utilisateurs
+            <Users className="h-8 w-8" /> {t('admin.usersPage.title')}
           </h1>
           <p className="text-sm text-muted-foreground flex items-center gap-1">
             <Shield className="h-4 w-4" /> 
@@ -301,11 +297,11 @@ const AdminUsers = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Rôle</TableHead>
-                  <TableHead>Inscrit le</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t('admin.usersPage.name')}</TableHead>
+                  <TableHead>{t('admin.usersPage.email')}</TableHead>
+                  <TableHead>{t('admin.usersPage.role')}</TableHead>
+                  <TableHead>{t('admin.usersPage.memberSince')}</TableHead>
+                  <TableHead>{t('admin.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -334,7 +330,7 @@ const AdminUsers = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {profile.created_at ? new Date(profile.created_at).toLocaleDateString('fr-FR') : '-'}
+                        {profile.created_at ? new Date(profile.created_at).toLocaleDateString(i18n.language === 'it' ? 'it-IT' : i18n.language === 'en' ? 'en-US' : 'fr-FR') : '-'}
                       </TableCell>
                       <TableCell className="flex gap-2">
                         {isMainAdmin && !isCurrentUser && (
@@ -344,9 +340,9 @@ const AdminUsers = () => {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="user">Utilisateur</SelectItem>
-                                <SelectItem value="moderator">Modérateur</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="user">{t('admin.usersPage.user')}</SelectItem>
+                                <SelectItem value="moderator">{t('admin.usersPage.moderator')}</SelectItem>
+                                <SelectItem value="admin">{t('admin.usersPage.admin')}</SelectItem>
                               </SelectContent>
                             </Select>
                             {role !== 'user' && (
@@ -386,14 +382,14 @@ const AdminUsers = () => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmation de suppression</AlertDialogTitle>
+            <AlertDialogTitle>{t('admin.usersPage.deleteUser')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.
+              {t('admin.usersPage.deleteUserDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogCancel>Annuler</AlertDialogCancel>
+          <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
           <AlertDialogAction onClick={deleteUser} className="bg-destructive">
-            Supprimer
+            {t('common.delete')}
           </AlertDialogAction>
         </AlertDialogContent>
       </AlertDialog>
@@ -401,18 +397,18 @@ const AdminUsers = () => {
       <Dialog open={permissionDialogOpen} onOpenChange={setPermissionDialogOpen}>
         <DialogContent className="w-[95vw] sm:max-w-md md:max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Gérer les permissions</DialogTitle>
+            <DialogTitle>{t('admin.usersPage.permissions')}</DialogTitle>
             <DialogDescription>
-              Sélectionnez les permissions à accorder à cet utilisateur
+              {t('admin.usersPage.deleteUserConfirm')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
-            {['Contenu', 'Utilisateurs', 'Communications', 'Analytics'].map(category => (
-              <div key={category}>
-                <h3 className="font-semibold mb-3 text-sm">{category}</h3>
+            {Array.from(new Set(AVAILABLE_PERMISSIONS.map(p => p.categoryKey))).map(categoryKey => (
+              <div key={categoryKey}>
+                <h3 className="font-semibold mb-3 text-sm">{t(categoryKey)}</h3>
                 <div className="space-y-2 pl-4">
-                  {AVAILABLE_PERMISSIONS.filter(p => p.category === category).map(permission => (
+                  {AVAILABLE_PERMISSIONS.filter(p => p.categoryKey === categoryKey).map(permission => (
                     <div key={permission.id} className="flex items-center gap-2">
                       <Checkbox
                         id={permission.id}
@@ -423,7 +419,7 @@ const AdminUsers = () => {
                         htmlFor={permission.id}
                         className="text-sm cursor-pointer flex-1"
                       >
-                        {permission.label}
+                        {t(permission.labelKey)}
                       </label>
                     </div>
                   ))}
@@ -434,10 +430,10 @@ const AdminUsers = () => {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setPermissionDialogOpen(false)}>
-              Annuler
+              {t('common.cancel')}
             </Button>
             <Button onClick={savePermissions}>
-              Enregistrer les permissions
+              {t('common.save')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +22,7 @@ interface PageContent {
 }
 
 const AdminHome = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAdmin, loading } = useAdmin();
   const [pageContent, setPageContent] = useState<PageContent | null>(null);
@@ -75,14 +77,14 @@ const AdminHome = () => {
       });
 
       if (rpcError) {
-        toast.error('Erreur lors de la sauvegarde');
+        toast.error(t('admin.saveError'));
         console.error('RPC Error:', rpcError);
       } else {
-        toast.success('Contenu sauvegardé');
+        toast.success(t('admin.saved'));
         await loadContent();
       }
     } catch (err) {
-      toast.error('Une erreur est survenue');
+      toast.error(t('admin.genericError'));
       console.error('Error:', err);
     } finally {
       setSaving(false);
@@ -97,21 +99,21 @@ const AdminHome = () => {
       <Navigation />
       <main className="flex-1 container mx-auto px-4 py-8 pt-24">
         <Button variant="ghost" onClick={() => navigate('/admin')} className="mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" /> Retour
+          <ArrowLeft className="h-4 w-4 mr-2" /> {t('admin.back')}
         </Button>
 
         <h1 className="text-2xl font-bold flex items-center gap-2 mb-6">
-          <Home className="h-6 w-6" /> Gestion de la Page d'Accueil
+          <Home className="h-6 w-6" /> {t('admin.homePage.title')}
         </h1>
 
         <Card>
           <CardHeader>
-            <CardTitle>Contenu de la page d'accueil</CardTitle>
+            <CardTitle>{t('admin.homePage.content')}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <Label>Titre principal</Label>
+                <Label>{t('admin.homePage.mainTitle')}</Label>
                 <Input
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
@@ -120,37 +122,34 @@ const AdminHome = () => {
               </div>
               
               <div>
-                <Label>Sous-titre</Label>
+                <Label>{t('admin.homePage.subtitle')}</Label>
                 <Input
                   value={formData.subtitle}
                   onChange={(e) => setFormData({...formData, subtitle: e.target.value})}
-                  placeholder="Votre guide spirituel quotidien"
                 />
               </div>
 
               <div>
-                <Label>Texte du Hero (verset)</Label>
+                <Label>{t('admin.homePage.heroText')}</Label>
                 <Textarea
                   value={formData.hero_text}
                   onChange={(e) => setFormData({...formData, hero_text: e.target.value})}
-                  placeholder="Je suis le chemin, la vérité et la vie"
                   rows={3}
                 />
               </div>
 
               <div>
-                <Label>Texte de la Mission</Label>
+                <Label>{t('admin.homePage.missionText')}</Label>
                 <Textarea
                   value={formData.mission_text}
                   onChange={(e) => setFormData({...formData, mission_text: e.target.value})}
-                  placeholder="Accompagner chaque âme dans son cheminement spirituel"
                   rows={4}
                 />
               </div>
 
               <Button type="submit" disabled={saving} className="w-full">
                 <Save className="h-4 w-4 mr-2" />
-                {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+                {saving ? t('admin.saving') : t('admin.save')}
               </Button>
             </form>
           </CardContent>

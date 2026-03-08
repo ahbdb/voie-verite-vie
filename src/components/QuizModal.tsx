@@ -85,10 +85,10 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
   });
 
   const difficultyLevels = [
-    { key: 'easy', label: t('quiz.easy'), icon: Star, color: 'bg-green-500', questions: '15 QCM + 5 ' + t('quiz.openQuestions') },
-    { key: 'medium', label: t('quiz.medium'), icon: Zap, color: 'bg-yellow-500', questions: '15 QCM + 5 ' + t('quiz.openQuestions') },
-    { key: 'hard', label: t('quiz.hard'), icon: Flame, color: 'bg-orange-500', questions: '15 QCM + 5 ' + t('quiz.openQuestions') },
-    { key: 'expert', label: t('quiz.expert'), icon: Crown, color: 'bg-red-500', questions: '15 QCM + 5 ' + t('quiz.openQuestions') },
+    { key: 'easy', label: t('quiz.easy'), icon: Star, color: 'bg-green-500', questions: `15 ${t('quiz.mcqLabel')} + 5 ${t('quiz.openQuestions')}` },
+    { key: 'medium', label: t('quiz.medium'), icon: Zap, color: 'bg-yellow-500', questions: `15 ${t('quiz.mcqLabel')} + 5 ${t('quiz.openQuestions')}` },
+    { key: 'hard', label: t('quiz.hard'), icon: Flame, color: 'bg-orange-500', questions: `15 ${t('quiz.mcqLabel')} + 5 ${t('quiz.openQuestions')}` },
+    { key: 'expert', label: t('quiz.expert'), icon: Crown, color: 'bg-red-500', questions: `15 ${t('quiz.mcqLabel')} + 5 ${t('quiz.openQuestions')}` },
   ];
 
   const resetQuiz = useCallback(() => {
@@ -318,7 +318,7 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
               </Badge>
               <Badge variant="secondary">
                 {currentSection === 'mc' 
-                  ? `QCM (${currentIndex + 1}/${quizData.multipleChoice.length})` 
+                  ? `${t('quiz.mcqLabel')} (${currentIndex + 1}/${quizData.multipleChoice.length})` 
                   : `${t('quiz.openLabel')} (${currentIndex + 1}/${quizData.openEnded.length})`}
               </Badge>
             </div>
@@ -486,7 +486,7 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
             <div className="grid grid-cols-2 gap-4 mb-6">
               <Card>
                 <CardContent className="pt-4">
-                  <p className="text-sm text-muted-foreground">QCM</p>
+                  <p className="text-sm text-muted-foreground">{t('quiz.mcqLabel')}</p>
                   <p className="text-2xl font-bold text-primary">{mcScore}/{quizData.multipleChoice.length}</p>
                 </CardContent>
               </Card>
