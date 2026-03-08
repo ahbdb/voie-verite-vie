@@ -260,13 +260,31 @@ const Navigation = () => {
             ))}
           </div>
 
-          {/* Menu Mobile */}
-          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <SheetTrigger asChild className="lg:hidden">
-              <Button variant="ghost" size="sm">
-                <Menu className="w-5 h-5" />
-              </Button>
-            </SheetTrigger>
+          {/* Mobile/Tablet top bar icons + hamburger */}
+          <div className="flex items-center gap-0.5 lg:hidden">
+            <LanguageSelector variant="icon" />
+            <Button
+              onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              title={isDarkMode ? t('common.lightMode') : t('common.darkMode')}
+            >
+              {isDarkMode ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-slate-600" />}
+            </Button>
+            <Button onClick={handleZoomOut} variant="ghost" size="icon" className="h-8 w-8" disabled={!canZoomOut}>
+              <ZoomOut className="w-4 h-4" />
+            </Button>
+            <Button onClick={handleZoomIn} variant="ghost" size="icon" className="h-8 w-8" disabled={!canZoomIn}>
+              <ZoomIn className="w-4 h-4" />
+            </Button>
+            <NotificationBell />
+            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
             <SheetContent side="right" className="w-[30%] min-w-[250px] sm:w-[30%]">
               <div className="flex flex-col h-full py-6">
                 <div className="space-y-4 flex-1 overflow-y-auto">
