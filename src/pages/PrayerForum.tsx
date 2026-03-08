@@ -414,8 +414,8 @@ const PrayerForum = () => {
                         <Card>
                           <CardContent className="py-8 text-center text-muted-foreground">
                             <HandHeart className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                            <p>Aucune intention de prière pour le moment.</p>
-                            <p className="text-sm">Soyez le premier à partager une intention.</p>
+                            <p>{t('prayer.noPrayers')}</p>
+                            <p className="text-sm">{t('prayer.beFirst')}</p>
                           </CardContent>
                         </Card>
                       ) : (
