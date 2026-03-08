@@ -81,14 +81,15 @@ export const BibleChapterViewer = ({
         setLoading(false);
         setTranslating(true);
 
-        // Translate via edge function
+        // Translate via edge function (KJV for English canonical, AI for Italian & deuterocanonical)
         try {
           const { data, error: fnError } = await supabase.functions.invoke('translate-bible-chapter', {
             body: {
               verses: chapterVerses,
               bookName,
               chapterNumber,
-              targetLang: lang
+              targetLang: lang,
+              bookFileName: bookId
             }
           });
 
