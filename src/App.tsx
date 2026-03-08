@@ -10,6 +10,7 @@ import { SettingsProvider } from "@/hooks/useSettings";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import LoadingScreen from "@/components/LoadingScreen";
 import ScrollToTop from "@/components/ScrollToTop";
+import PWAUpdatePrompt from "@/components/PWAUpdatePrompt";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Activities from "./pages/Activities";
@@ -98,6 +99,7 @@ const App = () => {
             {isLoading && <LoadingScreen />}
             <Toaster />
             <Sonner />
+            <PWAUpdatePrompt />
             <ErrorBoundary>
               <BrowserRouter>
                 <AppNotificationInitializer>
