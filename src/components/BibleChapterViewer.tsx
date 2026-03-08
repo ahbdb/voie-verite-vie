@@ -76,9 +76,7 @@ export const BibleChapterViewer = ({
           } catch { /* ignore */ }
         }
 
-        // Show French while translating
-        setVerses(chapterVerses);
-        setLoading(false);
+        // Don't show French text — keep loading state while translating
         setTranslating(true);
 
         // Translate via edge function (KJV for English canonical, AI for Italian & deuterocanonical)
@@ -99,10 +97,14 @@ export const BibleChapterViewer = ({
             setVerses(data.verses);
             // Cache translation
             localStorage.setItem(cacheKey, JSON.stringify(data.verses));
+          } else {
+            // Only show French as absolute last resort
+            console.warn('Translation failed, showing French as fallback');
+            setVerses(chapterVerses);
           }
         } catch (translateErr) {
-          console.warn('Translation failed, showing French:', translateErr);
-          // Keep French verses - already set
+          console.warn('Translation failed, showing French fallback:', translateErr);
+          if (isMounted) setVerses(chapterVerses);
         } finally {
           if (isMounted) setTranslating(false);
         }
@@ -160,7 +162,10 @@ export const BibleChapterViewer = ({
     }
   }, [abbreviation, chapterNumber, verses, bookName, toast, t]);
 
-  if (loading) {
+  if (loading || (translating && verses.length === 0)) {
+    const loadingMsg = translating 
+      ? (lang === 'it' ? 'Caricamento della Bibbia in italiano...' : lang === 'en' ? 'Loading Bible in English...' : t('bibleChapter.loading'))
+      : t('bibleChapter.loading', { defaultValue: 'Chargement...' });
     return (
       <Card className="w-full bg-card/50 backdrop-blur-sm border-primary/20">
         <CardHeader className="space-y-0 pb-3">
@@ -171,8 +176,9 @@ export const BibleChapterViewer = ({
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="flex items-center justify-center py-12">
+        <CardContent className="flex flex-col items-center justify-center py-12 gap-3">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          <p className="text-sm text-muted-foreground animate-pulse">{loadingMsg}</p>
         </CardContent>
       </Card>
     );
@@ -208,11 +214,6 @@ export const BibleChapterViewer = ({
           </Button>
           <CardTitle className="text-2xl">{bookName} {chapterNumber}</CardTitle>
         </div>
-        {translating && (
-          <p className="text-xs text-muted-foreground text-center animate-pulse">
-            {t('bibleChapter.translating', { defaultValue: lang === 'it' ? 'Traduzione in corso...' : 'Translating...' })}
-          </p>
-        )}
       </CardHeader>
 
       <CardContent className="pt-0 px-2 md:px-4">
