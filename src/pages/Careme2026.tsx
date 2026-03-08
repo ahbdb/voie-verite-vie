@@ -446,9 +446,9 @@ const Careme2026 = memo(() => {
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 lg:grid-cols-3 mb-6 bg-slate-100 p-1 rounded-lg dark:bg-slate-800 gap-1">
-            <TabsTrigger value="overview" className="text-xs sm:text-sm px-0 sm:px-3">📅 Vue d'ensemble</TabsTrigger>
-            <TabsTrigger value="calendar" className="text-xs sm:text-sm px-0 sm:px-3">📋 Calendrier</TabsTrigger>
-            <button onClick={() => navigate('/chemin-de-croix')} className="flex gap-1 sm:gap-2 bg-violet-600 hover:bg-violet-700 text-white rounded-md px-2 sm:px-3 py-1.5 text-xs sm:text-sm justify-center items-center transition-colors whitespace-nowrap">✝️ <span className="hidden sm:inline">Chemin de Croix</span><span className="sm:hidden">Chemin</span></button>
+             <TabsTrigger value="overview" className="text-xs sm:text-sm px-0 sm:px-3">📅 {t('careme.overviewTab')}</TabsTrigger>
+            <TabsTrigger value="calendar" className="text-xs sm:text-sm px-0 sm:px-3">📋 {t('careme.calendarTab')}</TabsTrigger>
+            <button onClick={() => navigate('/chemin-de-croix')} className="flex gap-1 sm:gap-2 bg-violet-600 hover:bg-violet-700 text-white rounded-md px-2 sm:px-3 py-1.5 text-xs sm:text-sm justify-center items-center transition-colors whitespace-nowrap">✝️ <span className="hidden sm:inline">{t('careme.stationsOfCross')}</span><span className="sm:hidden">{t('common.stationsOfCross')}</span></button>
           </TabsList>
 
           {/* Overview Tab */}
