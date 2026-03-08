@@ -138,7 +138,7 @@ export default function DayReadingViewer({ reading, onClose }: DayReadingViewerP
             </Button>
             <div className="flex-1">
               <h1 className="text-2xl md:text-4xl font-playfair font-bold mb-1">
-                {t('biblicalReading.day')} {reading.day_number}: {reading.books} {chaptersDisplay}
+                {t('biblicalReading.day')} {reading.day_number}: {translatedBookName} {chaptersDisplay}
               </h1>
               <p className="text-sm text-muted-foreground">
                 {dateStr.charAt(0).toUpperCase() + dateStr.slice(1)} • {reading.chapters_count > 1 
