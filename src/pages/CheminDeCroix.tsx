@@ -138,7 +138,7 @@ const CheminDeCroix = memo(() => {
     };
     void loadContent();
     if (!subscriptionRef.current) {
-      subscriptionRef.current = supabase.channel('chemin_de_croix_updates').on('postgres_changes', { event: '*', schema: 'public', table: 'page_content', filter: `page_key=eq.chemin-de-croix` }, (payload: any) => { if (payload.new?.content) { setContentData(mergeCheminContent(payload.new.content)); } else { void loadContent(); } }).subscribe();
+      subscriptionRef.current = supabase.channel('chemin_de_croix_updates').on('postgres_changes', { event: '*', schema: 'public', table: 'page_content', filter: `page_key=eq.chemin-de-croix` }, (payload: any) => { if (payload.new?.content) { setContentData(mergeCheminContent(payload.new.content, cheminDeCroixData)); } else { void loadContent(); } }).subscribe();
     }
     return () => { subscriptionRef.current?.unsubscribe(); subscriptionRef.current = null; };
   }, []);
