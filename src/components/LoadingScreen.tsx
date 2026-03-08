@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import logo3v from '@/assets/logo-3v.png';
 
 const LoadingScreen = () => {
