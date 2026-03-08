@@ -75,10 +75,10 @@ const FAQ = () => {
           <div className="container mx-auto px-4">
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-4xl md:text-6xl font-playfair font-bold text-primary mb-4">
-                Questions Fréquentes
+                {t('faq.title')}
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed mb-6">
-                Trouvez des réponses à vos questions spirituelles et pratiques
+                {t('faq.subtitle')}
               </p>
               
               {/* Search Bar */}
