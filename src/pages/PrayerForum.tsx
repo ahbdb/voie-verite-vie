@@ -586,7 +586,7 @@ const PrayerRequestCard = ({
           disabled={isPrayed}
         >
           <Heart className={`w-4 h-4 mr-1 ${isPrayed ? 'fill-current' : ''}`} />
-          {isPrayed ? 'Prié' : 'Je prie'}
+          {isPrayed ? '✓' : '🙏'}
         </Button>
       </div>
     </CardContent>
