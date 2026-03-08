@@ -201,18 +201,17 @@ const AdminUsers = () => {
         const insertRes = await (supabase as any).from('user_permissions').insert(newPermissions);
         if (insertRes.error) {
           console.error('❌ Insert permissions error:', insertRes.error);
-          toast.error('Erreur: ' + insertRes.error.message);
+          toast.error(t('admin.genericError') + ': ' + insertRes.error.message);
           return;
         }
       }
 
-      console.log('✅ Permissions mises à jour');
-      toast.success('Permissions mises à jour');
+      toast.success(t('admin.updated'));
       setPermissionDialogOpen(false);
       loadData();
     } catch (error) {
       console.error('❌ Exception:', error);
-      toast.error('Erreur lors de la mise à jour des permissions');
+      toast.error(t('admin.genericError'));
     }
   };
 
