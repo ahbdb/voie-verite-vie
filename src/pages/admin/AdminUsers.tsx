@@ -397,9 +397,9 @@ const AdminUsers = () => {
       <Dialog open={permissionDialogOpen} onOpenChange={setPermissionDialogOpen}>
         <DialogContent className="w-[95vw] sm:max-w-md md:max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Gérer les permissions</DialogTitle>
+            <DialogTitle>{t('admin.usersPage.permissions')}</DialogTitle>
             <DialogDescription>
-              Sélectionnez les permissions à accorder à cet utilisateur
+              {t('admin.usersPage.deleteUserConfirm')}
             </DialogDescription>
           </DialogHeader>
 
