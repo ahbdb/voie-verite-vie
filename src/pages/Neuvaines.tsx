@@ -87,17 +87,21 @@ const Neuvaines = () => {
                       Commencer <ChevronRight className="h-4 w-4" />
                     </Button>
                     {n.pdf_url && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-amber-700"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.open(n.pdf_url!, '_blank');
-                        }}
+                      <a
+                        href={n.pdf_url}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <Download className="h-4 w-4" />
-                      </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-amber-700"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </a>
                     )}
                   </div>
                 </CardContent>
