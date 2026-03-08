@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Users, BookOpen } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import bibleBooksData from '@/data/bible-books.json';
+import { loadBibleChapter, type BibleVerse } from '@/lib/bible-content-loader';
 import heroCathedral from '@/assets/hero-cathedral.jpg';
 import logo3v from '@/assets/logo-3v.png';
 
@@ -23,20 +25,12 @@ const prayers = [
   "Bénis cette journée et ceux que j'aime.",
 ];
 
-// Versets bibliques enrichis
-const biblicalVerses = [
+// Fallback verses if today's reading can't be loaded
+const fallbackVerses = [
   { text: "Je suis le chemin, la vérité et la vie.", ref: "Jean 14:6" },
   { text: "Vous connaîtrez la vérité, et la vérité vous affranchira.", ref: "Jean 8:32" },
-  { text: "Ne vous conformez pas au monde actuel.", ref: "Romains 12:2" },
-  { text: "Car je connais les projets que j'ai formés sur vous, dit l'Éternel.", ref: "Jérémie 29:11" },
-  { text: "L'Éternel est mon berger : je ne manquerai de rien.", ref: "Psaume 23:1" },
   { text: "Ta parole est une lampe à mes pieds, une lumière sur mon sentier.", ref: "Psaume 119:105" },
-  { text: "Demeurez en moi, et je demeurerai en vous.", ref: "Jean 15:4" },
   { text: "Tout est possible à celui qui croit.", ref: "Marc 9:23" },
-  { text: "Heureux les artisans de paix, car ils seront appelés fils de Dieu.", ref: "Matthieu 5:9" },
-  { text: "L'amour est patient, l'amour est serviable.", ref: "1 Corinthiens 13:4" },
-  { text: "Remets ton sort à l'Éternel, et il te soutiendra.", ref: "Psaume 55:23" },
-  { text: "Fortifiez-vous et ayez du courage !", ref: "Josué 1:9" },
 ];
 
 interface TodayReading {
@@ -45,10 +39,40 @@ interface TodayReading {
   day_number: number;
 }
 
+interface DisplayVerse {
+  text: string;
+  ref: string;
+}
+
+/** Map French book name to fileName from bible-books.json */
+function bookNameToFileName(frenchName: string): string | null {
+  const book = (bibleBooksData.books as any[]).find(
+    (b) => b.name.toLowerCase() === frenchName.trim().toLowerCase()
+  );
+  return book?.fileName || null;
+}
+
+/** Parse chapter range like "5-8" or "3" into array [5,6,7,8] */
+function parseChapters(chapters: string): number[] {
+  const result: number[] = [];
+  for (const part of chapters.split(',')) {
+    const trimmed = part.trim();
+    if (trimmed.includes('-')) {
+      const [start, end] = trimmed.split('-').map(Number);
+      for (let i = start; i <= end; i++) result.push(i);
+    } else {
+      const n = Number(trimmed);
+      if (!isNaN(n)) result.push(n);
+    }
+  }
+  return result;
+}
+
 const HeroSection = () => {
   const { user } = useAuth();
   const [currentVerse, setCurrentVerse] = useState(0);
   const [todayReading, setTodayReading] = useState<TodayReading | null>(null);
+  const [verses, setVerses] = useState<DisplayVerse[]>(fallbackVerses);
 
   const userName = useMemo(() => {
     const metaName = (user?.user_metadata as any)?.full_name as string | undefined;
@@ -60,29 +84,63 @@ const HeroSection = () => {
     return prayers[dayOfYear % prayers.length];
   }, []);
 
-  // Fetch today's reading
-  useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    (supabase as any)
-      .from('biblical_readings')
-      .select('books, chapters, day_number')
-      .eq('date', today)
-      .limit(1)
-      .single()
-      .then(({ data }: any) => {
-        if (data) setTodayReading(data);
-      });
+  // Fetch today's reading + load actual verses
+  const loadTodayVerses = useCallback(async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const { data } = await (supabase as any)
+        .from('biblical_readings')
+        .select('books, chapters, day_number')
+        .eq('date', today)
+        .limit(1)
+        .single();
+
+      if (!data) return;
+      setTodayReading(data);
+
+      const fileName = bookNameToFileName(data.books);
+      if (!fileName) return;
+
+      const chapterNums = parseChapters(data.chapters);
+      const allVerses: DisplayVerse[] = [];
+
+      for (const chNum of chapterNums) {
+        const chVerses = await loadBibleChapter(fileName, chNum);
+        if (chVerses && chVerses.length > 0) {
+          // Pick ~4 evenly spaced verses per chapter
+          const step = Math.max(1, Math.floor(chVerses.length / 4));
+          for (let i = 0; i < chVerses.length; i += step) {
+            const v = chVerses[i];
+            if (v.text && v.text.trim().length > 20 && v.text.trim().length < 200) {
+              allVerses.push({
+                text: v.text.trim(),
+                ref: `${data.books} ${chNum}:${v.number}`,
+              });
+            }
+          }
+        }
+      }
+
+      if (allVerses.length > 0) {
+        setVerses(allVerses);
+      }
+    } catch (e) {
+      // Keep fallback verses
+    }
   }, []);
 
-  // Rotate verses faster (2.5s)
+  useEffect(() => {
+    loadTodayVerses();
+  }, [loadTodayVerses]);
+
+  // Rotate verses faster (2s)
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentVerse((prev) => (prev + 1) % biblicalVerses.length);
-    }, 2500);
+      setCurrentVerse((prev) => (prev + 1) % verses.length);
+    }, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [verses.length]);
 
-  // Animated letters for title
   const titleWords = ["Voie,", "Vérité,", "Vie"];
 
   return (
@@ -165,10 +223,13 @@ const HeroSection = () => {
               « {todayPrayer} »
             </p>
             {todayReading && (
-              <div className="mt-3 flex items-center gap-2 text-accent text-xs font-medium">
+              <Link
+                to="/biblical-reading"
+                className="mt-3 flex items-center gap-2 text-accent text-xs font-medium hover:underline"
+              >
                 <BookOpen className="w-3.5 h-3.5" />
-                <span>Lecture du jour : {todayReading.books} {todayReading.chapters} (Jour {todayReading.day_number})</span>
-              </div>
+                <span>📖 Lecture du jour : {todayReading.books} {todayReading.chapters} (Jour {todayReading.day_number})</span>
+              </Link>
             )}
           </motion.div>
         )}
@@ -203,9 +264,9 @@ const HeroSection = () => {
           </Button>
         </motion.div>
 
-        {/* Rotating verses at bottom */}
+        {/* Rotating verses from today's reading */}
         <motion.div
-          className="w-full max-w-lg min-h-[3rem] flex items-center justify-center"
+          className="w-full max-w-lg min-h-[3.5rem] flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.1 }}
@@ -213,15 +274,15 @@ const HeroSection = () => {
           <AnimatePresence mode="wait">
             <motion.p
               key={currentVerse}
-              className="text-[#ffffffd0] text-xs sm:text-sm font-playfair italic text-center"
+              className="text-[#ffffffd0] text-xs sm:text-sm font-playfair italic text-center leading-relaxed"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.25 }}
             >
-              « {biblicalVerses[currentVerse].text} »
-              <span className="block text-accent text-[10px] sm:text-xs mt-0.5 not-italic">
-                — {biblicalVerses[currentVerse].ref}
+              « {verses[currentVerse]?.text} »
+              <span className="block text-accent text-[10px] sm:text-xs mt-0.5 not-italic font-medium">
+                — {verses[currentVerse]?.ref}
               </span>
             </motion.p>
           </AnimatePresence>
