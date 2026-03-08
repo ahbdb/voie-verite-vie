@@ -326,44 +326,6 @@ const Navigation = () => {
                 })}
               </div>
                 <div className="border-t border-border/50 pt-4 space-y-2">
-                  {/* Language Selector Mobile */}
-                  <LanguageSelector variant="full" />
-
-                  {/* Theme Toggle Mobile */}
-                  <Button
-                    onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
-                    variant="ghost"
-                    className="w-full justify-start gap-2"
-                  >
-                    {isDarkMode ? (
-                      <>
-                        <Sun className="w-4 h-4 text-amber-500" />
-                        {t('common.lightMode')}
-                      </>
-                    ) : (
-                      <>
-                        <Moon className="w-4 h-4 text-slate-600" />
-                        {t('common.darkMode')}
-                      </>
-                    )}
-                  </Button>
-
-                  {/* Zoom Controls Mobile */}
-                  <div className="flex items-center justify-between px-4">
-                    <span className="text-sm text-muted-foreground">{t('common.textSize')}</span>
-                    <div className="flex items-center gap-1">
-                      <Button onClick={handleZoomOut} variant="ghost" size="sm" disabled={!canZoomOut}>
-                        <ZoomOut className="w-4 h-4" />
-                      </Button>
-                      <span className="text-xs text-muted-foreground w-8 text-center">
-                        {settings.textSize === 'extra-large' ? 'XL' : settings.textSize === 'large' ? 'L' : settings.textSize === 'small' ? 'S' : 'M'}
-                      </span>
-                      <Button onClick={handleZoomIn} variant="ghost" size="sm" disabled={!canZoomIn}>
-                        <ZoomIn className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-
                   {/* Install button mobile */}
                   <Button
                     onClick={() => {
