@@ -386,7 +386,7 @@ const Careme2026 = memo(() => {
         <div className="fixed top-0 left-0 right-0 bg-violet-600 text-white p-4 z-50 flex items-center gap-4">
           <div className="flex-1">
             <div className="flex justify-between text-sm mb-2">
-              <span>Partage en cours...</span>
+              <span>{t('careme.sharingInProgress')}</span>
               <span>{sharingProgress.current}/{sharingProgress.total}</span>
             </div>
             <div className="w-full bg-violet-800 rounded-full h-2">
