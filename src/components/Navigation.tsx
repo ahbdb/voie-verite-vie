@@ -19,7 +19,9 @@ import {
   ChevronDown,
   Settings,
   Sun,
-  Moon
+  Moon,
+  ZoomIn,
+  ZoomOut
 } from 'lucide-react';
 
 const ICONS: Record<string, any> = {
