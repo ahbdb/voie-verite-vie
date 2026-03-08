@@ -99,6 +99,7 @@ const App = () => {
             {isLoading && <LoadingScreen />}
             <Toaster />
             <Sonner />
+            <PWAUpdatePrompt />
             <ErrorBoundary>
               <BrowserRouter>
                 <AppNotificationInitializer>
