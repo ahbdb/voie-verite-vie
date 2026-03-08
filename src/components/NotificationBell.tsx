@@ -36,12 +36,16 @@ const typeIcons: Record<string, React.ReactNode> = {
   info: <Info className="w-4 h-4 text-muted-foreground" />,
 };
 
+const dateFnsLocales: Record<string, any> = { fr, en: enUS, it };
+
 export const NotificationBell = () => {
+  const { t, i18n } = useTranslation();
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const lang = i18n.language?.split('-')[0] || 'fr';
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
