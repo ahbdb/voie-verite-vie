@@ -135,21 +135,37 @@ const Navigation = () => {
           <div className="hidden lg:flex items-center space-x-1">
             {siteLinks.map((category) => {
               const visibleItems = category.items.filter((i) => i.showInNav !== false);
+              const categoryIsActive = visibleItems.some((item) => isPathActive(item.href));
+
               return (
                 <div key={category.id} className="group relative">
-                  <button className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-150 rounded-md hover:bg-muted/50">
+                  <button
+                    className={
+                      "px-3 py-2 text-sm font-medium transition-colors duration-150 rounded-md " +
+                      (categoryIsActive
+                        ? 'text-primary bg-muted/40'
+                        : 'text-muted-foreground hover:text-primary hover:bg-muted/50')
+                    }
+                    aria-current={categoryIsActive ? 'page' : undefined}
+                  >
                     {t(category.titleKey)}
                   </button>
+
                   {/* Dropdown */}
-                  <div className="absolute left-0 mt-0 w-48 bg-background border border-border/50 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out origin-top-left z-50">
+                  <div className="absolute left-0 mt-0 w-56 bg-popover text-popover-foreground border border-border/60 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out origin-top-left z-50">
                     <div className="py-2">
                       {visibleItems.map((item) => {
                         const Icon = item.icon ? ICONS[item.icon as string] : undefined;
+                        const active = isPathActive(item.href);
                         return (
                           <Link
                             key={item.nameKey}
                             to={item.href}
-                            className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted/50 transition-colors duration-150"
+                            className={
+                              'flex items-center gap-2 px-4 py-2 text-sm transition-colors duration-150 ' +
+                              (active ? 'bg-muted text-primary font-semibold' : 'hover:bg-muted/50')
+                            }
+                            aria-current={active ? 'page' : undefined}
                           >
                             {Icon && <Icon className="w-4 h-4 flex-shrink-0" />}
                             <span>{t(item.nameKey)}</span>
