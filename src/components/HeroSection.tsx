@@ -89,8 +89,10 @@ function parseChapters(chapters: string): number[] {
 }
 
 const HeroSection = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  const lang = i18n.language?.split('-')[0] || 'fr';
+  const fallbackVerses = fallbackVersesByLang[lang] || fallbackVersesByLang.fr;
   const [currentVerse, setCurrentVerse] = useState(0);
   const [todayReading, setTodayReading] = useState<TodayReading | null>(null);
   const [verses, setVerses] = useState<DisplayVerse[]>(fallbackVerses);
