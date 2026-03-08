@@ -110,9 +110,11 @@ const NeuvaineDayView = () => {
             <ArrowLeft className="h-4 w-4" /> Neuvaines
           </Button>
           {neuvaine.pdf_url && (
-            <Button variant="outline" size="sm" onClick={() => window.open(neuvaine.pdf_url!, '_blank')} className="gap-1">
-              <Download className="h-4 w-4" /> PDF
-            </Button>
+            <a href={neuvaine.pdf_url} download target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="sm" className="gap-1">
+                <Download className="h-4 w-4" /> PDF
+              </Button>
+            </a>
           )}
         </div>
 
