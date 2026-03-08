@@ -392,7 +392,7 @@ const BiblicalReading = () => {
                               onClick={() => toggleReadingComplete(reading)}
                             >
                               <CheckCircle className="w-3 h-3 mr-1" />
-                              {isCompleted ? "Complété" : "Marquer comme lu"}
+                              {isCompleted ? t('biblicalReading.completed') : t('biblicalReading.markAsRead')}
                             </Button>
                           </div>
                         </CardContent>
