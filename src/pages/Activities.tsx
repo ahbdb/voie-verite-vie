@@ -174,21 +174,21 @@ const Activities = () => {
           {timeStatus === 'today' && (
             <div className="absolute top-4 right-4 z-10">
               <Badge className="bg-green-500 text-white animate-pulse">
-                <Clock className="w-3 h-3 mr-1" /> Aujourd'hui
+                <Clock className="w-3 h-3 mr-1" /> {t('activities.todayBadge')}
               </Badge>
             </div>
           )}
           {timeStatus === 'ongoing' && (
             <div className="absolute top-4 right-4 z-10">
               <Badge className="bg-blue-500 text-white">
-                <Clock className="w-3 h-3 mr-1" /> En cours
+                <Clock className="w-3 h-3 mr-1" /> {t('activities.ongoingBadge')}
               </Badge>
             </div>
           )}
           {isPast && (
             <div className="absolute top-4 right-4 z-10">
               <Badge variant="secondary">
-                <CheckCircle className="w-3 h-3 mr-1" /> Terminée
+                <CheckCircle className="w-3 h-3 mr-1" /> {t('activities.finishedBadge')}
               </Badge>
             </div>
           )}
