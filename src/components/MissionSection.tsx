@@ -1,49 +1,51 @@
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { AnimatedSection } from '@/components/AnimatedSection';
 import missionVoie from '@/assets/mission-voie.jpg';
 import missionVerite from '@/assets/mission-verite.jpg';
 import missionVie from '@/assets/mission-vie.jpg';
 
-const missions = [
-  {
-    title: 'Voie',
-    subtitle: 'Le Chemin',
-    verse: '« Je suis le chemin »',
-    ref: 'Jean 14:6',
-    description: "Le chemin tracé par Jésus-Christ, suivre ses pas et embrasser ses enseignements.",
-    image: missionVoie,
-  },
-  {
-    title: 'Vérité',
-    subtitle: 'La Lumière',
-    verse: '« La vérité vous affranchira »',
-    ref: 'Jean 8:32',
-    description: "La lumière révélée par Jésus, vérité absolue et libératrice.",
-    image: missionVerite,
-  },
-  {
-    title: 'Vie',
-    subtitle: 'La Plénitude',
-    verse: '« Je suis venu pour qu\'ils aient la vie »',
-    ref: 'Jean 10:10',
-    description: "L'abondance spirituelle offerte par le Christ, joie, paix et communion.",
-    image: missionVie,
-  },
-];
-
 const MissionSection = () => {
+  const { t } = useTranslation();
+
+  const missions = [
+    {
+      title: t('mission.way'),
+      subtitle: t('mission.waySubtitle'),
+      verse: t('mission.wayVerse'),
+      ref: 'Jean 14:6',
+      description: t('mission.wayDescription'),
+      image: missionVoie,
+    },
+    {
+      title: t('mission.truth'),
+      subtitle: t('mission.truthSubtitle'),
+      verse: t('mission.truthVerse'),
+      ref: 'Jean 8:32',
+      description: t('mission.truthDescription'),
+      image: missionVerite,
+    },
+    {
+      title: t('mission.life'),
+      subtitle: t('mission.lifeSubtitle'),
+      verse: t('mission.lifeVerse'),
+      ref: 'Jean 10:10',
+      description: t('mission.lifeDescription'),
+      image: missionVie,
+    },
+  ];
+
   return (
     <section className="py-12 bg-background">
       <div className="container mx-auto px-4">
         <AnimatedSection className="text-center mb-8">
-          <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-2">Notre Mission</p>
+          <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-2">{t('mission.ourMission')}</p>
           <h2 className="text-3xl md:text-4xl font-playfair font-bold text-foreground mb-2">
-            Trois piliers de foi
+            {t('mission.threePillars')}
           </h2>
           <div className="w-12 h-0.5 bg-accent mx-auto" />
         </AnimatedSection>
 
-        {/* Horizontal scroll on mobile, grid on desktop */}
         <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-3 md:overflow-visible md:pb-0">
           {missions.map((mission, index) => (
             <motion.div

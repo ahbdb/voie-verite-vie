@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { 
@@ -43,6 +44,7 @@ import { useSettings, type TextSize } from '@/hooks/useSettings';
 import siteLinks from '@/data/site-links';
 import { useToast } from '@/components/ui/use-toast';
 import { NotificationBell } from './NotificationBell';
+import LanguageSelector from './LanguageSelector';
 import logo3v from '@/assets/logo-3v.png';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -51,6 +53,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const Navigation = () => {
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -106,14 +109,12 @@ const Navigation = () => {
   const handleSignOut = async () => {
     await signOut();
     toast({
-      title: "Déconnexion réussie",
-      description: "À bientôt !",
+      title: t('auth.logoutSuccess'),
+      description: t('auth.logoutMessage'),
     });
     navigate('/');
   };
 
-  // Nav items are sourced from a central `siteLinks` file so categories and sitemap stay in sync
-  // Flatten categories and only keep links intended for the navigation UI
   const flatLinks = siteLinks.flatMap((c) => c.items);
   const navItems = flatLinks.filter((i) => i.showInNav !== false);
 
@@ -140,7 +141,7 @@ const Navigation = () => {
               return (
                 <div key={category.id} className="group relative">
                   <button className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-150 rounded-md hover:bg-muted/50">
-                    {category.title}
+                    {t(category.titleKey)}
                   </button>
                   {/* Dropdown */}
                   <div className="absolute left-0 mt-0 w-48 bg-background border border-border/50 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out origin-top-left z-50">
@@ -149,12 +150,12 @@ const Navigation = () => {
                         const Icon = item.icon ? ICONS[item.icon as string] : undefined;
                         return (
                           <Link
-                            key={item.name}
+                            key={item.nameKey}
                             to={item.href}
                             className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted/50 transition-colors duration-150"
                           >
                             {Icon && <Icon className="w-4 h-4 flex-shrink-0" />}
-                            <span>{item.name}</span>
+                            <span>{t(item.nameKey)}</span>
                           </Link>
                         );
                       })}
@@ -167,16 +168,15 @@ const Navigation = () => {
 
           {/* Actions Desktop */}
           <div className="hidden lg:flex items-center gap-2">
-            {/* Notification Bell */}
             <NotificationBell />
+            <LanguageSelector variant="icon" />
 
-            {/* Theme Toggle */}
             <Button
               onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
               variant="ghost"
               size="sm"
               className="gap-2"
-              title={isDarkMode ? 'Passer au mode clair' : 'Passer au mode sombre'}
+              title={isDarkMode ? t('common.lightMode') : t('common.darkMode')}
             >
               {isDarkMode ? (
                 <Sun className="w-4 h-4 text-amber-500" />
@@ -185,14 +185,13 @@ const Navigation = () => {
               )}
             </Button>
 
-            {/* Zoom Controls */}
             <div className="flex items-center gap-0.5">
               <Button
                 onClick={handleZoomOut}
                 variant="ghost"
                 size="sm"
                 disabled={!canZoomOut}
-                title="Réduire le texte"
+                title={t('common.reduceText')}
               >
                 <ZoomOut className="w-4 h-4" />
               </Button>
@@ -201,7 +200,7 @@ const Navigation = () => {
                 variant="ghost"
                 size="sm"
                 disabled={!canZoomIn}
-                title="Agrandir le texte"
+                title={t('common.enlargeText')}
               >
                 <ZoomIn className="w-4 h-4" />
               </Button>
@@ -213,7 +212,7 @@ const Navigation = () => {
               className="gap-2 text-secondary"
             >
               <Download className="w-4 h-4" />
-              Installer
+              {t('common.install')}
             </Button>
 
             {authLoading ? <div className="w-12" /> : (user ? (
@@ -226,7 +225,7 @@ const Navigation = () => {
                     className="gap-2 text-primary"
                   >
                     <Shield className="w-4 h-4" />
-                    Admin
+                    {t('common.admin')}
                   </Button>
                 )}
                 <Button
@@ -236,7 +235,7 @@ const Navigation = () => {
                   className="gap-2"
                 >
                   <LogOut className="w-4 h-4" />
-                  Déconnexion
+                  {t('common.logout')}
                 </Button>
               </>
             ) : (
@@ -247,7 +246,7 @@ const Navigation = () => {
                   size="sm"
                 >
                   <User className="w-4 h-4 mr-2" />
-                  Connexion
+                  {t('common.login')}
                 </Button>
                 <Button
                   onClick={() => navigate('/auth')}
@@ -255,13 +254,13 @@ const Navigation = () => {
                   size="sm"
                   className="divine-glow"
                 >
-                  Rejoignez-nous
+                  {t('common.joinUs')}
                 </Button>
               </>
             ))}
           </div>
 
-          {/* Menu Mobile - Sheet à droite */}
+          {/* Menu Mobile */}
           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild className="lg:hidden">
               <Button variant="ghost" size="sm">
@@ -281,7 +280,7 @@ const Navigation = () => {
                         onClick={() => setExpandedCategory(isExpanded ? null : cat.id)}
                         className="w-full flex items-center px-0 py-2 text-sm font-bold text-primary uppercase tracking-wider hover:opacity-80 transition-opacity text-left"
                       >
-                        <span>{cat.title}</span>
+                        <span>{t(cat.titleKey)}</span>
                         <ChevronDown 
                           className={`w-4 h-4 transition-transform duration-200 ml-auto flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
                         />
@@ -292,13 +291,13 @@ const Navigation = () => {
                             const Icon = item.icon ? ICONS[item.icon as string] : undefined;
                             return (
                               <Link
-                                key={item.name}
+                                key={item.nameKey}
                                 to={item.href}
                                 className="flex items-center space-x-3 py-2 px-0 rounded-none hover:opacity-80 transition-opacity"
                                 onClick={() => setIsMenuOpen(false)}
                               >
                                 {Icon && <Icon className="w-4 h-4 text-primary flex-shrink-0" />}
-                                <span className="text-sm font-medium">{item.name}</span>
+                                <span className="text-sm font-medium">{t(item.nameKey)}</span>
                               </Link>
                             );
                           })}
@@ -309,6 +308,9 @@ const Navigation = () => {
                 })}
               </div>
                 <div className="border-t border-border/50 pt-4 space-y-2">
+                  {/* Language Selector Mobile */}
+                  <LanguageSelector variant="full" />
+
                   {/* Theme Toggle Mobile */}
                   <Button
                     onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
@@ -318,19 +320,19 @@ const Navigation = () => {
                     {isDarkMode ? (
                       <>
                         <Sun className="w-4 h-4 text-amber-500" />
-                        Mode clair
+                        {t('common.lightMode')}
                       </>
                     ) : (
                       <>
                         <Moon className="w-4 h-4 text-slate-600" />
-                        Mode sombre
+                        {t('common.darkMode')}
                       </>
                     )}
                   </Button>
 
                   {/* Zoom Controls Mobile */}
                   <div className="flex items-center justify-between px-4">
-                    <span className="text-sm text-muted-foreground">Taille texte</span>
+                    <span className="text-sm text-muted-foreground">{t('common.textSize')}</span>
                     <div className="flex items-center gap-1">
                       <Button onClick={handleZoomOut} variant="ghost" size="sm" disabled={!canZoomOut}>
                         <ZoomOut className="w-4 h-4" />
@@ -354,7 +356,7 @@ const Navigation = () => {
                     className="w-full justify-start text-secondary"
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Installer l'app
+                    {t('common.installApp')}
                   </Button>
 
                   {user ? (
@@ -369,7 +371,7 @@ const Navigation = () => {
                           className="w-full justify-start text-primary"
                         >
                           <Shield className="w-4 h-4 mr-2" />
-                          Admin
+                          {t('common.admin')}
                         </Button>
                       )}
                       <Button
@@ -381,7 +383,7 @@ const Navigation = () => {
                         className="w-full justify-start"
                       >
                         <LogOut className="w-4 h-4 mr-2" />
-                        Déconnexion
+                        {t('common.logout')}
                       </Button>
                     </>
                   ) : (
@@ -395,7 +397,7 @@ const Navigation = () => {
                         className="w-full justify-start"
                       >
                         <User className="w-4 h-4 mr-2" />
-                        Connexion
+                        {t('common.login')}
                       </Button>
                       <Button
                         onClick={() => {
@@ -405,7 +407,7 @@ const Navigation = () => {
                         variant="default"
                         className="w-full divine-glow"
                       >
-                        Rejoignez-nous
+                        {t('common.joinUs')}
                       </Button>
                     </>
                   )}

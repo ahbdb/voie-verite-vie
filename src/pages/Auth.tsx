@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,7 @@ const countryCodes = [
 ];
 
 const Auth = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -52,8 +54,8 @@ const Auth = () => {
     
     if (!email.trim() || !password.trim()) {
       toast({
-        title: "Champs requis",
-        description: "Veuillez remplir tous les champs",
+        title: t('auth.requiredFields'),
+        description: t('auth.fillAllFields'),
         variant: "destructive",
       });
       return;
@@ -65,32 +67,32 @@ const Auth = () => {
        const { error } = await signIn(email.trim(), password);
 
       if (error) {
-        let errorMessage = "Erreur de connexion";
+        let errorMessage = t('auth.loginError');
         if (error.message.includes('Invalid login credentials')) {
-          errorMessage = "Email ou mot de passe incorrect";
+          errorMessage = t('auth.wrongCredentials');
         } else if (error.message.includes('Email not confirmed')) {
-          errorMessage = "Veuillez confirmer votre email";
+          errorMessage = t('auth.confirmEmail');
         } else if (error.message.includes('fetch')) {
-          errorMessage = "Problème de connexion internet. Vérifiez votre connexion.";
+          errorMessage = t('auth.networkError');
         }
         
         toast({
-          title: "Erreur",
+          title: t('common.error'),
           description: errorMessage,
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Connexion réussie",
-          description: "Bienvenue !",
+          title: t('auth.loginSuccess'),
+          description: t('auth.welcome'),
            duration: 2000,
         });
         navigate('/');
       }
     } catch (err) {
       toast({
-        title: "Erreur de connexion",
-        description: "Problème de réseau. Vérifiez votre connexion internet.",
+        title: t('auth.loginError'),
+        description: t('auth.networkError'),
         variant: "destructive",
       });
     } finally {
@@ -103,8 +105,8 @@ const Auth = () => {
     
     if (!fullName.trim()) {
       toast({
-        title: "Erreur",
-        description: "Veuillez entrer votre nom complet",
+        title: t('common.error'),
+        description: t('auth.enterFullName'),
         variant: "destructive",
       });
       return;
@@ -112,8 +114,8 @@ const Auth = () => {
 
     if (password !== confirmPassword) {
       toast({
-        title: "Erreur",
-        description: "Les mots de passe ne correspondent pas",
+        title: t('common.error'),
+        description: t('auth.passwordMismatch'),
         variant: "destructive",
       });
       return;
@@ -121,8 +123,8 @@ const Auth = () => {
 
     if (password.length < 6) {
       toast({
-        title: "Erreur",
-        description: "Le mot de passe doit contenir au moins 6 caractères",
+        title: t('common.error'),
+        description: t('auth.passwordTooShort'),
         variant: "destructive",
       });
       return;
@@ -142,20 +144,20 @@ const Auth = () => {
       if (error) {
         let errorMessage = error.message;
         if (error.message.includes('fetch')) {
-          errorMessage = "Problème de connexion internet. Vérifiez votre connexion.";
+          errorMessage = t('auth.networkError');
         } else if (error.message.includes('already registered')) {
-          errorMessage = "Cet email est déjà utilisé";
+          errorMessage = t('auth.emailAlreadyUsed');
         }
         
         toast({
-          title: "Erreur d'inscription",
+          title: t('auth.signUpError'),
           description: errorMessage,
           variant: "destructive",
         });
       } else {
         toast({
-          title: `Bienvenue ${fullName} !`,
-          description: "Que Dieu vous bénisse dans votre cheminement spirituel avec 3V.",
+          title: t('auth.welcomeUser', { name: fullName }),
+          description: t('auth.welcomeMessage'),
           duration: 2500,
         });
 
@@ -170,8 +172,8 @@ const Auth = () => {
       }
     } catch (err) {
       toast({
-        title: "Erreur d'inscription",
-        description: "Problème de réseau. Vérifiez votre connexion internet.",
+        title: t('auth.signUpError'),
+        description: t('auth.networkError'),
         variant: "destructive",
       });
     } finally {
@@ -186,20 +188,20 @@ const Auth = () => {
           <div className="flex justify-center mb-4">
             <img src={logo3V} alt="3V Logo" className="w-20 h-20 object-contain" />
           </div>
-          <CardTitle className="text-2xl font-playfair">3V - Voie, Vérité, Vie</CardTitle>
-          <CardDescription>Connectez-vous pour accéder à votre parcours biblique</CardDescription>
+          <CardTitle className="text-2xl font-playfair">{t('auth.title')}</CardTitle>
+          <CardDescription>{t('auth.subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Connexion</TabsTrigger>
-              <TabsTrigger value="signup">Inscription</TabsTrigger>
+              <TabsTrigger value="signin">{t('auth.signIn')}</TabsTrigger>
+              <TabsTrigger value="signup">{t('auth.signUp')}</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('auth.email')}</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -214,7 +216,7 @@ const Auth = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Mot de passe</Label>
+                  <Label htmlFor="password">{t('auth.password')}</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -236,7 +238,7 @@ const Auth = () => {
                   </div>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Connexion..." : "Se connecter"}
+                  {loading ? t('auth.signingIn') : t('auth.signInBtn')}
                 </Button>
               </form>
             </TabsContent>
@@ -244,13 +246,13 @@ const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="fullname">Nom complet *</Label>
+                  <Label htmlFor="fullname">{t('auth.fullName')} *</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="fullname"
                       type="text"
-                      placeholder="Votre nom"
+                      placeholder={t('contact.yourName')}
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       className="pl-10"
@@ -259,7 +261,7 @@ const Auth = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email *</Label>
+                  <Label htmlFor="signup-email">{t('auth.email')} *</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -274,7 +276,7 @@ const Auth = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Téléphone</Label>
+                  <Label>{t('auth.phone')}</Label>
                   <div className="flex gap-2">
                     <Select value={phoneCountryCode} onValueChange={setPhoneCountryCode}>
                       <SelectTrigger className="w-32">
@@ -301,7 +303,7 @@ const Auth = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Mot de passe *</Label>
+                  <Label htmlFor="signup-password">{t('auth.password')} *</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -324,7 +326,7 @@ const Auth = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirmer le mot de passe *</Label>
+                  <Label htmlFor="confirm-password">{t('auth.confirmPassword')} *</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -347,7 +349,7 @@ const Auth = () => {
                   </div>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Inscription..." : "S'inscrire"}
+                  {loading ? t('auth.signingUp') : t('auth.signUpBtn')}
                 </Button>
               </form>
             </TabsContent>
