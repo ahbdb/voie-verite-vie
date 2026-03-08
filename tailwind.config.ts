@@ -18,8 +18,9 @@ export default {
 			}
 		},
 		extend: {
-			fontFamily: {
+		fontFamily: {
 				'playfair': ['Playfair Display', 'serif'],
+				'cinzel': ['Cinzel', 'Playfair Display', 'serif'],
 				'inter': ['Inter', 'sans-serif'],
 			},
 			colors: {
