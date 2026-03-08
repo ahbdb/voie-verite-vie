@@ -459,7 +459,7 @@ const Careme2026 = memo(() => {
                 <CardHeader className="bg-gradient-to-r from-violet-50 to-violet-100/50 dark:bg-gradient-to-r dark:from-violet-950 dark:to-violet-900/50">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Flame className="w-5 h-5 text-violet-600" />
-                    Les 3 Piliers
+                    {t('careme.threePillars')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-3">
