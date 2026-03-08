@@ -127,7 +127,7 @@ const AdminNeuvaines = () => {
       introduction: introduction.trim() || null,
       is_published: isPublished,
       total_days: totalDays,
-      days: days,
+      days: days as any,
       pdf_url: pdfUrl.trim() || null,
     };
 
