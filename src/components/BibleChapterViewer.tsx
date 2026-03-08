@@ -38,7 +38,8 @@ export const BibleChapterViewer = ({
 
     const loadChapter = async () => {
       try {
-        setLoading(true);
+      setLoading(true);
+        setInitialLoadDone(false);
         setError(null);
 
         // Load French verses from local data
