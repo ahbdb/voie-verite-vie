@@ -5,6 +5,7 @@ import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
 import BibleChapterViewer from './BibleChapterViewer';
 import bibleBooks from '@/data/bible-books.json';
+import { translateBookName, getBookAbbreviation } from '@/lib/bible-utils';
 
 interface Reading {
   id: string;
@@ -39,13 +40,16 @@ export default function DayReadingViewer({ reading, onClose }: DayReadingViewerP
         return chapters;
       }
 
+      const localizedName = translateBookName(bookName, i18n.language);
+      const localizedAbbr = getBookAbbreviation(book, i18n.language);
+
       if (chaptersStr.includes('-') && !chaptersStr.includes(',')) {
         const [start, end] = chaptersStr.split('-').map(s => parseInt(s.trim()));
         for (let i = start; i <= end; i++) {
           chapters.push({ 
             bookId: book.fileName,
-            bookName: book.name,
-            abbreviation: book.abbreviation,
+            bookName: localizedName,
+            abbreviation: localizedAbbr,
             chapterNumber: i 
           });
         }
@@ -58,8 +62,8 @@ export default function DayReadingViewer({ reading, onClose }: DayReadingViewerP
           if (!isNaN(num)) {
             chapters.push({ 
               bookId: book.fileName,
-              bookName: book.name,
-              abbreviation: book.abbreviation,
+              bookName: localizedName,
+              abbreviation: localizedAbbr,
               chapterNumber: num 
             });
           }
@@ -82,6 +86,7 @@ export default function DayReadingViewer({ reading, onClose }: DayReadingViewerP
     year: 'numeric'
   });
 
+  const translatedBookName = translateBookName(reading.books, i18n.language);
   const chaptersDisplay = reading.chapters.includes('-')
     ? `${reading.chapters.split('-')[0]} ${t('biblicalReading.to', { defaultValue: 'à' })} ${reading.chapters.split('-')[1]}`
     : reading.chapters;
@@ -133,7 +138,7 @@ export default function DayReadingViewer({ reading, onClose }: DayReadingViewerP
             </Button>
             <div className="flex-1">
               <h1 className="text-2xl md:text-4xl font-playfair font-bold mb-1">
-                {t('biblicalReading.day')} {reading.day_number}: {reading.books} {chaptersDisplay}
+                {t('biblicalReading.day')} {reading.day_number}: {translatedBookName} {chaptersDisplay}
               </h1>
               <p className="text-sm text-muted-foreground">
                 {dateStr.charAt(0).toUpperCase() + dateStr.slice(1)} • {reading.chapters_count > 1 

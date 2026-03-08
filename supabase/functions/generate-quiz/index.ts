@@ -11,58 +11,89 @@ serve(async (req) => {
   }
 
   try {
-    const { books, chapters, dayNumber, difficulty } = await req.json();
+    const { books, chapters, dayNumber, difficulty, language } = await req.json();
+    const lang = (language || 'fr').split('-')[0];
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log(`Generating ${difficulty} quiz for: ${books}, chapters ${chapters}, day ${dayNumber}`);
+    console.log(`Generating ${difficulty} quiz in ${lang} for: ${books}, chapters ${chapters}, day ${dayNumber}`);
 
-    const difficultyInstructions = {
-      easy: "Questions de niveau débutant/facile. Questions simples sur les faits principaux, les personnages, les événements clés. Pas de questions sur des détails obscurs.",
-      medium: "Questions de niveau intermédiaire. Questions sur les thèmes, les leçons morales, les liens entre passages. Quelques questions sur des références de versets.",
-      hard: "Questions de niveau difficile. Questions approfondies sur l'exégèse, les références de versets précis, les parallèles bibliques, le contexte historique.",
-      expert: "Questions de niveau expert/super difficile. Questions très complexes sur les nuances théologiques, les références croisées avec d'autres livres, l'analyse littéraire, les termes originaux hébreux/grecs."
+    const langInstructions: Record<string, { difficultyLabels: Record<string, string>, systemBase: string, promptBase: string }> = {
+      fr: {
+        difficultyLabels: {
+          easy: "Questions de niveau débutant/facile. Questions simples sur les faits principaux, les personnages, les événements clés.",
+          medium: "Questions de niveau intermédiaire. Questions sur les thèmes, les leçons morales, les liens entre passages.",
+          hard: "Questions de niveau difficile. Questions approfondies sur l'exégèse, les références de versets précis, les parallèles bibliques.",
+          expert: "Questions de niveau expert. Questions très complexes sur les nuances théologiques, les références croisées, l'analyse littéraire."
+        },
+        systemBase: `Tu es un expert en théologie catholique et en études bibliques. Tu génères des quiz éducatifs sur la Bible en français.
+Tu dois créer exactement 20 questions au total: 15 questions à choix multiples et 5 questions à réponse ouverte COURTES.
+IMPORTANT: Inclus des questions sur des références de versets précis, personnages, lieux, événements, interprétation et exégèse.
+Les questions ouvertes doivent appeler des réponses de 2-3 phrases maximum.
+Réponds UNIQUEMENT en JSON valide.`,
+        promptBase: `Génère un quiz de niveau DIFFICULTY sur BOOKS, chapitres CHAPTERS.`
+      },
+      en: {
+        difficultyLabels: {
+          easy: "Beginner/easy level questions. Simple questions about main facts, characters, key events.",
+          medium: "Intermediate level questions. Questions about themes, moral lessons, connections between passages.",
+          hard: "Difficult level questions. In-depth questions about exegesis, precise verse references, biblical parallels.",
+          expert: "Expert level questions. Very complex questions about theological nuances, cross-references, literary analysis."
+        },
+        systemBase: `You are an expert in Catholic theology and biblical studies. You generate educational Bible quizzes in English.
+You must create exactly 20 questions total: 15 multiple choice questions and 5 SHORT open-ended questions.
+IMPORTANT: Include questions about precise verse references, characters, places, events, interpretation and exegesis.
+Open-ended questions should require 2-3 sentence answers maximum.
+Respond ONLY in valid JSON.`,
+        promptBase: `Generate a DIFFICULTY level quiz on BOOKS, chapters CHAPTERS.`
+      },
+      it: {
+        difficultyLabels: {
+          easy: "Domande di livello principiante/facile. Domande semplici sui fatti principali, personaggi, eventi chiave.",
+          medium: "Domande di livello intermedio. Domande su temi, lezioni morali, collegamenti tra passaggi.",
+          hard: "Domande di livello difficile. Domande approfondite sull'esegesi, riferimenti precisi ai versetti, paralleli biblici.",
+          expert: "Domande di livello esperto. Domande molto complesse sulle sfumature teologiche, riferimenti incrociati, analisi letteraria."
+        },
+        systemBase: `Sei un esperto di teologia cattolica e studi biblici. Generi quiz educativi sulla Bibbia in italiano.
+Devi creare esattamente 20 domande in totale: 15 domande a scelta multipla e 5 domande aperte BREVI.
+IMPORTANTE: Includi domande su riferimenti precisi ai versetti, personaggi, luoghi, eventi, interpretazione ed esegesi.
+Le domande aperte devono richiedere risposte di 2-3 frasi al massimo.
+Rispondi SOLO in JSON valido.`,
+        promptBase: `Genera un quiz di livello DIFFICULTY su BOOKS, capitoli CHAPTERS.`
+      }
     };
 
-    const systemPrompt = `Tu es un expert en théologie catholique et en études bibliques. Tu génères des quiz éducatifs sur la Bible.
-Tu dois créer exactement 20 questions au total: 15 questions à choix multiples et 5 questions à réponse ouverte COURTES.
-Les questions doivent porter sur le contenu spécifique des livres et chapitres mentionnés.
-${difficultyInstructions[difficulty as keyof typeof difficultyInstructions] || difficultyInstructions.easy}
+    const instructions = langInstructions[lang] || langInstructions.fr;
+    const diffLabel = instructions.difficultyLabels[difficulty as string] || instructions.difficultyLabels.easy;
 
-IMPORTANT pour les questions:
-- Inclus des questions sur des références de versets précis (ex: "Dans quel verset trouve-t-on...")
-- Pose des questions sur les personnages, lieux, événements
-- Inclus des questions d'interprétation et d'exégèse
-- Les questions doivent être variées et couvrir tout le passage
-- Les questions ouvertes doivent être COURTES et appeler des réponses de 2-3 phrases maximum
+    const systemPrompt = `${instructions.systemBase}
+${diffLabel}`;
 
-Réponds UNIQUEMENT en JSON valide, sans commentaires ni texte supplémentaire.`;
+    const userPrompt = `${instructions.promptBase.replace('DIFFICULTY', difficulty).replace('BOOKS', books).replace('CHAPTERS', chapters)}
 
-    const userPrompt = `Génère un quiz de niveau ${difficulty} sur ${books}, chapitres ${chapters}.
-
-Format JSON requis:
+Format JSON:
 {
   "multipleChoice": [
     {
-      "question": "La question avec référence de verset si applicable",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "question": "...",
+      "options": ["A", "B", "C", "D"],
       "correctIndex": 0,
-      "explanation": "Explication détaillée avec référence biblique"
+      "explanation": "..."
     }
   ],
   "openEnded": [
     {
-      "question": "Question courte demandant une réflexion brève",
-      "keyPoints": ["Point clé 1", "Point clé 2"],
-      "sampleAnswer": "Réponse attendue en 2-3 phrases"
+      "question": "...",
+      "keyPoints": ["..."],
+      "sampleAnswer": "..."
     }
   ]
 }
 
-Génère exactement 15 questions à choix multiples et 5 questions à réponse ouverte courtes.`;
+15 multiple choice + 5 open-ended.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -82,17 +113,14 @@ Génère exactement 15 questions à choix multiples et 5 questions à réponse o
     if (!response.ok) {
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limits exceeded" }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (response.status === 402) {
         return new Response(JSON.stringify({ error: "Payment required" }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       throw new Error("AI gateway error");
@@ -100,64 +128,37 @@ Génère exactement 15 questions à choix multiples et 5 questions à réponse o
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
-    
-    if (!content) {
-      throw new Error("No content from AI");
-    }
-
-    console.log("AI response received, parsing...");
+    if (!content) throw new Error("No content from AI");
 
     let quizData;
     try {
       let jsonStr = content.trim();
-      if (jsonStr.startsWith("```json")) {
-        jsonStr = jsonStr.slice(7);
-      }
-      if (jsonStr.startsWith("```")) {
-        jsonStr = jsonStr.slice(3);
-      }
-      if (jsonStr.endsWith("```")) {
-        jsonStr = jsonStr.slice(0, -3);
-      }
+      if (jsonStr.startsWith("```json")) jsonStr = jsonStr.slice(7);
+      if (jsonStr.startsWith("```")) jsonStr = jsonStr.slice(3);
+      if (jsonStr.endsWith("```")) jsonStr = jsonStr.slice(0, -3);
       quizData = JSON.parse(jsonStr.trim());
       
-      // Validation de la structure
       if (!quizData.multipleChoice || !quizData.openEnded) {
         throw new Error("Invalid quiz structure");
       }
       
-      // Vérifier que chaque question MC a les bonnes données
+      // Shuffle MC options
       quizData.multipleChoice = quizData.multipleChoice.map((q: any, idx: number) => {
-        if (!q.options || q.options.length < 2) {
-          throw new Error(`Question ${idx} missing options`);
-        }
+        if (!q.options || q.options.length < 2) throw new Error(`Q${idx} missing options`);
         if (q.correctIndex === undefined || q.correctIndex < 0 || q.correctIndex >= q.options.length) {
-          throw new Error(`Question ${idx} has invalid correctIndex`);
+          throw new Error(`Q${idx} invalid correctIndex`);
         }
-        
-        // Mélanger les réponses SAUF si correctIndex est déjà approprié
-        // Pour éviter que la première soit toujours correcte
         const options = [...q.options];
         const correctAnswer = options[q.correctIndex];
-        
-        // Shuffle les options et mettre à jour correctIndex
         for (let i = options.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [options[i], options[j]] = [options[j], options[i]];
         }
-        
-        const newCorrectIndex = options.indexOf(correctAnswer);
-        
-        return {
-          ...q,
-          options,
-          correctIndex: newCorrectIndex
-        };
+        return { ...q, options, correctIndex: options.indexOf(correctAnswer) };
       });
       
     } catch (parseError) {
-      console.error("Failed to parse quiz JSON:", parseError);
-      console.error("Content was:", content);
+      console.error("Failed to parse quiz JSON:", parseError, content);
       throw new Error("Failed to parse quiz data");
     }
 
@@ -169,8 +170,7 @@ Génère exactement 15 questions à choix multiples et 5 questions à réponse o
     console.error("Error generating quiz:", error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });

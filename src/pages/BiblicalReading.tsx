@@ -15,6 +15,7 @@ import { QuizModal } from '@/components/QuizModal';
 import { BibleBookSelector } from '@/components/BibleBookSelector';
 import DayReadingViewer from '@/components/DayReadingViewer';
 import { logger } from '@/lib/logger';
+import { translateBookName } from '@/lib/bible-utils';
 
 interface Reading {
   id: string;
@@ -373,7 +374,7 @@ const BiblicalReading = () => {
                               className="p-0 h-auto font-semibold text-primary hover:text-primary/80 justify-start w-full text-left break-words"
                               onClick={() => openDayReading(reading)}
                             >
-                              {reading.books} {reading.chapters.includes('-') 
+                              {translateBookName(reading.books, i18n.language)} {reading.chapters.includes('-') 
                                 ? `${reading.chapters.split('-')[0]} ${t('biblicalReading.to', { defaultValue: 'à' })} ${reading.chapters.split('-')[1]}`
                                 : reading.chapters}
                             </Button>

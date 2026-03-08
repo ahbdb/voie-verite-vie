@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import BibleChapterViewer from '@/components/BibleChapterViewer';
 import { preloadBibleChapters, clearBibleCache } from '@/lib/bible-content-loader';
 import bibleBooks from '@/data/bible-books.json';
+import { getBookName, getBookAbbreviation } from '@/lib/bible-utils';
 
 interface BookData {
   id: number;
@@ -23,7 +24,7 @@ interface BookData {
 }
 
 const BibleBookDetail = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
   const [book, setBook] = useState<BookData | null>(null);
@@ -74,6 +75,8 @@ const BibleBookDetail = () => {
     );
   }
 
+  const localizedName = getBookName(book, i18n.language);
+  const localizedAbbr = getBookAbbreviation(book, i18n.language);
   const testamentName = book.testament === 'old' ? t('bibleBook.oldTestament') : t('bibleBook.newTestament');
   const chapters = Array.from({ length: book.chapters }, (_, i) => i + 1);
 
@@ -89,8 +92,8 @@ const BibleBookDetail = () => {
               </Button>
               <div className="text-right">
                 <div className="flex items-center gap-2 justify-end">
-                  <h1 className="text-3xl md:text-5xl font-playfair font-bold text-primary">{book.name}</h1>
-                  <Badge variant="default" className="text-lg px-3 py-1 h-fit">{book.abbreviation}</Badge>
+                  <h1 className="text-3xl md:text-5xl font-playfair font-bold text-primary">{localizedName}</h1>
+                  <Badge variant="default" className="text-lg px-3 py-1 h-fit">{localizedAbbr}</Badge>
                 </div>
                 {book.apocrypha && (
                   <Badge variant="secondary" className="mt-2">{t('bibleBook.deuterocanonical')}</Badge>
@@ -105,8 +108,8 @@ const BibleBookDetail = () => {
             {selectedChapter ? (
               <BibleChapterViewer
                 bookId={book.fileName}
-                bookName={book.name}
-                abbreviation={book.abbreviation}
+                bookName={localizedName}
+                abbreviation={localizedAbbr}
                 chapterNumber={selectedChapter}
                 onBack={() => setSelectedChapter(null)}
               />
@@ -145,11 +148,11 @@ const BibleBookDetail = () => {
                     <CardContent className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">{t('bibleBook.fullName')}:</span>
-                        <span className="font-semibold">{book.name}</span>
+                        <span className="font-semibold">{localizedName}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">{t('bibleBook.abbreviation')}:</span>
-                        <span className="font-semibold">{book.abbreviation}</span>
+                        <span className="font-semibold">{localizedAbbr}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">{t('bibleBook.chaptersCount')}:</span>
@@ -172,7 +175,7 @@ const BibleBookDetail = () => {
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
                       <p className="text-muted-foreground">
-                        {t('bibleBook.bookOrder', { name: book.name, order: book.order })}
+                        {t('bibleBook.bookOrder', { name: localizedName, order: book.order })}
                       </p>
                       {book.apocrypha && (
                         <p className="text-amber-600 bg-amber-50 p-2 rounded">

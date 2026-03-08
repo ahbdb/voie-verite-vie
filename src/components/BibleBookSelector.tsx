@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { BookOpen, Search } from 'lucide-react';
 import bibleBooks from '@/data/bible-books.json';
+import { getBookName, getBookAbbreviation } from '@/lib/bible-utils';
 
 interface BookData {
   id: number;
@@ -22,9 +23,10 @@ interface BookData {
 
 export const BibleBookSelector = ({ onBookSelect }: { onBookSelect?: (book: BookData) => void }) => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTestament, setSelectedTestament] = useState<'all' | 'old' | 'new'>('all');
+  const lang = i18n.language;
 
   const handleBookClick = (book: BookData) => {
     navigate(`/bible-book/${book.fileName}`);
@@ -39,12 +41,13 @@ export const BibleBookSelector = ({ onBookSelect }: { onBookSelect?: (book: Book
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(book =>
-        book.name.toLowerCase().includes(term) ||
-        book.abbreviation.toLowerCase().includes(term)
+        getBookName(book, lang).toLowerCase().includes(term) ||
+        getBookAbbreviation(book, lang).toLowerCase().includes(term) ||
+        book.name.toLowerCase().includes(term)
       );
     }
     return filtered;
-  }, [searchTerm, selectedTestament]);
+  }, [searchTerm, selectedTestament, lang]);
 
   const oldTestamentBooks = (bibleBooks.books as BookData[]).filter((b: BookData) => b.testament === 'old' && !b.apocrypha);
   const apocryphaBooks = (bibleBooks.books as BookData[]).filter((b: BookData) => b.apocrypha);
@@ -59,11 +62,11 @@ export const BibleBookSelector = ({ onBookSelect }: { onBookSelect?: (book: Book
       <CardContent className="p-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
-            <h4 className="font-semibold text-sm leading-tight">{book.name}</h4>
+            <h4 className="font-semibold text-sm leading-tight">{getBookName(book, lang)}</h4>
             <p className="text-xs text-muted-foreground">{book.chapters} ch.</p>
           </div>
           <Badge variant={showDeutero ? "secondary" : "outline"} className="shrink-0 text-xs">
-            {book.abbreviation}
+            {getBookAbbreviation(book, lang)}
           </Badge>
         </div>
         {book.apocrypha && showDeutero && (

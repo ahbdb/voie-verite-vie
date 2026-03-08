@@ -1,4 +1,5 @@
 import { useState, useCallback, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -48,16 +49,10 @@ interface QuizModalProps {
   } | null;
 }
 
-const difficultyLevels = [
-  { key: 'easy', label: 'Facile', icon: Star, color: 'bg-green-500', questions: '15 QCM + 10 ouvertes' },
-  { key: 'medium', label: 'Intermédiaire', icon: Zap, color: 'bg-yellow-500', questions: '15 QCM + 10 ouvertes' },
-  { key: 'hard', label: 'Difficile', icon: Flame, color: 'bg-orange-500', questions: '15 QCM + 10 ouvertes' },
-  { key: 'expert', label: 'Super Difficile', icon: Crown, color: 'bg-red-500', questions: '15 QCM + 10 ouvertes' },
-];
-
 export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => {
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
-  const [generationProgress, setGenerationProgress] = useState(0); // 0-100
+  const [generationProgress, setGenerationProgress] = useState(0);
   const [evaluating, setEvaluating] = useState(false);
   const [quizData, setQuizData] = useState<QuizData | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
@@ -72,7 +67,6 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
   const [quizCompleted, setQuizCompleted] = useState(false);
   const { toast } = useToast();
   
-  // Web Speech API
   const {
     isListening,
     isSpeaking,
@@ -86,9 +80,16 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
       setOpenAnswer(prev => (prev ? prev + ' ' : '') + text);
     },
     onError: (error) => {
-      toast({ title: 'Erreur micro', description: error, variant: 'destructive' });
+      toast({ title: t('quiz.micError'), description: error, variant: 'destructive' });
     }
   });
+
+  const difficultyLevels = [
+    { key: 'easy', label: t('quiz.easy'), icon: Star, color: 'bg-green-500', questions: '15 QCM + 5 ' + t('quiz.openQuestions') },
+    { key: 'medium', label: t('quiz.medium'), icon: Zap, color: 'bg-yellow-500', questions: '15 QCM + 5 ' + t('quiz.openQuestions') },
+    { key: 'hard', label: t('quiz.hard'), icon: Flame, color: 'bg-orange-500', questions: '15 QCM + 5 ' + t('quiz.openQuestions') },
+    { key: 'expert', label: t('quiz.expert'), icon: Crown, color: 'bg-red-500', questions: '15 QCM + 5 ' + t('quiz.openQuestions') },
+  ];
 
   const resetQuiz = useCallback(() => {
     setQuizData(null);
@@ -123,14 +124,13 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
     setQuizCompleted(false);
 
     const startTime = Date.now();
-    const estimatedTime = 8000; // 8 secondes estimées pour la génération
+    const estimatedTime = 8000;
 
-    // Progression linéaire et continue jusqu'à 95%
     const progressInterval = setInterval(() => {
       const elapsed = Date.now() - startTime;
-      const progressPercent = (elapsed / estimatedTime) * 95; // Aller jusqu'à 95%
+      const progressPercent = (elapsed / estimatedTime) * 95;
       setGenerationProgress(Math.floor(Math.min(progressPercent, 95)));
-    }, 100); // Mise à jour toutes les 100ms pour fluidité
+    }, 100);
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-quiz', {
@@ -138,27 +138,21 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
           books: reading.books,
           chapters: reading.chapters,
           dayNumber: reading.day_number,
-          difficulty
+          difficulty,
+          language: i18n.language
         }
       });
 
-      // Arrêter le timer et mettre à 100% immédiatement
       clearInterval(progressInterval);
-
       if (error) throw error;
-      
-      if (data && data.error) {
-        throw new Error(data.error);
-      }
+      if (data && data.error) throw new Error(data.error);
 
-      // Afficher le quiz immédiatement quand reçu
       if (data && data.multipleChoice && data.openEnded) {
         setQuizData(data);
       } else {
-        throw new Error('Format de quiz invalide');
+        throw new Error('Invalid quiz format');
       }
 
-      // Assurer que la progression atteint 100%
       setGenerationProgress(100);
       setLoading(false);
     } catch (err) {
@@ -168,12 +162,12 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
       setGenerationProgress(0);
       console.error('Quiz generation error:', err);
       toast({ 
-        title: "Erreur", 
-        description: "Impossible de générer le quiz. Veuillez réessayer.",
+        title: t('common.error'), 
+        description: t('quiz.generateError'),
         variant: "destructive" 
       });
     }
-  }, [reading, toast]);
+  }, [reading, toast, i18n.language, t]);
 
   const handleMCAnswer = useCallback((index: number) => {
     if (showResult || !quizData) return;
@@ -198,24 +192,21 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
           keyPoints: currentQuestion.keyPoints,
           sampleAnswer: currentQuestion.sampleAnswer,
           books: reading.books,
-          chapters: reading.chapters
+          chapters: reading.chapters,
+          language: i18n.language
         }
       });
 
       if (error) throw error;
-      
       setCurrentEvaluation(data);
       setOpenScores(prev => [...prev, data]);
       setShowResult(true);
     } catch (error) {
       console.error('Error evaluating answer:', error);
       const fallbackEval: Evaluation = {
-        score: 5,
-        maxScore: 10,
-        feedback: "Merci pour votre réponse !",
-        strengths: [],
-        improvements: [],
-        missingPoints: []
+        score: 5, maxScore: 10,
+        feedback: t('quiz.thankYou'),
+        strengths: [], improvements: [], missingPoints: []
       };
       setCurrentEvaluation(fallbackEval);
       setOpenScores(prev => [...prev, fallbackEval]);
@@ -223,7 +214,7 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
     } finally {
       setEvaluating(false);
     }
-  }, [openAnswer, quizData, reading, currentIndex]);
+  }, [openAnswer, quizData, reading, currentIndex, i18n.language, t]);
 
   const handleNext = useCallback(() => {
     if (currentSection === 'mc') {
@@ -258,17 +249,13 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
     ? currentIndex + 1 
     : (quizData?.multipleChoice.length || 0) + currentIndex + 1;
 
-  const DifficultyIcon = selectedDifficulty 
-    ? difficultyLevels.find(d => d.key === selectedDifficulty)?.icon || Star
-    : Star;
-
   return (
     <Dialog open={isOpen} onOpenChange={() => { resetQuiz(); onClose(); }}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Brain className="w-5 h-5 text-primary" />
-            Quiz - Jour {reading?.day_number}
+            Quiz - {t('biblicalReading.day')} {reading?.day_number}
             {selectedDifficulty && (
               <Badge className={difficultyLevels.find(d => d.key === selectedDifficulty)?.color}>
                 {difficultyLevels.find(d => d.key === selectedDifficulty)?.label}
@@ -282,9 +269,9 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
           <div className="py-4">
             <div className="text-center mb-6">
               <BookOpen className="w-12 h-12 text-primary mx-auto mb-3" />
-              <h3 className="text-lg font-semibold mb-1">Choisissez votre niveau</h3>
+              <h3 className="text-lg font-semibold mb-1">{t('quiz.chooseLevel')}</h3>
               <p className="text-sm text-muted-foreground">
-                {reading?.books}, chapitres {reading?.chapters}
+                {reading?.books}, {t('quiz.chaptersLabel')} {reading?.chapters}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -314,10 +301,10 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
           <div className="text-center py-8 space-y-4">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
             <div className="space-y-2">
-              <p className="text-primary font-semibold">Génération du quiz en cours...</p>
+              <p className="text-primary font-semibold">{t('quiz.generating')}</p>
               <Progress value={generationProgress} className="h-2" />
               <p className="text-sm text-muted-foreground font-semibold">{Math.floor(generationProgress)}%</p>
-              <p className="text-xs text-muted-foreground mt-3">VOIE, VÉRITÉ, VIE vous propose 25 questions (15 QCM + 10 ouvertes)</p>
+              <p className="text-xs text-muted-foreground mt-3">{t('quiz.brandMessage')}</p>
             </div>
           </div>
         )}
@@ -327,10 +314,12 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Badge variant="outline">
-                Question {currentQuestionNumber}/{totalQuestions}
+                {t('quiz.question')} {currentQuestionNumber}/{totalQuestions}
               </Badge>
               <Badge variant="secondary">
-                {currentSection === 'mc' ? `QCM (${currentIndex + 1}/${quizData.multipleChoice.length})` : `Ouverte (${currentIndex + 1}/${quizData.openEnded.length})`}
+                {currentSection === 'mc' 
+                  ? `QCM (${currentIndex + 1}/${quizData.multipleChoice.length})` 
+                  : `${t('quiz.openLabel')} (${currentIndex + 1}/${quizData.openEnded.length})`}
               </Badge>
             </div>
             
@@ -350,26 +339,15 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
                       
                       let className = "w-full text-left p-3 rounded-lg border transition-colors text-sm ";
                       if (showResult) {
-                        if (isCorrect) {
-                          className += "bg-green-50 border-green-500 text-green-800";
-                        } else if (isSelected) {
-                          className += "bg-red-50 border-red-500 text-red-800";
-                        } else {
-                          className += "bg-muted opacity-50";
-                        }
+                        if (isCorrect) className += "bg-green-50 border-green-500 text-green-800";
+                        else if (isSelected) className += "bg-red-50 border-red-500 text-red-800";
+                        else className += "bg-muted opacity-50";
                       } else {
-                        className += isSelected 
-                          ? "bg-primary/10 border-primary" 
-                          : "hover:bg-muted";
+                        className += isSelected ? "bg-primary/10 border-primary" : "hover:bg-muted";
                       }
 
                       return (
-                        <button
-                          key={idx}
-                          onClick={() => handleMCAnswer(idx)}
-                          className={className}
-                          disabled={showResult}
-                        >
+                        <button key={idx} onClick={() => handleMCAnswer(idx)} className={className} disabled={showResult}>
                           <div className="flex items-center gap-2">
                             {showResult && isCorrect && <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />}
                             {showResult && isSelected && !isCorrect && <XCircle className="w-4 h-4 text-red-600 flex-shrink-0" />}
@@ -382,7 +360,7 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
                   {showResult && quizData.multipleChoice[currentIndex].explanation && (
                     <div className="mt-4 p-3 bg-muted rounded-lg">
                       <p className="text-sm text-muted-foreground">
-                        <strong>Explication:</strong> {quizData.multipleChoice[currentIndex].explanation}
+                        <strong>{t('quiz.explanation')}:</strong> {quizData.multipleChoice[currentIndex].explanation}
                       </p>
                     </div>
                   )}
@@ -401,34 +379,23 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
                     <Textarea
                       value={openAnswer}
                       onChange={(e) => setOpenAnswer(e.target.value)}
-                      placeholder="Écrivez votre réponse détaillée... ou utilisez le microphone"
+                      placeholder={t('quiz.openPlaceholder')}
                       rows={5}
                       disabled={showResult || evaluating || isListening}
                       className="mb-4"
                     />
                     
-                    {/* Boutons Voice */}
                     {isSupported() && !showResult && (
                       <div className="flex gap-2 flex-wrap">
                         {isListening ? (
-                          <Button
-                            onClick={stopListening}
-                            variant="outline"
-                            size="sm"
-                            className="gap-2"
-                          >
+                          <Button onClick={stopListening} variant="outline" size="sm" className="gap-2">
                             <MicOff className="w-4 h-4" />
-                            Arrêter l'enregistrement
+                            {t('quiz.stopRecording')}
                           </Button>
                         ) : (
-                          <Button
-                            onClick={startListening}
-                            variant="outline"
-                            size="sm"
-                            className="gap-2"
-                          >
+                          <Button onClick={startListening} variant="outline" size="sm" className="gap-2">
                             <Mic className="w-4 h-4" />
-                            Répondre au micro
+                            {t('quiz.answerByVoice')}
                           </Button>
                         )}
                       </div>
@@ -436,18 +403,14 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
                   </div>
                   
                   {!showResult && !evaluating && (
-                    <Button 
-                      onClick={evaluateOpenAnswer} 
-                      disabled={!openAnswer.trim()}
-                      className="mt-4"
-                    >
-                      Soumettre pour évaluation
+                    <Button onClick={evaluateOpenAnswer} disabled={!openAnswer.trim()} className="mt-4">
+                      {t('quiz.submitForEvaluation')}
                     </Button>
                   )}
                   {evaluating && (
                     <div className="flex items-center gap-2 text-muted-foreground mt-4">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      L'IA évalue votre réponse...
+                      {t('quiz.aiEvaluating')}
                     </div>
                   )}
                   {showResult && currentEvaluation && (
@@ -459,24 +422,15 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
                         <span className="text-sm font-medium">points</span>
                       </div>
                       
-                      {/* Bouton pour lire l'explication */}
                       {isSupported() && currentEvaluation.feedback && (
                         <Button
                           onClick={() => isSpeaking ? stopSpeaking() : speak(currentEvaluation.feedback)}
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 w-full"
+                          variant="outline" size="sm" className="gap-2 w-full"
                         >
                           {isSpeaking ? (
-                            <>
-                              <VolumeX className="w-4 h-4" />
-                              Arrêter la lecture
-                            </>
+                            <><VolumeX className="w-4 h-4" />{t('quiz.stopReading')}</>
                           ) : (
-                            <>
-                              <Volume2 className="w-4 h-4" />
-                              Lire l'explication
-                            </>
+                            <><Volume2 className="w-4 h-4" />{t('quiz.readExplanation')}</>
                           )}
                         </Button>
                       )}
@@ -485,7 +439,7 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
                         <p className="text-sm">{currentEvaluation.feedback}</p>
                         {currentEvaluation.strengths.length > 0 && (
                           <div>
-                            <p className="text-xs font-semibold text-green-600">Points forts:</p>
+                            <p className="text-xs font-semibold text-green-600">{t('quiz.strengths')}:</p>
                             <ul className="text-xs list-disc list-inside">
                               {currentEvaluation.strengths.map((s, i) => <li key={i}>{s}</li>)}
                             </ul>
@@ -493,7 +447,7 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
                         )}
                         {currentEvaluation.improvements.length > 0 && (
                           <div>
-                            <p className="text-xs font-semibold text-orange-600">À améliorer:</p>
+                            <p className="text-xs font-semibold text-orange-600">{t('quiz.toImprove')}:</p>
                             <ul className="text-xs list-disc list-inside">
                               {currentEvaluation.improvements.map((s, i) => <li key={i}>{s}</li>)}
                             </ul>
@@ -502,7 +456,7 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
                       </div>
                       <div className="p-3 bg-primary/5 rounded-lg">
                         <p className="text-xs text-muted-foreground">
-                          <strong>Réponse attendue:</strong> {quizData.openEnded[currentIndex].sampleAnswer}
+                          <strong>{t('quiz.expectedAnswer')}:</strong> {quizData.openEnded[currentIndex].sampleAnswer}
                         </p>
                       </div>
                     </div>
@@ -515,8 +469,8 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
               <div className="flex justify-end">
                 <Button onClick={handleNext}>
                   {currentSection === 'open' && currentIndex === (quizData?.openEnded.length || 0) - 1
-                    ? 'Voir les résultats'
-                    : 'Suivant'}
+                    ? t('quiz.seeResults')
+                    : t('quiz.next')}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
@@ -528,35 +482,25 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
         {quizCompleted && quizData && (
           <div className="text-center py-6">
             <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-            <h3 className="text-2xl font-bold text-primary mb-4">Quiz terminé !</h3>
+            <h3 className="text-2xl font-bold text-primary mb-4">{t('quiz.completed')}</h3>
             <div className="grid grid-cols-2 gap-4 mb-6">
               <Card>
                 <CardContent className="pt-4">
                   <p className="text-sm text-muted-foreground">QCM</p>
-                  <p className="text-2xl font-bold text-primary">
-                    {mcScore}/{quizData.multipleChoice.length}
-                  </p>
+                  <p className="text-2xl font-bold text-primary">{mcScore}/{quizData.multipleChoice.length}</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="pt-4">
-                  <p className="text-sm text-muted-foreground">Questions ouvertes</p>
-                  <p className="text-2xl font-bold text-primary">
-                    {totalOpenScore}/{totalOpenMax}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t('quiz.openQuestions')}</p>
+                  <p className="text-2xl font-bold text-primary">{totalOpenScore}/{totalOpenMax}</p>
                 </CardContent>
               </Card>
             </div>
             <div className="flex gap-2 justify-center flex-wrap">
-              <Button variant="outline" onClick={resetQuiz}>
-                Autre niveau
-              </Button>
-              <Button variant="outline" onClick={() => generateQuiz(selectedDifficulty!)}>
-                Refaire ce niveau
-              </Button>
-              <Button onClick={() => { resetQuiz(); onClose(); }}>
-                Fermer
-              </Button>
+              <Button variant="outline" onClick={resetQuiz}>{t('quiz.otherLevel')}</Button>
+              <Button variant="outline" onClick={() => generateQuiz(selectedDifficulty!)}>{t('quiz.retryLevel')}</Button>
+              <Button onClick={() => { resetQuiz(); onClose(); }}>{t('quiz.close')}</Button>
             </div>
           </div>
         )}
