@@ -40,13 +40,16 @@ export default function DayReadingViewer({ reading, onClose }: DayReadingViewerP
         return chapters;
       }
 
+      const localizedName = translateBookName(bookName, i18n.language);
+      const localizedAbbr = getBookAbbreviation(book, i18n.language);
+
       if (chaptersStr.includes('-') && !chaptersStr.includes(',')) {
         const [start, end] = chaptersStr.split('-').map(s => parseInt(s.trim()));
         for (let i = start; i <= end; i++) {
           chapters.push({ 
             bookId: book.fileName,
-            bookName: book.name,
-            abbreviation: book.abbreviation,
+            bookName: localizedName,
+            abbreviation: localizedAbbr,
             chapterNumber: i 
           });
         }
