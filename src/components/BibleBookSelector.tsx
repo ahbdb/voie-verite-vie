@@ -62,11 +62,11 @@ export const BibleBookSelector = ({ onBookSelect }: { onBookSelect?: (book: Book
       <CardContent className="p-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
-            <h4 className="font-semibold text-sm leading-tight">{book.name}</h4>
+            <h4 className="font-semibold text-sm leading-tight">{getBookName(book, lang)}</h4>
             <p className="text-xs text-muted-foreground">{book.chapters} ch.</p>
           </div>
           <Badge variant={showDeutero ? "secondary" : "outline"} className="shrink-0 text-xs">
-            {book.abbreviation}
+            {getBookAbbreviation(book, lang)}
           </Badge>
         </div>
         {book.apocrypha && showDeutero && (
