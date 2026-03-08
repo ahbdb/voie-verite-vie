@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Copy, Share2, Heart } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -17,129 +15,54 @@ interface BibleChapterViewerProps {
   onBack: () => void;
 }
 
-export const BibleChapterViewer = ({
-  bookId,
-  bookName,
-  abbreviation,
-  chapterNumber,
-  onBack,
-}: BibleChapterViewerProps) => {
+export const BibleChapterViewer = ({ bookId, bookName, abbreviation, chapterNumber, onBack }: BibleChapterViewerProps) => {
   const { t, i18n } = useTranslation();
   const [verses, setVerses] = useState<BibleVerse[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-
   const lang = i18n.language?.split('-')[0] || 'fr';
 
   useEffect(() => {
     let isMounted = true;
-
     const loadChapter = async () => {
       try {
-      setLoading(true);
+        setLoading(true);
         setInitialLoadDone(false);
         setError(null);
-
-        // Load French verses from local data
         let chapterVerses = await loadBibleChapterCached(bookId, chapterNumber);
-        if (!chapterVerses) {
-          clearBibleCache();
-          chapterVerses = await loadBibleChapterCached(bookId, chapterNumber);
-        }
-
+        if (!chapterVerses) { clearBibleCache(); chapterVerses = await loadBibleChapterCached(bookId, chapterNumber); }
         if (!isMounted) return;
-
         if (!chapterVerses) {
           setError(t('bibleChapter.chapterNotAvailable', { chapter: chapterNumber, book: bookName }));
-          setVerses([]);
-          setLoading(false);
-          return;
+          setVerses([]); setLoading(false); return;
         }
-
-        // === FRENCH: Show instantly, patch empty verses silently ===
         if (lang === 'fr') {
-          // Check patch cache first
           const patchKey = `bible_patched_fr_${bookId}_${chapterNumber}`;
           const cached = localStorage.getItem(patchKey);
-          if (cached) {
-            try {
-              const parsed = JSON.parse(cached);
-              if (parsed?.length > 0) {
-                setVerses(parsed);
-                setLoading(false);
-                return;
-              }
-            } catch { /* ignore */ }
-          }
-
-          // Show non-empty verses IMMEDIATELY
+          if (cached) { try { const parsed = JSON.parse(cached); if (parsed?.length > 0) { setVerses(parsed); setLoading(false); return; } } catch {} }
           const nonEmpty = chapterVerses.filter((v: any) => v.text && v.text.trim());
-          setVerses(nonEmpty);
-          setLoading(false);
-
-          // Patch empty verses silently in background
+          setVerses(nonEmpty); setLoading(false);
           const hasEmpty = chapterVerses.some((v: any) => !v.text || v.text.trim() === '');
           if (hasEmpty) {
-            supabase.functions.invoke('translate-bible-chapter', {
-              body: { verses: chapterVerses, bookName, chapterNumber, bookFileName: bookId, patchEmptyVerses: true }
-            }).then(({ data }) => {
-              if (isMounted && data?.verses?.length > 0) {
-                const patched = data.verses.filter((v: any) => v.text && v.text.trim());
-                setVerses(patched);
-                if (data.patched > 0) {
-                  localStorage.setItem(patchKey, JSON.stringify(patched));
-                }
-              }
+            supabase.functions.invoke('translate-bible-chapter', { body: { verses: chapterVerses, bookName, chapterNumber, bookFileName: bookId, patchEmptyVerses: true } }).then(({ data }) => {
+              if (isMounted && data?.verses?.length > 0) { const patched = data.verses.filter((v: any) => v.text && v.text.trim()); setVerses(patched); if (data.patched > 0) localStorage.setItem(patchKey, JSON.stringify(patched)); }
             }).catch(() => {});
           }
           return;
         }
-
-        // === ENGLISH / ITALIAN: Check cache first, show instantly if available ===
         const cacheKey = `bible_${lang}_${bookId}_${chapterNumber}`;
         const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          try {
-            const parsed = JSON.parse(cached);
-            if (parsed?.length > 0) {
-              setVerses(parsed);
-              setLoading(false);
-              return;
-            }
-          } catch { /* ignore */ }
-        }
-
-        // Fetch from API — show loading briefly
-        setLoading(false); // Don't show loading, just empty then fill
-        
-        const { data, error: fnError } = await supabase.functions.invoke('translate-bible-chapter', {
-          body: { verses: chapterVerses, bookName, chapterNumber, targetLang: lang, bookFileName: bookId }
-        });
-
+        if (cached) { try { const parsed = JSON.parse(cached); if (parsed?.length > 0) { setVerses(parsed); setLoading(false); return; } } catch {} }
+        setLoading(false);
+        const { data, error: fnError } = await supabase.functions.invoke('translate-bible-chapter', { body: { verses: chapterVerses, bookName, chapterNumber, targetLang: lang, bookFileName: bookId } });
         if (!isMounted) return;
-
-        if (!fnError && data?.verses?.length > 0) {
-          setVerses(data.verses);
-          localStorage.setItem(cacheKey, JSON.stringify(data.verses));
-        } else {
-          // Show French as fallback (non-empty only)
-          setVerses(chapterVerses.filter((v: any) => v.text && v.text.trim()));
-        }
-
-      } catch (err) {
-        if (isMounted) {
-          setError(t('bibleChapter.loadError', { error: String(err) }));
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-          setInitialLoadDone(true);
-        }
-      }
+        if (!fnError && data?.verses?.length > 0) { setVerses(data.verses); localStorage.setItem(cacheKey, JSON.stringify(data.verses)); }
+        else { setVerses(chapterVerses.filter((v: any) => v.text && v.text.trim())); }
+      } catch (err) { if (isMounted) setError(t('bibleChapter.loadError', { error: String(err) })); }
+      finally { if (isMounted) { setLoading(false); setInitialLoadDone(true); } }
     };
-
     loadChapter();
     return () => { isMounted = false; };
   }, [bookId, chapterNumber, bookName, t, lang]);
@@ -153,11 +76,10 @@ export const BibleChapterViewer = ({
     const reference = `${abbreviation} ${chapterNumber}:${verseNumber}`;
     const text = verses.find((v) => Number(v.number) === Number(verseNumber))?.text || '';
     if (navigator.share) {
-      navigator.share({ title: `${bookName} ${chapterNumber}:${verseNumber}`, text: `${reference}\n\n${text}` })
-        .catch(() => {
-          navigator.clipboard.writeText(`${reference}\n\n${text}`);
-          toast({ title: t('bibleChapter.copied'), description: t('bibleChapter.refCopied', { ref: reference }) });
-        });
+      navigator.share({ title: `${bookName} ${chapterNumber}:${verseNumber}`, text: `${reference}\n\n${text}` }).catch(() => {
+        navigator.clipboard.writeText(`${reference}\n\n${text}`);
+        toast({ title: t('bibleChapter.copied'), description: t('bibleChapter.refCopied', { ref: reference }) });
+      });
     } else {
       navigator.clipboard.writeText(`${reference}\n\n${text}`);
       toast({ title: t('bibleChapter.copied'), description: t('bibleChapter.refCopied', { ref: reference }) });
@@ -181,76 +103,59 @@ export const BibleChapterViewer = ({
 
   if (error) {
     return (
-      <Card className="w-full bg-card/50 backdrop-blur-sm border-primary/20">
-        <CardHeader className="space-y-0 pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl">{bookName} {chapterNumber}</CardTitle>
-            <Button variant="ghost" size="sm" onClick={onBack} title={t('bibleChapter.back')}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 text-destructive">
-            {error}
-          </div>
-          <Button variant="outline" onClick={() => window.location.reload()}>{t('bibleChapter.retry')}</Button>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-cinzel font-bold">{bookName} {chapterNumber}</h2>
+          <Button variant="ghost" size="sm" onClick={onBack}><ArrowLeft className="w-4 h-4" /></Button>
+        </div>
+        <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 text-destructive text-sm">{error}</div>
+        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>{t('bibleChapter.retry')}</Button>
+      </div>
     );
   }
 
   return (
-    <Card className="w-full bg-card/50 backdrop-blur-sm border-primary/20">
-      <CardHeader className="space-y-0 pb-3">
-        <div className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={onBack} title={t('bibleChapter.back')}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <CardTitle className="text-2xl">{bookName} {chapterNumber}</CardTitle>
-        </div>
-      </CardHeader>
+    <div>
+      {/* Header – flat */}
+      <div className="flex items-center justify-between mb-6">
+        <Button variant="ghost" size="sm" onClick={onBack}><ArrowLeft className="w-4 h-4" /></Button>
+        <h2 className="text-xl font-cinzel font-bold">{bookName} {chapterNumber}</h2>
+        <div className="w-8" />
+      </div>
 
-      <CardContent className="pt-0 px-2 md:px-4">
-        {verses.length > 0 && (
-          <ScrollArea className="h-[600px] pr-2 md:pr-4">
-            <div className="space-y-2 md:space-y-1">
-              {verses.map((verse) => (
-                <div key={verse.number} className="py-0.5">
-                  <div className="flex gap-2">
-                    <Badge variant="secondary" className="h-fit flex-shrink-0 font-semibold text-xs sticky left-0 mt-0.5">
-                      {verse.number}
-                    </Badge>
-                    <div className="flex-1">
-                      <p className="text-sm leading-relaxed text-foreground/90 text-justify inline">
-                        {verse.text}
-                        <span className="inline-flex gap-1 ml-2">
-                          <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-muted-foreground hover:text-primary transition-colors inline-flex" onClick={() => copyToClipboard(verse.text)} title={t('bibleChapter.copyVerse')}>
-                            <Copy className="w-3 h-3" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-muted-foreground hover:text-primary transition-colors inline-flex" onClick={() => shareVerse(verse.number)} title={t('bibleChapter.shareVerse')}>
-                            <Share2 className="w-3 h-3" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive transition-colors inline-flex" onClick={() => saveVerse(verse.number)} title={t('bibleChapter.saveVerse')}>
-                            <Heart className="w-3 h-3" />
-                          </Button>
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+      {/* Verses – flat list, no Card */}
+      {verses.length > 0 && (
+        <div className="space-y-1">
+          {verses.map((verse) => (
+            <div key={verse.number} className="flex gap-3 py-1 group">
+              <Badge variant="secondary" className="h-fit flex-shrink-0 font-semibold text-xs mt-0.5 w-7 justify-center">
+                {verse.number}
+              </Badge>
+              <div className="flex-1">
+                <p className="text-sm leading-relaxed text-foreground/90 text-justify inline">
+                  {verse.text}
+                  <span className="inline-flex gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button className="h-5 w-5 p-0 inline-flex items-center justify-center text-muted-foreground hover:text-primary transition-colors" onClick={() => copyToClipboard(verse.text)} title={t('bibleChapter.copyVerse')}>
+                      <Copy className="w-3 h-3" />
+                    </button>
+                    <button className="h-5 w-5 p-0 inline-flex items-center justify-center text-muted-foreground hover:text-primary transition-colors" onClick={() => shareVerse(verse.number)} title={t('bibleChapter.shareVerse')}>
+                      <Share2 className="w-3 h-3" />
+                    </button>
+                    <button className="h-5 w-5 p-0 inline-flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors" onClick={() => saveVerse(verse.number)} title={t('bibleChapter.saveVerse')}>
+                      <Heart className="w-3 h-3" />
+                    </button>
+                  </span>
+                </p>
+              </div>
             </div>
-          </ScrollArea>
-        )}
+          ))}
+        </div>
+      )}
 
-        {verses.length === 0 && initialLoadDone && !error && (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>{t('bibleChapter.noVerses')}</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {verses.length === 0 && initialLoadDone && !error && (
+        <div className="text-center py-8 text-muted-foreground"><p>{t('bibleChapter.noVerses')}</p></div>
+      )}
+    </div>
   );
 };
 
