@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, BookOpen, Calendar, Heart, MessageCircle, Youtube } from 'lucide-react';
 import { AnimatedSection } from '@/components/AnimatedSection';
@@ -12,30 +13,31 @@ import ctaMary from '@/assets/cta-mary.jpg';
 import { useRef } from 'react';
 import { useScroll, useTransform } from 'framer-motion';
 
-const activities = [
-  { title: 'Lecture Biblique', desc: '73 livres en 358 jours', image: activityBible, link: '/biblical-reading', icon: BookOpen },
-  { title: 'Communauté', desc: 'Priez et partagez', image: activityCommunity, link: '/prayer-forum', icon: Heart },
-  { title: 'Conférences', desc: 'Enseignements', image: activityConference, link: '/activities', icon: Calendar },
-  { title: 'Neuvaines', desc: 'Prière guidée', image: activityCreative, link: '/neuvaines', icon: Heart },
-  { title: 'Méditation', desc: 'Carême & croix', image: activityMeditation, link: '/careme-2026', icon: BookOpen },
-];
-
 const ActivitiesSection = () => {
+  const { t } = useTranslation();
+
+  const activities = [
+    { title: t('homeActivities.biblicalReading'), desc: t('homeActivities.biblicalReadingDesc'), image: activityBible, link: '/biblical-reading', icon: BookOpen },
+    { title: t('homeActivities.communityTitle'), desc: t('homeActivities.communityDesc'), image: activityCommunity, link: '/prayer-forum', icon: Heart },
+    { title: t('homeActivities.conferences'), desc: t('homeActivities.conferencesDesc'), image: activityConference, link: '/activities', icon: Calendar },
+    { title: t('homeActivities.novenasTitle'), desc: t('homeActivities.novenasDesc'), image: activityCreative, link: '/neuvaines', icon: Heart },
+    { title: t('homeActivities.meditation'), desc: t('homeActivities.meditationDesc'), image: activityMeditation, link: '/careme-2026', icon: BookOpen },
+  ];
+
   return (
     <section className="py-12 bg-muted/30">
       <div className="container mx-auto px-4">
         <AnimatedSection className="flex items-end justify-between mb-6">
           <div>
-            <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-1">Découvrir</p>
-            <h2 className="text-2xl md:text-3xl font-playfair font-bold text-foreground">Nos activités</h2>
+            <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-1">{t('homeActivities.discover')}</p>
+            <h2 className="text-2xl md:text-3xl font-playfair font-bold text-foreground">{t('homeActivities.ourActivities')}</h2>
           </div>
           <Button variant="ghost" asChild className="gap-1 hidden sm:flex">
-            <Link to="/activities">Tout voir <ArrowRight className="w-4 h-4" /></Link>
+            <Link to="/activities">{t('common.seeAll')} <ArrowRight className="w-4 h-4" /></Link>
           </Button>
         </AnimatedSection>
       </div>
 
-      {/* Horizontal carousel */}
       <div className="flex gap-4 overflow-x-auto pb-4 px-4 snap-x snap-mandatory scrollbar-hide">
         <div className="min-w-[max(0px,calc((100vw-1400px)/2+2rem-1rem))] shrink-0 hidden md:block" />
         {activities.map((activity, index) => (
@@ -77,7 +79,7 @@ const ActivitiesSection = () => {
 
       <div className="container mx-auto px-4 mt-4 sm:hidden">
         <Button variant="outline" asChild className="w-full gap-2">
-          <Link to="/activities">Voir toutes les activités <ArrowRight className="w-4 h-4" /></Link>
+          <Link to="/activities">{t('homeActivities.seeAllActivities')} <ArrowRight className="w-4 h-4" /></Link>
         </Button>
       </div>
     </section>
@@ -85,6 +87,7 @@ const ActivitiesSection = () => {
 };
 
 const CTASection = () => {
+  const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
   
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
@@ -98,12 +101,12 @@ const CTASection = () => {
       <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/70" />
 
       <AnimatedSection className="relative z-10 text-center px-4 max-w-2xl mx-auto">
-        <p className="text-xs tracking-[0.3em] uppercase text-white/60 mb-2">Ensemble en Christ</p>
+        <p className="text-xs tracking-[0.3em] uppercase text-white/60 mb-2">{t('cta.togetherInChrist')}</p>
         <h2 className="text-2xl md:text-4xl font-playfair font-bold text-white mb-4">
-          Rejoignez notre communauté
+          {t('cta.joinOurCommunity')}
         </h2>
         <p className="text-white/80 text-sm mb-6 leading-relaxed">
-          Un sanctuaire spirituel pour la jeunesse, fondé sur les valeurs de l'Évangile
+          {t('cta.ctaDescription')}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Button
@@ -111,7 +114,7 @@ const CTASection = () => {
             asChild
             className="bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-lg rounded-full"
           >
-            <Link to="/auth">Créer un compte</Link>
+            <Link to="/auth">{t('cta.createAccount')}</Link>
           </Button>
           <Button size="default" className="bg-green-600 hover:bg-green-700 text-white rounded-full" asChild>
             <a href="https://chat.whatsapp.com/FfvCe9nHwpj5OYoDZBfGER" target="_blank" rel="noopener noreferrer">

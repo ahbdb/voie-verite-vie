@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Users, BookOpen } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,30 +11,29 @@ import { loadBibleChapter, type BibleVerse } from '@/lib/bible-content-loader';
 import heroCathedral from '@/assets/hero-cathedral.jpg';
 import logo3v from '@/assets/logo-3v.png';
 
-function getTimeGreeting() {
+function getTimeGreeting(t: (key: string) => string) {
   const h = new Date().getHours();
-  if (h < 12) return 'Bonjour';
-  if (h < 18) return 'Bon après-midi';
-  return 'Bonsoir';
+  if (h < 12) return t('hero.goodMorning');
+  if (h < 18) return t('hero.goodAfternoon');
+  return t('hero.goodEvening');
 }
 
-/** Generates a personalized prayer using the user's first name */
-function getPersonalPrayer(fullName: string | null): string {
+function getPersonalPrayer(fullName: string | null, t: (key: string, opts?: any) => string): string {
   const firstName = fullName?.split(' ')[0] || '';
+  const name = firstName || t('common.member');
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
   const prayers = [
-    `Seigneur, bénis ${firstName || 'ton enfant'} en ce jour. Accorde-lui ta paix, éclaire son chemin et remplis son cœur de ta joie. Amen.`,
-    `Père céleste, veille sur ${firstName || 'ton enfant'}. Donne-lui la force d'affronter cette journée et la sagesse de suivre ta volonté. Amen.`,
-    `Esprit Saint, accompagne ${firstName || 'ton enfant'} à chaque instant. Que ta lumière dissipe ses doutes et que ton amour le/la fortifie. Amen.`,
-    `Seigneur Jésus, prends ${firstName || 'ton enfant'} par la main aujourd'hui. Que chaque pas soit guidé par ta grâce et chaque parole inspirée par ton Esprit. Amen.`,
-    `Dieu d'amour, entoure ${firstName || 'ton enfant'} de ta protection. Que cette journée soit remplie de bénédictions et de moments de grâce. Amen.`,
-    `Marie, Mère de Dieu, intercède pour ${firstName || 'ton enfant'}. Couvre-le/la de ton manteau maternel et conduis-le/la vers ton Fils. Amen.`,
-    `Seigneur, que ${firstName || 'ton enfant'} ressente ta présence aujourd'hui. Fortifie sa foi, ravive son espérance et embrase son cœur d'amour. Amen.`,
+    t('prayers.prayer1', { name }),
+    t('prayers.prayer2', { name }),
+    t('prayers.prayer3', { name }),
+    t('prayers.prayer4', { name }),
+    t('prayers.prayer5', { name }),
+    t('prayers.prayer6', { name }),
+    t('prayers.prayer7', { name }),
   ];
   return prayers[dayOfYear % prayers.length];
 }
 
-// Fallback verses if today's reading can't be loaded
 const fallbackVerses = [
   { text: "Je suis le chemin, la vérité et la vie.", ref: "Jean 14:6" },
   { text: "Vous connaîtrez la vérité, et la vérité vous affranchira.", ref: "Jean 8:32" },
@@ -52,7 +52,6 @@ interface DisplayVerse {
   ref: string;
 }
 
-/** Map French book name to fileName from bible-books.json */
 function bookNameToFileName(frenchName: string): string | null {
   const book = (bibleBooksData.books as any[]).find(
     (b) => b.name.toLowerCase() === frenchName.trim().toLowerCase()
@@ -60,7 +59,6 @@ function bookNameToFileName(frenchName: string): string | null {
   return book?.fileName || null;
 }
 
-/** Parse chapter range like "5-8" or "3" into array [5,6,7,8] */
 function parseChapters(chapters: string): number[] {
   const result: number[] = [];
   for (const part of chapters.split(',')) {
@@ -77,6 +75,7 @@ function parseChapters(chapters: string): number[] {
 }
 
 const HeroSection = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [currentVerse, setCurrentVerse] = useState(0);
   const [todayReading, setTodayReading] = useState<TodayReading | null>(null);
@@ -88,10 +87,9 @@ const HeroSection = () => {
   }, [user]);
 
   const todayPrayer = useMemo(() => {
-    return getPersonalPrayer(userName || null);
-  }, [userName]);
+    return getPersonalPrayer(userName || null, t);
+  }, [userName, t]);
 
-  // Fetch today's reading + load actual verses
   const loadTodayVerses = useCallback(async () => {
     try {
       const today = new Date().toISOString().split('T')[0];
@@ -114,7 +112,6 @@ const HeroSection = () => {
       for (const chNum of chapterNums) {
         const chVerses = await loadBibleChapter(fileName, chNum);
         if (chVerses && chVerses.length > 0) {
-          // Pick ~4 evenly spaced verses per chapter
           const step = Math.max(1, Math.floor(chVerses.length / 4));
           for (let i = 0; i < chVerses.length; i += step) {
             const v = chVerses[i];
@@ -140,7 +137,6 @@ const HeroSection = () => {
     loadTodayVerses();
   }, [loadTodayVerses]);
 
-  // Rotate verses faster (2s)
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentVerse((prev) => (prev + 1) % verses.length);
@@ -152,7 +148,6 @@ const HeroSection = () => {
 
   return (
     <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
-      {/* Background */}
       <div className="absolute inset-0 z-0">
         <motion.img
           src={heroCathedral}
@@ -165,9 +160,7 @@ const HeroSection = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
       </div>
 
-      {/* Content */}
       <div className="relative z-10 text-center px-4 sm:px-6 max-w-2xl mx-auto flex flex-col items-center pt-20">
-        {/* Logo */}
         <motion.img
           src={logo3v}
           alt="Logo 3V"
@@ -177,7 +170,6 @@ const HeroSection = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
         />
 
-        {/* Animated Title */}
         <motion.h1
           className="text-4xl sm:text-5xl md:text-6xl font-playfair font-bold text-white mb-3 leading-tight drop-shadow-lg flex flex-wrap items-center justify-center gap-x-3"
           initial={{ opacity: 0 }}
@@ -197,7 +189,6 @@ const HeroSection = () => {
           ))}
         </motion.h1>
 
-        {/* Divider */}
         <motion.div
           className="w-16 h-[2px] bg-accent mb-5"
           initial={{ scaleX: 0 }}
@@ -205,17 +196,15 @@ const HeroSection = () => {
           transition={{ duration: 0.5, delay: 0.9 }}
         />
 
-        {/* Subtitle */}
         <motion.p
           className="text-[#ffffffcc] text-sm sm:text-base mb-5 max-w-md leading-relaxed"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
         >
-          Un sanctuaire spirituel pour la jeunesse catholique
+          {t('hero.subtitle')}
         </motion.p>
 
-        {/* Greeting box with prayer (logged-in users) */}
         {user && (
           <motion.div
             className="w-full max-w-md mb-6 rounded-xl border border-white/20 bg-white/10 px-5 py-4 text-left"
@@ -224,7 +213,7 @@ const HeroSection = () => {
             transition={{ delay: 0.7, duration: 0.5 }}
           >
             <p className="text-white font-semibold text-base mb-1.5">
-              {getTimeGreeting()}{userName ? `, ${userName}` : ''} 🙏
+              {getTimeGreeting(t)}{userName ? `, ${userName}` : ''} 🙏
             </p>
             <p className="text-[#ffffffaa] text-sm italic leading-relaxed">
               « {todayPrayer} »
@@ -235,13 +224,12 @@ const HeroSection = () => {
                 className="mt-3 flex items-center gap-2 text-accent text-xs font-medium hover:underline"
               >
                 <BookOpen className="w-3.5 h-3.5" />
-                <span>📖 Lecture du jour : {todayReading.books} {todayReading.chapters} (Jour {todayReading.day_number})</span>
+                <span>📖 {t('hero.readingOfDay', { books: todayReading.books, chapters: todayReading.chapters, day: todayReading.day_number })}</span>
               </Link>
             )}
           </motion.div>
         )}
 
-        {/* CTA Buttons */}
         <motion.div
           className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full mb-6"
           initial={{ opacity: 0, y: 15 }}
@@ -255,7 +243,7 @@ const HeroSection = () => {
           >
             <Link to="/auth">
               <Users className="mr-2 w-5 h-5" />
-              Rejoignez-nous
+              {t('common.joinUs')}
             </Link>
           </Button>
           <Button
@@ -265,13 +253,12 @@ const HeroSection = () => {
             className="w-full sm:w-auto px-8 py-5 border-white/50 text-white bg-white/10 hover:bg-white/20 rounded-full"
           >
             <Link to="/about">
-              En savoir plus
+              {t('common.learnMore')}
               <ArrowRight className="ml-2 w-4 h-4" />
             </Link>
           </Button>
         </motion.div>
 
-        {/* Rotating verses from today's reading */}
         <motion.div
           className="w-full max-w-lg min-h-[3.5rem] flex items-center justify-center"
           initial={{ opacity: 0 }}
