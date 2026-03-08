@@ -85,10 +85,10 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
   });
 
   const difficultyLevels = [
-    { key: 'easy', label: t('quiz.easy'), icon: Star, color: 'bg-green-500', questions: '15 QCM + 5 ' + t('quiz.openQuestions') },
-    { key: 'medium', label: t('quiz.medium'), icon: Zap, color: 'bg-yellow-500', questions: '15 QCM + 5 ' + t('quiz.openQuestions') },
-    { key: 'hard', label: t('quiz.hard'), icon: Flame, color: 'bg-orange-500', questions: '15 QCM + 5 ' + t('quiz.openQuestions') },
-    { key: 'expert', label: t('quiz.expert'), icon: Crown, color: 'bg-red-500', questions: '15 QCM + 5 ' + t('quiz.openQuestions') },
+    { key: 'easy', label: t('quiz.easy'), icon: Star, color: 'bg-green-500', questions: `15 ${t('quiz.mcqLabel')} + 5 ${t('quiz.openQuestions')}` },
+    { key: 'medium', label: t('quiz.medium'), icon: Zap, color: 'bg-yellow-500', questions: `15 ${t('quiz.mcqLabel')} + 5 ${t('quiz.openQuestions')}` },
+    { key: 'hard', label: t('quiz.hard'), icon: Flame, color: 'bg-orange-500', questions: `15 ${t('quiz.mcqLabel')} + 5 ${t('quiz.openQuestions')}` },
+    { key: 'expert', label: t('quiz.expert'), icon: Crown, color: 'bg-red-500', questions: `15 ${t('quiz.mcqLabel')} + 5 ${t('quiz.openQuestions')}` },
   ];
 
   const resetQuiz = useCallback(() => {
