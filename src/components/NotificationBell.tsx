@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Bell, X, Check, BookOpen, Calendar, MessageCircle, Info, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS, it } from 'date-fns/locale';
 
 interface UserNotification {
   id: string;
@@ -35,12 +36,16 @@ const typeIcons: Record<string, React.ReactNode> = {
   info: <Info className="w-4 h-4 text-muted-foreground" />,
 };
 
+const dateFnsLocales: Record<string, any> = { fr, en: enUS, it };
+
 export const NotificationBell = () => {
+  const { t, i18n } = useTranslation();
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const lang = i18n.language?.split('-')[0] || 'fr';
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
@@ -209,7 +214,7 @@ export const NotificationBell = () => {
       </PopoverTrigger>
       <PopoverContent className="w-96 p-0" align="end">
         <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-primary/5 to-transparent">
-          <h3 className="font-semibold text-base">Notifications</h3>
+          <h3 className="font-semibold text-base">{t('notifications.title')}</h3>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -218,7 +223,7 @@ export const NotificationBell = () => {
               onClick={markAllAsRead}
             >
               <Check className="w-3 h-3 mr-1" />
-              Tout lire
+              {t('notifications.markAllRead')}
             </Button>
           )}
         </div>
@@ -229,12 +234,12 @@ export const NotificationBell = () => {
               <div className="animate-spin">
                 <Bell className="w-6 h-6 mx-auto opacity-50" />
               </div>
-              <p className="mt-2">Chargement...</p>
+              <p className="mt-2">{t('notifications.loading')}</p>
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-6 text-center text-muted-foreground text-sm">
               <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p>Aucune notification</p>
+              <p>{t('notifications.noNotifications')}</p>
             </div>
           ) : (
             <div className="divide-y">
@@ -269,7 +274,7 @@ export const NotificationBell = () => {
                       <p className="text-xs text-muted-foreground/70 mt-2">
                         {formatDistanceToNow(new Date(notification.created_at), {
                           addSuffix: true,
-                          locale: fr,
+                          locale: dateFnsLocales[lang] || fr,
                         })}
                       </p>
                     </div>

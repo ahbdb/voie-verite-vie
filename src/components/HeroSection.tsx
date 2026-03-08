@@ -34,12 +34,26 @@ function getPersonalPrayer(fullName: string | null, t: (key: string, opts?: any)
   return prayers[dayOfYear % prayers.length];
 }
 
-const fallbackVerses = [
-  { text: "Je suis le chemin, la vérité et la vie.", ref: "Jean 14:6" },
-  { text: "Vous connaîtrez la vérité, et la vérité vous affranchira.", ref: "Jean 8:32" },
-  { text: "Ta parole est une lampe à mes pieds, une lumière sur mon sentier.", ref: "Psaume 119:105" },
-  { text: "Tout est possible à celui qui croit.", ref: "Marc 9:23" },
-];
+const fallbackVersesByLang: Record<string, DisplayVerse[]> = {
+  fr: [
+    { text: "Je suis le chemin, la vérité et la vie.", ref: "Jean 14:6" },
+    { text: "Vous connaîtrez la vérité, et la vérité vous affranchira.", ref: "Jean 8:32" },
+    { text: "Ta parole est une lampe à mes pieds, une lumière sur mon sentier.", ref: "Psaume 119:105" },
+    { text: "Tout est possible à celui qui croit.", ref: "Marc 9:23" },
+  ],
+  en: [
+    { text: "I am the way, the truth, and the life.", ref: "John 14:6" },
+    { text: "You will know the truth, and the truth will set you free.", ref: "John 8:32" },
+    { text: "Your word is a lamp to my feet, a light on my path.", ref: "Psalm 119:105" },
+    { text: "Everything is possible for one who believes.", ref: "Mark 9:23" },
+  ],
+  it: [
+    { text: "Io sono la via, la verità e la vita.", ref: "Giovanni 14:6" },
+    { text: "Conoscerete la verità e la verità vi farà liberi.", ref: "Giovanni 8:32" },
+    { text: "La tua parola è lampada ai miei passi, luce sul mio cammino.", ref: "Salmo 119:105" },
+    { text: "Tutto è possibile per chi crede.", ref: "Marco 9:23" },
+  ],
+};
 
 interface TodayReading {
   books: string;
@@ -75,8 +89,10 @@ function parseChapters(chapters: string): number[] {
 }
 
 const HeroSection = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  const lang = i18n.language?.split('-')[0] || 'fr';
+  const fallbackVerses = fallbackVersesByLang[lang] || fallbackVersesByLang.fr;
   const [currentVerse, setCurrentVerse] = useState(0);
   const [todayReading, setTodayReading] = useState<TodayReading | null>(null);
   const [verses, setVerses] = useState<DisplayVerse[]>(fallbackVerses);

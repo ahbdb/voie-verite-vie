@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import HeroSection from '@/components/HeroSection';
 import MissionSection from '@/components/MissionSection';
@@ -21,6 +22,7 @@ interface ActiveRoom {
 }
 
 const ActiveCallBanner = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [activeRooms, setActiveRooms] = useState<ActiveRoom[]>([]);
 
@@ -58,7 +60,7 @@ const ActiveCallBanner = () => {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
             <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
           </span>
-          <span className="text-sm font-semibold text-foreground">Appel en cours</span>
+          <span className="text-sm font-semibold text-foreground">{t('activeCall.callInProgress')}</span>
         </div>
         {activeRooms.map((room) => (
           <div key={room.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2">
@@ -67,7 +69,7 @@ const ActiveCallBanner = () => {
               <span className="text-sm font-medium text-foreground truncate max-w-[180px]">{room.title}</span>
             </div>
             <Button size="sm" asChild className="shrink-0">
-              <Link to={`/meeting/${room.id}`}><Phone className="h-3.5 w-3.5 mr-1" /> Rejoindre</Link>
+              <Link to={`/meeting/${room.id}`}><Phone className="h-3.5 w-3.5 mr-1" /> {t('activeCall.join')}</Link>
             </Button>
           </div>
         ))}

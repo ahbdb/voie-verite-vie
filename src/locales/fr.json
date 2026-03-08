@@ -401,6 +401,18 @@
     "prayer6": "Marie, Mère de Dieu, intercède pour {{name}}. Couvre-le/la de ton manteau maternel et conduis-le/la vers ton Fils. Amen.",
     "prayer7": "Seigneur, que {{name}} ressente ta présence aujourd'hui. Fortifie sa foi, ravive son espérance et embrase son cœur d'amour. Amen."
   },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Tout lire",
+    "loading": "Chargement...",
+    "noNotifications": "Aucune notification"
+  },
+  "errorBoundary": {
+    "title": "Une erreur s'est produite",
+    "description": "L'application a rencontré un problème inattendu. Vos données ne sont pas perdues.",
+    "retry": "Réessayer",
+    "home": "Accueil"
+  },
   "activeCall": {
     "callInProgress": "Appel en cours",
     "join": "Rejoindre"
