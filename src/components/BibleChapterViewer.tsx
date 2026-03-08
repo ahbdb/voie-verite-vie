@@ -76,9 +76,7 @@ export const BibleChapterViewer = ({
           } catch { /* ignore */ }
         }
 
-        // Show French while translating
-        setVerses(chapterVerses);
-        setLoading(false);
+        // Don't show French text — keep loading state while translating
         setTranslating(true);
 
         // Translate via edge function (KJV for English canonical, AI for Italian & deuterocanonical)
@@ -99,10 +97,14 @@ export const BibleChapterViewer = ({
             setVerses(data.verses);
             // Cache translation
             localStorage.setItem(cacheKey, JSON.stringify(data.verses));
+          } else {
+            // Only show French as absolute last resort
+            console.warn('Translation failed, showing French as fallback');
+            setVerses(chapterVerses);
           }
         } catch (translateErr) {
-          console.warn('Translation failed, showing French:', translateErr);
-          // Keep French verses - already set
+          console.warn('Translation failed, showing French fallback:', translateErr);
+          if (isMounted) setVerses(chapterVerses);
         } finally {
           if (isMounted) setTranslating(false);
         }
