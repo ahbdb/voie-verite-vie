@@ -370,7 +370,7 @@ const Careme2026 = memo(() => {
         });
       } else {
         await navigator.clipboard.writeText(window.location.href);
-        toast({ title: 'Lien copié' });
+        toast({ title: t('careme.linkCopied') });
       }
     } catch (err) {
       console.error(err);
