@@ -15,6 +15,7 @@ import { generateShareImage, shareImage } from '@/lib/share-utils';
 import { caremeData } from '@/data/careme-2026-data';
 
 const Careme2026 = memo(() => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
