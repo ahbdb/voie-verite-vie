@@ -303,11 +303,11 @@ const Activities = () => {
                   <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
                     <TabsTrigger value="upcoming" className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      À venir ({filteredUpcomingActivities.length})
+                      {t('activities.upcoming')} ({filteredUpcomingActivities.length})
                     </TabsTrigger>
                     <TabsTrigger value="past" className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4" />
-                      Passées ({filteredPastActivities.length})
+                      {t('activities.past')} ({filteredPastActivities.length})
                     </TabsTrigger>
                   </TabsList>
 
