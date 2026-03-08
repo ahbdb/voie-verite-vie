@@ -665,7 +665,7 @@ const Careme2026 = memo(() => {
                     disabled={!isCompletedDate(selectedDay.dateObj) && !canMarkCompleted(selectedDay.dateObj)}
                   >
                     <Check className="w-4 h-4" />
-                    <span className="hidden sm:inline">{isCompletedDate(selectedDay.dateObj) ? 'Complété' : 'Compléter'}</span>
+                    <span className="hidden sm:inline">{isCompletedDate(selectedDay.dateObj) ? t('careme.completed') : t('careme.complete')}</span>
                   </Button>
                   <Button 
                     className="flex-1"
