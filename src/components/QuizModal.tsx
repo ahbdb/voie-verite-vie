@@ -486,7 +486,7 @@ export const QuizModal = memo(({ isOpen, onClose, reading }: QuizModalProps) => 
             <div className="grid grid-cols-2 gap-4 mb-6">
               <Card>
                 <CardContent className="pt-4">
-                  <p className="text-sm text-muted-foreground">QCM</p>
+                  <p className="text-sm text-muted-foreground">{t('quiz.mcqLabel')}</p>
                   <p className="text-2xl font-bold text-primary">{mcScore}/{quizData.multipleChoice.length}</p>
                 </CardContent>
               </Card>
