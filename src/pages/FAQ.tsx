@@ -46,10 +46,11 @@ const FAQ = () => {
       <Navigation />
       <main className="pt-20 pb-16">
         <div className="container mx-auto px-4 max-w-3xl">
-          {/* Header */}
-          <motion.div initial="hidden" animate="visible" variants={fadeUp} className="mb-8">
+          {/* Header with glow */}
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} className="mb-8 relative">
+            <motion.div className="absolute -top-10 right-0 w-48 h-48 rounded-full bg-cathedral-gold/5 blur-3xl" animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 6, repeat: Infinity }} />
             <p className="text-xs tracking-[0.3em] uppercase text-cathedral-gold/70 mb-2 font-inter">FAQ</p>
-            <h1 className="text-3xl md:text-5xl font-cinzel font-bold text-foreground mb-3">{t('faq.title')}</h1>
+            <h1 className="text-3xl md:text-5xl font-cinzel font-bold text-gradient-gold mb-3">{t('faq.title')}</h1>
             <p className="text-sm text-muted-foreground font-inter mb-6">{t('faq.subtitle')}</p>
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 w-4 h-4" />
