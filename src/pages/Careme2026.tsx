@@ -432,7 +432,7 @@ const Careme2026 = memo(() => {
           <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border-blue-200">
             <CardContent className="pt-6">
               <div className="text-2xl sm:text-3xl font-bold text-blue-700">{completionRate}%</div>
-              <p className="text-xs sm:text-sm text-gray-600">Progression</p>
+              <p className="text-xs sm:text-sm text-gray-600">{t('careme.progression')}</p>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/10 border-amber-200">
