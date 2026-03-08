@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Tables } from '@/integrations/supabase/types';
 import Navigation from '@/components/Navigation';
 import { useAuth } from '@/hooks/useAuth';
