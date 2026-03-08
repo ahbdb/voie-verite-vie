@@ -530,7 +530,8 @@
     "updateError": "Impossibile aggiornare il progresso",
     "loading": "Caricamento...",
     "exploreBooks": "Esplora i 73 libri della Bibbia cattolica",
-    "exploreBooksDesc": "Clicca su un libro per leggere i suoi capitoli"
+    "exploreBooksDesc": "Clicca su un libro per leggere i suoi capitoli",
+    "to": "a"
   },
   "bibleBook": {
     "bookNotFound": "Libro non trovato",

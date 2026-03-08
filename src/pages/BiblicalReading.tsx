@@ -220,21 +220,21 @@ const BiblicalReading = () => {
     return filtered;
   }, [allReadings, selectedMonth, selectedTestament]);
 
-  const monthsOrder = useMemo(() => [
-    { key: '11-2025', name: 'Nov 2025' },
-    { key: '12-2025', name: 'Déc 2025' },
-    { key: '1-2026', name: 'Jan 2026' },
-    { key: '2-2026', name: 'Fév 2026' },
-    { key: '3-2026', name: 'Mar 2026' },
-    { key: '4-2026', name: 'Avr 2026' },
-    { key: '5-2026', name: 'Mai 2026' },
-    { key: '6-2026', name: 'Juin 2026' },
-    { key: '7-2026', name: 'Juil 2026' },
-    { key: '8-2026', name: 'Août 2026' },
-    { key: '9-2026', name: 'Sep 2026' },
-    { key: '10-2026', name: 'Oct 2026' },
-    { key: '11-2026', name: 'Nov 2026' },
-  ], []);
+  const monthsOrder = useMemo(() => {
+    const lang = i18n.language?.split('-')[0] || 'fr';
+    const fmt = new Intl.DateTimeFormat(lang === 'it' ? 'it-IT' : lang === 'en' ? 'en-US' : 'fr-FR', { month: 'short' });
+    const monthKeys = [
+      { m: 11, y: 2025 }, { m: 12, y: 2025 },
+      { m: 1, y: 2026 }, { m: 2, y: 2026 }, { m: 3, y: 2026 }, { m: 4, y: 2026 },
+      { m: 5, y: 2026 }, { m: 6, y: 2026 }, { m: 7, y: 2026 }, { m: 8, y: 2026 },
+      { m: 9, y: 2026 }, { m: 10, y: 2026 }, { m: 11, y: 2026 },
+    ];
+    return monthKeys.map(({ m, y }) => {
+      const d = new Date(y, m - 1, 1);
+      const label = fmt.format(d);
+      return { key: `${m}-${y}`, name: `${label.charAt(0).toUpperCase() + label.slice(1)} ${y}` };
+    });
+  }, [i18n.language]);
   
   const completedCount = useMemo(() => userProgress.filter(p => p.completed).length, [userProgress]);
   const progressPercentage = useMemo(() => Math.round((completedCount / 358) * 100), [completedCount]);
@@ -374,7 +374,7 @@ const BiblicalReading = () => {
                               onClick={() => openDayReading(reading)}
                             >
                               {reading.books} {reading.chapters.includes('-') 
-                                ? `${reading.chapters.split('-')[0]} à ${reading.chapters.split('-')[1]}`
+                                ? `${reading.chapters.split('-')[0]} ${t('biblicalReading.to', { defaultValue: 'à' })} ${reading.chapters.split('-')[1]}`
                                 : reading.chapters}
                             </Button>
                             <p className="text-xs md:text-sm text-muted-foreground">
