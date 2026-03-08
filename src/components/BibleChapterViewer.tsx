@@ -1,9 +1,5 @@
-/**
- * Composant pour afficher les versets d'un chapitre biblique
- * À intégrer dans BibleBookDetail.tsx
- */
-
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -13,7 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { loadBibleChapterCached, clearBibleCache, BibleVerse } from '@/lib/bible-content-loader';
 
 interface BibleChapterViewerProps {
-  bookId: string; // fileName
+  bookId: string;
   bookName: string;
   abbreviation: string;
   chapterNumber: number;
@@ -27,13 +23,13 @@ export const BibleChapterViewer = ({
   chapterNumber,
   onBack,
 }: BibleChapterViewerProps) => {
+  const { t } = useTranslation();
   const [verses, setVerses] = useState<BibleVerse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Charger immédiatement avec cache
     let isMounted = true;
 
     const loadChapter = async () => {
@@ -45,7 +41,6 @@ export const BibleChapterViewer = ({
         if (!isMounted) return;
 
         if (!chapterVerses) {
-          // Si le chapitre n'est pas disponible, vider le cache et réessayer une fois
           clearBibleCache();
           const retryVerses = await loadBibleChapterCached(bookId, chapterNumber);
           if (retryVerses) {
@@ -55,14 +50,14 @@ export const BibleChapterViewer = ({
             return;
           }
 
-          setError(`Le chapitre ${chapterNumber} de ${bookName} n'est pas disponible.`);
+          setError(t('bibleChapter.chapterNotAvailable', { chapter: chapterNumber, book: bookName }));
           setVerses([]);
         } else {
           setVerses(chapterVerses);
         }
       } catch (err) {
         if (isMounted) {
-          setError(`Erreur lors du chargement: ${String(err)}`);
+          setError(t('bibleChapter.loadError', { error: String(err) }));
           console.error(err);
         }
       } finally {
@@ -73,19 +68,16 @@ export const BibleChapterViewer = ({
     };
 
     loadChapter();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [bookId, chapterNumber, bookName]);
+    return () => { isMounted = false; };
+  }, [bookId, chapterNumber, bookName, t]);
 
   const copyToClipboard = useCallback((verseText: string) => {
     navigator.clipboard.writeText(verseText);
     toast({
-      title: 'Copié',
-      description: 'Le verset a été copié',
+      title: t('bibleChapter.copied'),
+      description: t('bibleChapter.verseCopied'),
     });
-  }, [toast]);
+  }, [toast, t]);
 
   const shareVerse = useCallback((verseNumber: number) => {
     const reference = `${abbreviation} ${chapterNumber}:${verseNumber}`;
@@ -98,21 +90,20 @@ export const BibleChapterViewer = ({
           text: `${reference}\n\n${text}`,
         })
         .catch(() => {
-          // Fallback si partage échoue
           navigator.clipboard.writeText(`${reference}\n\n${text}`);
           toast({
-            title: 'Copié',
-            description: `${reference} copié`,
+            title: t('bibleChapter.copied'),
+            description: t('bibleChapter.refCopied', { ref: reference }),
           });
         });
     } else {
       navigator.clipboard.writeText(`${reference}\n\n${text}`);
       toast({
-        title: 'Copié',
-        description: `${reference} copié`,
+        title: t('bibleChapter.copied'),
+        description: t('bibleChapter.refCopied', { ref: reference }),
       });
     }
-  }, [abbreviation, chapterNumber, verses, bookName, toast]);
+  }, [abbreviation, chapterNumber, verses, bookName, toast, t]);
 
   const saveVerse = useCallback((verseNumber: number) => {
     const reference = `${abbreviation} ${chapterNumber}:${verseNumber}`;
@@ -125,16 +116,16 @@ export const BibleChapterViewer = ({
       savedVerses.push(verseData);
       localStorage.setItem('saved_verses', JSON.stringify(savedVerses));
       toast({
-        title: 'Verset sauvegardé',
-        description: `${reference} ajouté à vos mémorisations`,
+        title: t('bibleChapter.verseSaved'),
+        description: t('bibleChapter.verseSavedDesc', { ref: reference }),
       });
     } else {
       toast({
-        title: 'Déjà sauvegardé',
-        description: `${reference} est déjà dans vos mémorisations`,
+        title: t('bibleChapter.alreadySaved'),
+        description: t('bibleChapter.alreadySavedDesc', { ref: reference }),
       });
     }
-  }, [abbreviation, chapterNumber, verses, bookName, toast]);
+  }, [abbreviation, chapterNumber, verses, bookName, toast, t]);
 
   if (loading) {
     return (
@@ -144,7 +135,7 @@ export const BibleChapterViewer = ({
             <CardTitle className="text-2xl">
               {bookName} {chapterNumber}
             </CardTitle>
-            <Button variant="ghost" size="sm" onClick={onBack} title="Retour">
+            <Button variant="ghost" size="sm" onClick={onBack} title={t('bibleChapter.back')}>
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </div>
@@ -164,7 +155,7 @@ export const BibleChapterViewer = ({
             <CardTitle className="text-2xl">
               {bookName} {chapterNumber}
             </CardTitle>
-            <Button variant="ghost" size="sm" onClick={onBack} title="Retour">
+            <Button variant="ghost" size="sm" onClick={onBack} title={t('bibleChapter.back')}>
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </div>
@@ -174,7 +165,7 @@ export const BibleChapterViewer = ({
             {error}
           </div>
           <Button variant="outline" onClick={() => window.location.reload()}>
-            Réessayer
+            {t('bibleChapter.retry')}
           </Button>
         </CardContent>
       </Card>
@@ -185,7 +176,7 @@ export const BibleChapterViewer = ({
     <Card className="w-full bg-card/50 backdrop-blur-sm border-primary/20">
       <CardHeader className="space-y-0 pb-3">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={onBack} title="Retour">
+          <Button variant="ghost" size="sm" onClick={onBack} title={t('bibleChapter.back')}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <CardTitle className="text-2xl">
@@ -198,7 +189,7 @@ export const BibleChapterViewer = ({
         {verses.length > 0 && (
           <ScrollArea className="h-[600px] pr-2 md:pr-4">
             <div className="space-y-2 md:space-y-1">
-              {verses.map((verse, index) => (
+              {verses.map((verse) => (
                 <div key={verse.number} className="py-0.5">
                   <div className="flex gap-2">
                     <Badge
@@ -216,7 +207,7 @@ export const BibleChapterViewer = ({
                             size="sm"
                             className="h-5 w-5 p-0 text-muted-foreground hover:text-primary transition-colors inline-flex"
                             onClick={() => copyToClipboard(verse.text)}
-                            title="Copier ce verset"
+                            title={t('bibleChapter.copyVerse')}
                           >
                             <Copy className="w-3 h-3" />
                           </Button>
@@ -225,7 +216,7 @@ export const BibleChapterViewer = ({
                             size="sm"
                             className="h-5 w-5 p-0 text-muted-foreground hover:text-primary transition-colors inline-flex"
                             onClick={() => shareVerse(verse.number)}
-                            title="Partager ce verset"
+                            title={t('bibleChapter.shareVerse')}
                           >
                             <Share2 className="w-3 h-3" />
                           </Button>
@@ -234,7 +225,7 @@ export const BibleChapterViewer = ({
                             size="sm"
                             className="h-5 w-5 p-0 text-muted-foreground hover:text-rose-500 transition-colors inline-flex"
                             onClick={() => saveVerse(verse.number)}
-                            title="Mémoriser ce verset"
+                            title={t('bibleChapter.saveVerse')}
                           >
                             <Heart className="w-3 h-3" />
                           </Button>
@@ -250,7 +241,7 @@ export const BibleChapterViewer = ({
 
         {verses.length === 0 && !error && (
           <div className="text-center py-8 text-muted-foreground">
-            <p>Aucun verset disponible pour ce chapitre.</p>
+            <p>{t('bibleChapter.noVerses')}</p>
           </div>
         )}
       </CardContent>

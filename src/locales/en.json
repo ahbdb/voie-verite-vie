@@ -629,5 +629,47 @@
   },
   "postSignup": {
     "securityNote": "For security reasons, we cannot add you \"automatically\" to WhatsApp/YouTube. However, here are the official links in one click."
+  },
+  "dayReading": {
+    "close": "Close",
+    "dayTitle": "Day {{day}}: {{books}} {{chapters}}",
+    "chapterCount": "{{count}} chapter",
+    "chapterCountPlural": "{{count}} chapters",
+    "chaptersToRead": "Chapters to read",
+    "howToContinue": "How to continue",
+    "tipClickChapter": "Click on a chapter above to read the verses",
+    "tipTakeTime": "Take your time — it's a spiritual journey",
+    "tipMeditate": "Meditate on what God is telling you",
+    "tipMarkComplete": "Come back to mark this day as completed"
+  },
+  "bibleBookSelector": {
+    "searchPlaceholder": "Search for a Bible book...",
+    "allBooks": "All ({{count}})",
+    "oldTestament": "Old ({{count}})",
+    "newTestament": "New ({{count}})",
+    "deuterocanonical": "Deuterocanonical",
+    "noBookFound": "No book found",
+    "oldTestamentTitle": "Old Testament",
+    "deuterocanonicalTitle": "Deuterocanonical Books",
+    "otBooks": "OT Books",
+    "ntBooks": "NT Books",
+    "total": "Total"
+  },
+  "bibleChapter": {
+    "chapterNotAvailable": "Chapter {{chapter}} of {{book}} is not available.",
+    "loadError": "Error loading: {{error}}",
+    "copied": "Copied",
+    "verseCopied": "The verse has been copied",
+    "refCopied": "{{ref}} copied",
+    "verseSaved": "Verse saved",
+    "verseSavedDesc": "{{ref}} added to your memorizations",
+    "alreadySaved": "Already saved",
+    "alreadySavedDesc": "{{ref}} is already in your memorizations",
+    "back": "Back",
+    "retry": "Retry",
+    "copyVerse": "Copy this verse",
+    "shareVerse": "Share this verse",
+    "saveVerse": "Save this verse",
+    "noVerses": "No verses available for this chapter."
   }
 }
