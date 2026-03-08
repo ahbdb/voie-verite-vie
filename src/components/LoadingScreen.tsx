@@ -27,7 +27,8 @@ const LoadingScreen = () => {
           />
         </div>
         <h1 className="text-3xl md:text-4xl font-playfair font-bold text-primary mb-4 animate-fade-in-up">
-          Voie, Vérité, Vie
+          {t('brand.fullName')}
+        </h1>
         </h1>
         <div className="flex justify-center space-x-2">
           <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>

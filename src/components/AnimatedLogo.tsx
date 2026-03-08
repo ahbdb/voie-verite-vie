@@ -103,7 +103,7 @@ const AnimatedLogo = ({ size = 'md', className = '' }: AnimatedLogoProps) => {
       >
         <motion.img
           src={logo3v}
-          alt="Logo 3V - Voie, Vérité, Vie"
+          alt={t('brand.logoAlt')}
           className="w-full h-full object-contain drop-shadow-[0_0_15px_hsl(var(--cathedral-gold)/0.4)]"
           initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
           animate={{ opacity: 1, scale: 1, rotate: 0 }}

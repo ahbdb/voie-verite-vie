@@ -171,7 +171,7 @@ const HeroSection = () => {
     return () => clearInterval(interval);
   }, [verses.length]);
 
-  const titleWords = ["Voie,", "Vérité,", "Vie"];
+  const titleWords = [t('brand.word1'), t('brand.word2'), t('brand.word3')];
 
   return (
     <section className="relative min-h-[100vh] flex items-center justify-center overflow-hidden">
