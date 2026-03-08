@@ -1,27 +1,24 @@
 import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import Navigation from '@/components/Navigation';
 import LanguageSelector from '@/components/LanguageSelector';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useSettings, type Theme, type TextSize } from '@/hooks/useSettings';
 import { Sun, Moon, Monitor, Type, Bell, Globe, Lock, Download, Trash2, Info, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
+const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
 
 const Settings = memo(() => {
   const { t } = useTranslation();
-  const { settings, setTheme, setTextSize, isDarkMode } = useSettings();
+  const { settings, setTheme, setTextSize } = useSettings();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -41,202 +38,135 @@ const Settings = memo(() => {
   ];
 
   const clearCache = () => {
-    if ('caches' in window) {
-      caches.keys().then((names) => { names.forEach(name => { caches.delete(name); }); });
-    }
+    if ('caches' in window) { caches.keys().then((names) => { names.forEach(name => { caches.delete(name); }); }); }
     localStorage.clear();
     alert(t('settings.clearCache'));
-  };
-
-  const installApp = () => {
-    const event = new Event('beforeinstallprompt');
-    window.dispatchEvent(event);
   };
 
   const handleDeleteAccount = async () => {
     try {
       setDeletingAccount(true);
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session || !session.user) {
-        toast({ title: t('common.error'), description: t('auth.networkError'), variant: "destructive" });
-        return;
-      }
+      if (!session?.user) { toast({ title: t('common.error'), variant: "destructive" }); return; }
       const userId = session.user.id;
       await supabase.from('profiles').delete().eq('id', userId).select();
       await supabase.from('user_roles').delete().eq('user_id', userId).select();
-      try {
-        await supabase.rpc('hard_delete_auth_user', { target_user_id: userId });
-      } catch (rpcErr) { console.error('RPC error:', rpcErr); }
-      try { await supabase.auth.signOut(); } catch (e) {}
-      localStorage.clear();
-      sessionStorage.clear();
-      if ('caches' in window) { try { const names = await caches.keys(); await Promise.all(names.map(name => caches.delete(name))); } catch (e) {} }
-      toast({ title: "✅ " + t('settings.deleteAccount'), description: t('settings.deleteDesc') });
+      try { await supabase.rpc('hard_delete_auth_user', { target_user_id: userId }); } catch {}
+      try { await supabase.auth.signOut(); } catch {}
+      localStorage.clear(); sessionStorage.clear();
+      toast({ title: "✅ " + t('settings.deleteAccount') });
       setTimeout(() => navigate('/'), 2000);
     } catch (error) {
       console.error('Erreur:', error);
-      toast({ title: t('common.error'), description: "support@voieVeriteVie.com", variant: "destructive" });
-    } finally {
-      setDeletingAccount(false);
-      setDeleteDialogOpen(false);
-    }
+      toast({ title: t('common.error'), variant: "destructive" });
+    } finally { setDeletingAccount(false); setDeleteDialogOpen(false); }
   };
 
-  return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-gradient-to-b from-slate-50 to-white'}`}>
-      <Navigation />
-      <main className="container mx-auto px-4 py-12">
-        <div className="max-w-2xl mx-auto">
-          <div className="mb-8 text-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2 font-playfair">{t('settings.title')}</h1>
-            <p className={`text-sm ${isDarkMode ? 'text-slate-300' : 'text-gray-600'}`}>{t('settings.subtitle')}</p>
-          </div>
+  const Section = ({ icon: Icon, title, desc, children }: { icon: any; title: string; desc: string; children: React.ReactNode }) => (
+    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="pb-6">
+      <div className="flex items-center gap-2 mb-1">
+        <Icon className="w-4 h-4 text-cathedral-gold" />
+        <h2 className="text-base font-cinzel font-bold text-foreground">{title}</h2>
+      </div>
+      <p className="text-xs text-muted-foreground/60 font-inter mb-4">{desc}</p>
+      {children}
+      <div className="cathedral-line w-full mt-6" />
+    </motion.div>
+  );
 
-          <div className="space-y-6">
+  return (
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <main className="pt-20 pb-16">
+        <div className="container mx-auto px-4 max-w-2xl">
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} className="mb-8">
+            <h1 className="text-3xl font-cinzel font-bold text-foreground">{t('settings.title')}</h1>
+            <p className="text-sm text-muted-foreground font-inter">{t('settings.subtitle')}</p>
+          </motion.div>
+
+          <div className="space-y-2">
             {/* Theme */}
-            <Card className={isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-100' : ''}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Sun className="w-5 h-5" />{t('settings.theme')}</CardTitle>
-                <CardDescription className={isDarkMode ? 'text-slate-400' : ''}>{t('settings.themeDesc')}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {themeOptions.map(option => (
-                    <button key={option.value} onClick={() => setTheme(option.value)}
-                      className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
-                        settings.theme === option.value
-                          ? isDarkMode ? 'border-violet-500 bg-violet-950/50' : 'border-violet-600 bg-violet-50'
-                          : isDarkMode ? 'border-slate-700 bg-slate-800 hover:border-slate-600' : 'border-slate-200 bg-slate-50 hover:border-slate-300'
-                      }`}>
-                      <span className={settings.theme === option.value ? 'text-violet-600' : ''}>{option.icon}</span>
-                      <span className={`text-sm font-medium ${isDarkMode ? 'text-slate-100' : ''}`}>{option.label}</span>
-                      {settings.theme === option.value && <span className={isDarkMode ? 'text-xs text-violet-400' : 'text-xs text-violet-600'}>{t('settings.active')}</span>}
-                    </button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <Section icon={Sun} title={t('settings.theme')} desc={t('settings.themeDesc')}>
+              <div className="grid grid-cols-3 gap-3">
+                {themeOptions.map(option => (
+                  <button key={option.value} onClick={() => setTheme(option.value)}
+                    className={`p-4 rounded-lg border transition-all flex flex-col items-center gap-2 ${
+                      settings.theme === option.value
+                        ? 'border-cathedral-gold bg-cathedral-gold/5'
+                        : 'border-border/40 hover:border-border'
+                    }`}>
+                    <span className={settings.theme === option.value ? 'text-cathedral-gold' : 'text-muted-foreground'}>{option.icon}</span>
+                    <span className="text-xs font-inter">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            </Section>
 
             {/* Text Size */}
-            <Card className={isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-100' : ''}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Type className="w-5 h-5" />{t('settings.textSize')}</CardTitle>
-                <CardDescription className={isDarkMode ? 'text-slate-400' : ''}>{t('settings.textSizeDesc')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {textSizeOptions.map(option => (
-                    <button key={option.value} onClick={() => setTextSize(option.value)}
-                      className={`w-full p-3 rounded-lg border-2 text-left transition-all flex justify-between items-center ${
-                        settings.textSize === option.value
-                          ? isDarkMode ? 'border-violet-500 bg-violet-950/50' : 'border-violet-600 bg-violet-50'
-                          : isDarkMode ? 'border-slate-700 bg-slate-800 hover:border-slate-600' : 'border-slate-200 bg-slate-50 hover:border-slate-300'
-                      }`}>
-                      <span className="font-medium">{option.label}</span>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>{option.scale}</span>
-                        {settings.textSize === option.value && <span className={isDarkMode ? 'text-violet-400' : 'text-violet-600'}>✓</span>}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                <div className={`mt-6 p-4 rounded-lg border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-                  <p className={`text-xs font-semibold mb-2 opacity-75 ${isDarkMode ? 'text-slate-300' : ''}`}>{t('settings.preview')}</p>
-                  <p className={`text-sm mb-2 ${isDarkMode ? 'text-slate-200' : ''}`}>{t('settings.previewSmall')}</p>
-                  <p className={`text-base mb-2 ${isDarkMode ? 'text-slate-200' : ''}`}>{t('settings.previewNormal')}</p>
-                  <p className={`text-lg mb-2 ${isDarkMode ? 'text-slate-200' : ''}`}>{t('settings.previewLarge')}</p>
-                  <p className={`text-xl ${isDarkMode ? 'text-slate-200' : ''}`}>{t('settings.previewXL')}</p>
-                </div>
-              </CardContent>
-            </Card>
+            <Section icon={Type} title={t('settings.textSize')} desc={t('settings.textSizeDesc')}>
+              <div className="space-y-2">
+                {textSizeOptions.map(option => (
+                  <button key={option.value} onClick={() => setTextSize(option.value)}
+                    className={`w-full p-3 rounded-lg border text-left transition-all flex justify-between items-center ${
+                      settings.textSize === option.value
+                        ? 'border-cathedral-gold bg-cathedral-gold/5'
+                        : 'border-border/40 hover:border-border'
+                    }`}>
+                    <span className="text-sm font-inter">{option.label}</span>
+                    <span className="text-xs text-muted-foreground/60">{option.scale}</span>
+                  </button>
+                ))}
+              </div>
+            </Section>
 
-            {/* Application */}
-            <Card className={isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-100' : ''}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Download className="w-5 h-5" />{t('settings.application')}</CardTitle>
-                <CardDescription className={isDarkMode ? 'text-slate-400' : ''}>{t('settings.appDesc')}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button onClick={installApp} variant="outline" className="w-full justify-start gap-2"><Download className="w-4 h-4" />{t('settings.installApp')}</Button>
-              </CardContent>
-            </Card>
-
-            {/* Accessibility */}
-            <Card className={isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-100' : ''}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Globe className="w-5 h-5" />{t('settings.accessibility')}</CardTitle>
-                <CardDescription className={isDarkMode ? 'text-slate-400' : ''}>{t('settings.accessibilityDesc')}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" className="w-4 h-4" defaultChecked /><span className="text-sm">{t('settings.reduceAnimations')}</span></label>
-                <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" className="w-4 h-4" /><span className="text-sm">{t('settings.highContrast')}</span></label>
-                <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" className="w-4 h-4" /><span className="text-sm">{t('settings.enhancedFocus')}</span></label>
-              </CardContent>
-            </Card>
+            {/* Language */}
+            <Section icon={Globe} title={t('settings.contentLanguage')} desc={t('settings.contentLanguageDesc')}>
+              <LanguageSelector variant="full" />
+            </Section>
 
             {/* Notifications */}
-            <Card className={isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-100' : ''}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Bell className="w-5 h-5" />{t('settings.notifications')}</CardTitle>
-                <CardDescription className={isDarkMode ? 'text-slate-400' : ''}>{t('settings.notificationsDesc')}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" className="w-4 h-4" defaultChecked /><span className="text-sm">{t('settings.readingReminders')}</span></label>
-                <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" className="w-4 h-4" defaultChecked /><span className="text-sm">{t('settings.lentNotifications')}</span></label>
-                <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" className="w-4 h-4" /><span className="text-sm">{t('settings.activityNotifications')}</span></label>
-                <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" className="w-4 h-4" /><span className="text-sm">{t('settings.newsUpdates')}</span></label>
-              </CardContent>
-            </Card>
+            <Section icon={Bell} title={t('settings.notifications')} desc={t('settings.notificationsDesc')}>
+              <div className="space-y-3">
+                {[t('settings.readingReminders'), t('settings.lentNotifications'), t('settings.activityNotifications'), t('settings.newsUpdates')].map((label, i) => (
+                  <label key={i} className="flex items-center gap-3 cursor-pointer text-sm font-inter text-muted-foreground">
+                    <input type="checkbox" className="w-4 h-4 accent-cathedral-gold" defaultChecked={i < 2} />{label}
+                  </label>
+                ))}
+              </div>
+            </Section>
 
-            {/* Content & Language */}
-            <Card className={isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-100' : ''}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Globe className="w-5 h-5" />{t('settings.contentLanguage')}</CardTitle>
-                <CardDescription className={isDarkMode ? 'text-slate-400' : ''}>{t('settings.contentLanguageDesc')}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium block mb-2">{t('settings.language')}</label>
-                  <LanguageSelector variant="full" />
-                </div>
-                <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" className="w-4 h-4" defaultChecked /><span className="text-sm">{t('settings.showVerses')}</span></label>
-                <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" className="w-4 h-4" defaultChecked /><span className="text-sm">{t('settings.simplifiedReading')}</span></label>
-              </CardContent>
-            </Card>
+            {/* App */}
+            <Section icon={Download} title={t('settings.application')} desc={t('settings.appDesc')}>
+              <Button variant="outline" size="sm" className="gap-2 border-cathedral-gold/30">
+                <Download className="w-4 h-4" />{t('settings.installApp')}
+              </Button>
+            </Section>
 
             {/* Data & Privacy */}
-            <Card className={isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-100' : ''}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Lock className="w-5 h-5" />{t('settings.dataPrivacy')}</CardTitle>
-                <CardDescription className={isDarkMode ? 'text-slate-400' : ''}>{t('settings.dataPrivacyDesc')}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button onClick={clearCache} variant="outline" className="w-full justify-start gap-2 text-red-600 hover:text-red-700"><Trash2 className="w-4 h-4" />{t('settings.clearCache')}</Button>
-                <p className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>{t('settings.clearCacheDesc')}</p>
-              </CardContent>
-            </Card>
+            <Section icon={Lock} title={t('settings.dataPrivacy')} desc={t('settings.dataPrivacyDesc')}>
+              <Button onClick={clearCache} variant="outline" size="sm" className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10">
+                <Trash2 className="w-4 h-4" />{t('settings.clearCache')}
+              </Button>
+            </Section>
 
             {/* Danger Zone */}
-            <Card className={`${isDarkMode ? 'bg-red-950 border-red-900' : 'bg-red-50 border-red-200'}`}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-red-600"><AlertTriangle className="w-5 h-5" />{t('settings.dangerZone')}</CardTitle>
-                <CardDescription className={isDarkMode ? 'text-red-300' : 'text-red-700'}>{t('settings.dangerZoneDesc')}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className={`p-3 rounded-lg ${isDarkMode ? 'bg-red-900/30' : 'bg-red-100'}`}>
-                  <p className={`text-sm ${isDarkMode ? 'text-red-200' : 'text-red-800'}`}>⚠️ <strong>{t('settings.deleteWarning')}</strong></p>
-                </div>
-                <Button onClick={() => setDeleteDialogOpen(true)} variant="destructive" className="w-full justify-start gap-2"><Trash2 className="w-4 h-4" />{t('settings.deleteAccount')}</Button>
-              </CardContent>
-            </Card>
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+              <div className="flex items-center gap-2 mb-1">
+                <AlertTriangle className="w-4 h-4 text-destructive" />
+                <h2 className="text-base font-cinzel font-bold text-destructive">{t('settings.dangerZone')}</h2>
+              </div>
+              <p className="text-xs text-destructive/60 font-inter mb-4">{t('settings.dangerZoneDesc')}</p>
+              <p className="text-xs text-destructive/80 mb-3 font-inter">⚠️ {t('settings.deleteWarning')}</p>
+              <Button onClick={() => setDeleteDialogOpen(true)} variant="destructive" size="sm" className="gap-2">
+                <Trash2 className="w-4 h-4" />{t('settings.deleteAccount')}
+              </Button>
+            </motion.div>
 
             {/* About */}
-            <Card className={isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-100' : ''}>
-              <CardHeader><CardTitle className="flex items-center gap-2"><Info className="w-5 h-5" />{t('common.about')}</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div><p className="text-sm font-medium">Voie, Vérité, Vie</p><p className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-gray-600'}`}>v1.0.0</p></div>
-              </CardContent>
-            </Card>
+            <div className="pt-8 text-center">
+              <p className="text-sm font-cinzel text-foreground">Voie, Vérité, Vie</p>
+              <p className="text-xs text-muted-foreground/40 font-inter">v1.0.0</p>
+            </div>
           </div>
         </div>
       </main>
@@ -244,12 +174,12 @@ const Settings = memo(() => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-red-600"><AlertTriangle className="w-5 h-5" />{t('settings.deleteConfirmTitle')}</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-3 mt-4"><p>{t('settings.deleteConfirmDesc')}</p></AlertDialogDescription>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive"><AlertTriangle className="w-5 h-5" />{t('settings.deleteConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('settings.deleteConfirmDesc')}</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex gap-2">
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteAccount} disabled={deletingAccount} className="bg-red-600 hover:bg-red-700 text-white">
+            <AlertDialogAction onClick={handleDeleteAccount} disabled={deletingAccount} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
               {deletingAccount ? t('settings.deleting') : t('settings.deleteAccount')}
             </AlertDialogAction>
           </div>

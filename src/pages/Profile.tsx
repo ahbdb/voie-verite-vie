@@ -1,29 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { User, BookOpen, Heart, Activity, Mail, LogOut, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
+
 interface UserProfile { id: string; email: string; full_name: string | null; created_at: string; }
-interface PrayerBookmark { id: string; prayer_request_id: string; prayer_title: string; created_at: string; }
-interface ReadingProgress { id: string; book_name: string; chapter: number; date_read: string; }
-interface UserActivity { id: string; activity_type: string; activity_date: string; details: string; }
 
 const Profile = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [prayers, setPrayers] = useState<PrayerBookmark[]>([]);
-  const [readings, setReadings] = useState<ReadingProgress[]>([]);
-  const [activities, setActivities] = useState<UserActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ prayersCount: 0, favoritesCount: 0, readingDays: 0 });
 
@@ -39,10 +33,6 @@ const Profile = () => {
       setLoading(true);
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user?.id).single();
       if (profileData) setProfile(profileData);
-      setPrayers([]);
-      setStats(s => ({ ...s, favoritesCount: 0 }));
-      setReadings([]);
-      setStats(s => ({ ...s, readingDays: 0 }));
       const { count: prayersCount } = await supabase.from('prayer_requests').select('*', { count: 'exact', head: true }).eq('user_id', user?.id);
       setStats(s => ({ ...s, prayersCount: prayersCount || 0 }));
     } catch (error) {
@@ -58,49 +48,85 @@ const Profile = () => {
   };
 
   if (authLoading || loading) {
-    return (<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>);
+    return (<div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-10 w-10 border-2 border-cathedral-gold border-t-transparent"></div></div>);
   }
   if (!user || !profile) return null;
 
+  const statItems = [
+    { icon: Activity, value: stats.prayersCount, label: t('profile.prayerRequests'), color: 'text-cathedral-gold' },
+    { icon: Heart, value: stats.favoritesCount, label: t('profile.savedPrayers'), color: 'text-stained-ruby' },
+    { icon: BookOpen, value: stats.readingDays, label: t('profile.readingDays'), color: 'text-stained-blue' },
+  ];
+
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen bg-background">
       <Navigation />
-      <main className="flex-1 container mx-auto px-4 py-8 pt-24">
-        <div className="mb-8">
-          <div className="flex justify-between items-start mb-6">
+      <main className="pt-20 pb-16">
+        <div className="container mx-auto px-4 max-w-2xl">
+          {/* Header */}
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-4xl font-bold flex items-center gap-3 mb-2"><User className="h-10 w-10" />{t('profile.title')}</h1>
-              <p className="text-muted-foreground">{t('profile.subtitle')}</p>
+              <h1 className="text-3xl font-cinzel font-bold text-foreground">{t('profile.title')}</h1>
+              <p className="text-sm text-muted-foreground font-inter">{t('profile.subtitle')}</p>
             </div>
-            <Button variant="destructive" onClick={handleLogout} className="gap-2"><LogOut className="h-4 w-4" />{t('common.logout')}</Button>
-          </div>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div><h2 className="text-sm text-muted-foreground mb-1">{t('profile.name')}</h2><p className="text-lg font-semibold">{profile.full_name || t('profile.notProvided')}</p></div>
-                <div><h2 className="text-sm text-muted-foreground flex items-center gap-1 mb-1"><Mail className="h-4 w-4" /> Email</h2><p className="text-lg font-semibold">{profile.email}</p></div>
-                <div><h2 className="text-sm text-muted-foreground flex items-center gap-1 mb-1"><Clock className="h-4 w-4" /> {t('profile.memberSince')}</h2><p className="text-lg font-semibold">{formatDate(profile.created_at)}</p></div>
+            <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10">
+              <LogOut className="h-4 w-4" />{t('common.logout')}
+            </Button>
+          </motion.div>
+
+          {/* Profile info - flat */}
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} transition={{ delay: 0.1 }} className="mb-8">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-16 h-16 rounded-full bg-cathedral-gold/10 border border-cathedral-gold/30 flex items-center justify-center">
+                <User className="w-8 h-8 text-cathedral-gold" />
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div>
+                <h2 className="text-xl font-cinzel font-semibold text-foreground">{profile.full_name || t('profile.notProvided')}</h2>
+                <p className="text-sm text-muted-foreground font-inter flex items-center gap-1"><Mail className="w-3 h-3" />{profile.email}</p>
+                <p className="text-xs text-muted-foreground/60 font-inter flex items-center gap-1"><Clock className="w-3 h-3" />{t('profile.memberSince')} {formatDate(profile.created_at || '')}</p>
+              </div>
+            </div>
+            <div className="cathedral-line w-full" />
+          </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <Card><CardContent className="pt-6 text-center"><Activity className="h-8 w-8 mx-auto mb-2 text-primary" /><p className="text-3xl font-bold">{stats.prayersCount}</p><p className="text-sm text-muted-foreground">{t('profile.prayerRequests')}</p></CardContent></Card>
-          <Card><CardContent className="pt-6 text-center"><Heart className="h-8 w-8 mx-auto mb-2 text-red-500" /><p className="text-3xl font-bold">{stats.favoritesCount}</p><p className="text-sm text-muted-foreground">{t('profile.savedPrayers')}</p></CardContent></Card>
-          <Card><CardContent className="pt-6 text-center"><BookOpen className="h-8 w-8 mx-auto mb-2 text-blue-500" /><p className="text-3xl font-bold">{stats.readingDays}</p><p className="text-sm text-muted-foreground">{t('profile.readingDays')}</p></CardContent></Card>
-        </div>
+          {/* Stats - flat row */}
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} transition={{ delay: 0.2 }} className="grid grid-cols-3 gap-6 mb-10">
+            {statItems.map((s, i) => (
+              <div key={i} className="text-center">
+                <s.icon className={`w-5 h-5 mx-auto mb-2 ${s.color}`} />
+                <p className="text-2xl font-cinzel font-bold text-foreground">{s.value}</p>
+                <p className="text-[10px] text-muted-foreground font-inter uppercase tracking-wider">{s.label}</p>
+              </div>
+            ))}
+          </motion.div>
 
-        <Tabs defaultValue="prayers" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="prayers">{t('profile.savedPrayersTab')}</TabsTrigger>
-            <TabsTrigger value="readings">{t('profile.biblicalReadingTab')}</TabsTrigger>
-            <TabsTrigger value="activity">{t('profile.activityTab')}</TabsTrigger>
-          </TabsList>
-          <TabsContent value="prayers"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Heart className="h-5 w-5" /> {t('profile.savedPrayersTab')}</CardTitle></CardHeader><CardContent>{prayers.length === 0 ? <p className="text-muted-foreground text-center py-8">{t('profile.noSavedPrayers')}</p> : prayers.map(p => <div key={p.id} className="p-3 border rounded-lg">{p.prayer_title}</div>)}</CardContent></Card></TabsContent>
-          <TabsContent value="readings"><Card><CardHeader><CardTitle className="flex items-center gap-2"><BookOpen className="h-5 w-5" /> {t('profile.biblicalReadingTab')}</CardTitle></CardHeader><CardContent>{readings.length === 0 ? <p className="text-muted-foreground text-center py-8">{t('profile.noReadings')}</p> : readings.map(r => <div key={r.id} className="p-3 border rounded-lg">{r.book_name} - {t('profile.chapter')} {r.chapter}</div>)}</CardContent></Card></TabsContent>
-          <TabsContent value="activity"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Activity className="h-5 w-5" /> {t('profile.recentActivity')}</CardTitle></CardHeader><CardContent>{activities.length === 0 ? <div className="text-center py-8"><p className="text-muted-foreground mb-2">{t('profile.noActivity')}</p><p className="text-sm text-muted-foreground">{t('profile.startParticipating')}</p></div> : activities.map(a => <div key={a.id} className="p-3 border-l-4 border-primary pl-4">{a.details}</div>)}</CardContent></Card></TabsContent>
-        </Tabs>
+          <div className="cathedral-line w-full mb-8" />
+
+          {/* Tabs - flat sections */}
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-cinzel font-bold text-foreground mb-4 flex items-center gap-2">
+                <Heart className="w-4 h-4 text-cathedral-gold" />{t('profile.savedPrayersTab')}
+              </h3>
+              <p className="text-sm text-muted-foreground/60 font-inter italic">{t('profile.noSavedPrayers')}</p>
+            </div>
+            <div className="cathedral-line w-full" />
+            <div>
+              <h3 className="text-lg font-cinzel font-bold text-foreground mb-4 flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-cathedral-gold" />{t('profile.biblicalReadingTab')}
+              </h3>
+              <p className="text-sm text-muted-foreground/60 font-inter italic">{t('profile.noReadings')}</p>
+            </div>
+            <div className="cathedral-line w-full" />
+            <div>
+              <h3 className="text-lg font-cinzel font-bold text-foreground mb-4 flex items-center gap-2">
+                <Activity className="w-4 h-4 text-cathedral-gold" />{t('profile.recentActivity')}
+              </h3>
+              <p className="text-sm text-muted-foreground/60 font-inter">{t('profile.noActivity')}</p>
+              <p className="text-xs text-muted-foreground/40 font-inter mt-1">{t('profile.startParticipating')}</p>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   );

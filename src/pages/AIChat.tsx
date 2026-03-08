@@ -79,7 +79,6 @@ const AIChat = () => {
     await supabase.from('ai_conversations').delete().eq('id', id);
     if (currentConversationId === id) { setCurrentConversationId(null); setMessages([]); }
     await loadConversations();
-    toast({ title: t('aiChat.deleted') });
   };
 
   const streamChat = async (userMessage: Message, convId: string) => {
@@ -121,161 +120,170 @@ const AIChat = () => {
     if (!convId) return;
     setCurrentConversationId(convId);
     let fullContent = input;
-    if (uploadedFile) { fullContent = `[Fichier attaché: ${uploadedFile.name}]\n${uploadedFile.content}\n\n${input}`; }
+    if (uploadedFile) { fullContent = `[Fichier: ${uploadedFile.name}]\n${uploadedFile.content}\n\n${input}`; }
     const userMessage: Message = { role: 'user', content: fullContent };
     setMessages(prev => [...prev, userMessage]); 
-    setInput(''); 
-    setUploadedFile(null);
-    setIsLoading(true);
+    setInput(''); setUploadedFile(null); setIsLoading(true);
     await saveMessage(convId, 'user', fullContent);
     await streamChat(userMessage, convId);
-    await loadConversations(); 
-    setIsLoading(false);
+    await loadConversations(); setIsLoading(false);
   };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     event.target.value = '';
-
-    if (file.type.startsWith('image/')) {
-      toast({ title: t('aiChat.unsupportedFormat'), description: t('aiChat.unsupportedFormatDesc'), variant: 'destructive' });
-      return;
-    }
-
+    if (file.type.startsWith('image/')) { toast({ title: t('aiChat.unsupportedFormat'), variant: 'destructive' }); return; }
     try {
       const ext = file.name.toLowerCase().split('.').pop();
-
       if (file.type === 'application/pdf' || ext === 'pdf') {
-        const arrayBuffer = await file.arrayBuffer();
-        const doc = await (pdfjs as any).getDocument({ data: arrayBuffer }).promise;
-        let extracted = '';
-        const maxPages = Math.min(doc.numPages ?? 1, 10);
-        for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-          const page = await doc.getPage(pageNum);
-          const content = await page.getTextContent();
-          const pageText = (content.items || []).map((it: any) => (typeof it?.str === 'string' ? it.str : '')).join(' ');
-          extracted += `\n\n--- Page ${pageNum} ---\n${pageText}`;
-          if (extracted.length > 15000) break;
+        const ab = await file.arrayBuffer();
+        const doc = await (pdfjs as any).getDocument({ data: ab }).promise;
+        let text = '';
+        for (let p = 1; p <= Math.min(doc.numPages ?? 1, 10); p++) {
+          const page = await doc.getPage(p);
+          const c = await page.getTextContent();
+          text += '\n' + (c.items || []).map((it: any) => it?.str || '').join(' ');
+          if (text.length > 15000) break;
         }
-        setUploadedFile({ name: file.name, content: extracted.trim().slice(0, 15000), type: file.type });
-        toast({ title: `✅ ${t('aiChat.pdfAdded')}`, description: file.name });
-        return;
+        setUploadedFile({ name: file.name, content: text.trim().slice(0, 15000), type: file.type });
+        toast({ title: `✅ PDF` }); return;
       }
-
       if (ext === 'docx') {
-        const arrayBuffer = await file.arrayBuffer();
-        const result = await mammoth.extractRawText({ arrayBuffer });
-        const text = (result?.value || '').trim();
-        setUploadedFile({ name: file.name, content: text.slice(0, 15000), type: file.type || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-        toast({ title: `✅ ${t('aiChat.docxAdded')}`, description: file.name });
-        return;
+        const ab = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer: ab });
+        setUploadedFile({ name: file.name, content: (result?.value || '').slice(0, 15000), type: 'application/docx' });
+        toast({ title: `✅ DOCX` }); return;
       }
-
       const text = await file.text();
-      setUploadedFile({ name: file.name, content: text.substring(0, 15000), type: file.type || 'text/plain' });
-      toast({ title: `✅ ${t('aiChat.fileAdded')}`, description: file.name });
-    } catch (error) {
-      console.error('Erreur lecture fichier:', error);
-      toast({ title: '❌', description: t('aiChat.fileError'), variant: 'destructive' });
-    }
+      setUploadedFile({ name: file.name, content: text.slice(0, 15000), type: file.type || 'text/plain' });
+      toast({ title: `✅ ${file.name}` });
+    } catch { toast({ title: '❌', variant: 'destructive' }); }
   };
 
   const newChat = useCallback(() => { setCurrentConversationId(null); setMessages([]); setShowSidebar(false); }, []);
 
-  const LogoIcon = ({ className }: { className?: string }) => (
-    <img src={logo3v} alt="Logo 3V" className={className} />
-  );
-
   return (
     <div className="h-screen flex flex-col bg-background">
-      <div className="border-b p-3 flex items-center justify-between bg-card">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/')} aria-label={t('aiChat.backToHome')}><ArrowLeft className="w-5 h-5" /></Button>
-          <Button variant="ghost" size="icon" onClick={() => setShowSidebar(!showSidebar)} className="md:hidden" aria-label={t('aiChat.conversations')}><MessageSquare className="w-5 h-5" /></Button>
-          <div className="p-2 bg-primary rounded-lg"><LogoIcon className="w-5 h-5 object-contain" /></div>
-          <div><h1 className="font-semibold text-primary text-sm">{t('aiChat.title')}</h1></div>
+      {/* Header */}
+      <div className="border-b border-border/30 px-4 py-3 flex items-center justify-between bg-background">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate('/')} className="text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft className="w-5 h-5" /></button>
+          <button onClick={() => setShowSidebar(!showSidebar)} className="md:hidden text-muted-foreground"><MessageSquare className="w-5 h-5" /></button>
+          <div className="w-8 h-8 rounded-lg bg-cathedral-gold/10 flex items-center justify-center p-1">
+            <img src={logo3v} alt="3V" className="w-full h-full object-contain" />
+          </div>
+          <div>
+            <h1 className="text-sm font-cinzel font-bold text-foreground">{t('aiChat.title')}</h1>
+          </div>
         </div>
-        <Button variant="outline" size="sm" onClick={newChat}><Plus className="w-4 h-4 mr-1" />{t('aiChat.new')}</Button>
+        <Button variant="outline" size="sm" onClick={newChat} className="gap-1 text-xs border-cathedral-gold/30">
+          <Plus className="w-3 h-3" />{t('aiChat.new')}
+        </Button>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        <div className={`${showSidebar ? 'block' : 'hidden'} md:block w-56 border-r bg-muted/30 overflow-y-auto`}>
-          <div className="p-2 space-y-1">
-            <p className="text-xs font-semibold text-muted-foreground mb-2">{t('aiChat.conversations')}</p>
-            {conversations.map((c) => (
-              <div key={c.id} className={`flex items-center gap-2 p-2 rounded cursor-pointer group ${currentConversationId === c.id ? 'bg-primary/10' : 'hover:bg-muted'}`} onClick={() => loadMessages(c.id)}>
-                <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                <span className="text-xs truncate flex-1">{c.title || t('aiChat.noTitle')}</span>
-                <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); deleteConversation(c.id); }} aria-label={t('common.delete')}><Trash2 className="w-3 h-3" /></Button>
+        {/* Sidebar */}
+        <div className={`${showSidebar ? 'block' : 'hidden'} md:block w-52 border-r border-border/20 bg-muted/10 overflow-y-auto`}>
+          <div className="p-3 space-y-0.5">
+            <p className="text-[10px] font-inter text-muted-foreground/50 uppercase tracking-wider mb-2">{t('aiChat.conversations')}</p>
+            {conversations.map(c => (
+              <div key={c.id} className={`flex items-center gap-2 py-2 px-2 rounded cursor-pointer group transition-colors ${currentConversationId === c.id ? 'bg-cathedral-gold/10' : 'hover:bg-muted/50'}`} onClick={() => loadMessages(c.id)}>
+                <MessageSquare className="w-3 h-3 flex-shrink-0 text-muted-foreground/40" />
+                <span className="text-xs truncate flex-1 font-inter">{c.title || t('aiChat.noTitle')}</span>
+                <button className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); deleteConversation(c.id); }}>
+                  <Trash2 className="w-3 h-3 text-muted-foreground/40 hover:text-destructive" />
+                </button>
               </div>
             ))}
           </div>
         </div>
 
+        {/* Chat area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-            <div className="max-w-2xl mx-auto space-y-3">
+            <div className="max-w-2xl mx-auto space-y-4">
               {messages.length === 0 && (
-                <div className="text-center py-12">
-                  <LogoIcon className="w-12 h-12 text-primary mx-auto mb-3 object-contain" />
-                  <h3 className="font-semibold text-primary mb-1">{t('aiChat.welcome')}</h3>
-                  <p className="text-muted-foreground text-sm">{t('aiChat.welcomeDesc')}</p>
+                <div className="text-center py-20">
+                  <div className="w-14 h-14 rounded-full bg-cathedral-gold/10 flex items-center justify-center mx-auto mb-4 p-2">
+                    <img src={logo3v} alt="3V" className="w-full h-full object-contain" />
+                  </div>
+                  <h3 className="font-cinzel font-bold text-foreground mb-1">{t('aiChat.welcome')}</h3>
+                  <p className="text-sm text-muted-foreground font-inter max-w-sm mx-auto">{t('aiChat.welcomeDesc')}</p>
                 </div>
               )}
 
               {messages.map((m, i) => (
-                <div key={i} className={`flex gap-2 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  {m.role === 'assistant' && (<div className="bg-primary rounded w-7 h-7 flex items-center justify-center p-1"><LogoIcon className="w-full h-full object-contain" /></div>)}
-                  <div className={`rounded-lg p-3 max-w-[80%] text-sm ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                    {m.role === 'assistant' ? (<div className="prose prose-sm dark:prose-invert max-w-none"><ReactMarkdown>{m.content}</ReactMarkdown></div>) : (<p className="whitespace-pre-wrap">{m.content}</p>)}
+                <div key={i} className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  {m.role === 'assistant' && (
+                    <div className="w-7 h-7 rounded-full bg-cathedral-gold/10 flex items-center justify-center flex-shrink-0 p-1">
+                      <img src={logo3v} alt="" className="w-full h-full object-contain" />
+                    </div>
+                  )}
+                  <div className={`rounded-xl px-4 py-3 max-w-[80%] text-sm ${
+                    m.role === 'user' 
+                      ? 'bg-cathedral-gold/10 text-foreground' 
+                      : 'bg-muted/50'
+                  }`}>
+                    {m.role === 'assistant' ? (
+                      <div className="prose prose-sm dark:prose-invert max-w-none font-inter"><ReactMarkdown>{m.content}</ReactMarkdown></div>
+                    ) : (
+                      <p className="whitespace-pre-wrap font-inter">{m.content}</p>
+                    )}
                     {m.role === 'assistant' && isSupported() && (
-                      <Button onClick={() => (isSpeaking ? stopSpeaking() : speak(m.content))} variant="ghost" size="sm" className="mt-2 gap-1 h-6 text-xs">
-                        {isSpeaking ? (<><VolumeX className="w-3 h-3" />{t('aiChat.stop')}</>) : (<><Volume2 className="w-3 h-3" />{t('aiChat.read')}</>)}
-                      </Button>
+                      <button onClick={() => isSpeaking ? stopSpeaking() : speak(m.content)}
+                        className="mt-2 text-[10px] text-muted-foreground/50 hover:text-muted-foreground flex items-center gap-1 font-inter">
+                        {isSpeaking ? <><VolumeX className="w-3 h-3" />{t('aiChat.stop')}</> : <><Volume2 className="w-3 h-3" />{t('aiChat.read')}</>}
+                      </button>
                     )}
                   </div>
-                  {m.role === 'user' && (<div className="bg-secondary rounded w-7 h-7 flex items-center justify-center"><User className="w-4 h-4" /></div>)}
+                  {m.role === 'user' && (
+                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                  )}
                 </div>
               ))}
 
               {isLoading && (
-                <div className="flex gap-2">
-                  <div className="bg-primary rounded w-7 h-7 flex items-center justify-center p-1"><LogoIcon className="w-full h-full object-contain" /></div>
-                  <div className="bg-muted rounded-lg p-3">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                    </div>
+                <div className="flex gap-3">
+                  <div className="w-7 h-7 rounded-full bg-cathedral-gold/10 flex items-center justify-center p-1">
+                    <img src={logo3v} alt="" className="w-full h-full object-contain" />
+                  </div>
+                  <div className="bg-muted/50 rounded-xl px-4 py-3 flex gap-1">
+                    <div className="w-1.5 h-1.5 bg-cathedral-gold/50 rounded-full animate-bounce" />
+                    <div className="w-1.5 h-1.5 bg-cathedral-gold/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                    <div className="w-1.5 h-1.5 bg-cathedral-gold/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
                   </div>
                 </div>
               )}
             </div>
           </ScrollArea>
-          <div className="border-t p-3 bg-card">
+
+          {/* Input */}
+          <div className="border-t border-border/20 p-3 bg-background">
             <div className="max-w-2xl mx-auto">
               {uploadedFile && (
-                <div className="mb-2 flex items-center gap-2 p-2 bg-muted rounded text-sm">
-                  <Paperclip className="w-4 h-4" />
+                <div className="mb-2 flex items-center gap-2 px-3 py-1.5 bg-cathedral-gold/5 border border-cathedral-gold/20 rounded text-xs font-inter">
+                  <Paperclip className="w-3 h-3 text-cathedral-gold" />
                   <span className="flex-1 truncate">{uploadedFile.name}</span>
-                  <Button variant="ghost" size="sm" onClick={() => setUploadedFile(null)} className="h-5 w-5 p-0"><X className="w-3 h-3" /></Button>
+                  <button onClick={() => setUploadedFile(null)}><X className="w-3 h-3 text-muted-foreground" /></button>
                 </div>
               )}
               <div className="flex gap-2">
                 <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.txt,.md,.docx" onChange={handleFileSelect} />
-                <Button variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()} className={uploadedFile ? 'bg-muted' : ''}><Paperclip className="w-5 h-5" /></Button>
+                <button onClick={() => fileInputRef.current?.click()} className="text-muted-foreground/40 hover:text-muted-foreground transition-colors p-2"><Paperclip className="w-4 h-4" /></button>
                 {isSupported() && (
-                  <>
-                    {isListening ? (
-                      <Button variant="destructive" size="icon" onClick={stopListening}><MicOff className="w-5 h-5" /></Button>
-                    ) : (
-                      <Button variant="ghost" size="icon" onClick={startListening}><Mic className="w-5 h-5" /></Button>
-                    )}
-                  </>
+                  isListening ? (
+                    <button onClick={stopListening} className="text-destructive p-2"><MicOff className="w-4 h-4" /></button>
+                  ) : (
+                    <button onClick={startListening} className="text-muted-foreground/40 hover:text-muted-foreground p-2"><Mic className="w-4 h-4" /></button>
+                  )
                 )}
-                <Input value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSend()} placeholder={t('aiChat.askQuestion')} disabled={isLoading || isListening} className="flex-1" />
-                <Button onClick={handleSend} disabled={isLoading || !input.trim()}><Send className="w-4 h-4" /></Button>
+                <Input value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSend()} placeholder={t('aiChat.askQuestion')} disabled={isLoading || isListening} className="flex-1 border-border/30" />
+                <Button onClick={handleSend} disabled={isLoading || !input.trim()} size="sm" className="bg-cathedral-gold hover:bg-cathedral-gold/90 text-cathedral-navy">
+                  <Send className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           </div>
