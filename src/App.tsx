@@ -25,6 +25,8 @@ import PrayerForum from "./pages/PrayerForum";
 import Careme2026 from "./pages/Careme2026";
 import CheminDeCroix from "./pages/CheminDeCroix";
 import ShareDebug from "./pages/ShareDebug";
+import Neuvaines from "./pages/Neuvaines";
+import NeuvaineDayView from "./pages/NeuvaineDayView";
 import Admin from "./pages/Admin";
 import AdminReadings from "./pages/admin/AdminReadings";
 import AdminPrayers from "./pages/admin/AdminPrayers";
