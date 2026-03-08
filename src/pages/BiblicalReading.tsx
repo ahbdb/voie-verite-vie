@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +37,7 @@ interface UserProgress {
 }
 
 const BiblicalReading = () => {
+  const { t, i18n } = useTranslation();
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [selectedTestament, setSelectedTestament] = useState('all');
   const [activeTab, setActiveTab] = useState('program');
@@ -138,14 +140,14 @@ const BiblicalReading = () => {
       if (!wasCompleted) {
         setQuizReading(reading);
         setShowQuiz(true);
-        toast({ title: "Lecture complétée !" });
+        toast({ title: t('biblicalReading.readingCompleted') });
       }
     } catch (error) {
       logger.error('Erreur lors de la mise à jour du statut de lecture', 
         { readingId: reading.id, userId: user.id }, 
         error instanceof Error ? error : new Error(String(error))
       );
-      toast({ title: "Erreur", description: "Impossible de mettre à jour votre progression", variant: "destructive" });
+      toast({ title: t('common.error'), description: t('biblicalReading.updateError'), variant: "destructive" });
     }
   };
 
@@ -191,13 +193,13 @@ const BiblicalReading = () => {
         { readingId: reading.id, userId: user.id }, 
         error instanceof Error ? error : new Error(String(error))
       );
-      toast({ title: "Erreur", description: "Impossible de mettre à jour votre progression", variant: "destructive" });
+      toast({ title: t('common.error'), description: t('biblicalReading.updateError'), variant: "destructive" });
     }
     
     await loadUserProgress();
     setQuizReading(reading);
     setShowQuiz(true);
-    toast({ title: "Lecture marquée comme complétée !" });
+    toast({ title: t('biblicalReading.readingMarkedCompleted') });
   };
 
   const filteredReadings = useMemo(() => {
@@ -241,7 +243,7 @@ const BiblicalReading = () => {
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-2"></div>
-        <p className="text-sm text-muted-foreground">Chargement...</p>
+        <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
       </div>
     </div>
   );
@@ -269,8 +271,8 @@ const BiblicalReading = () => {
         <section className="py-6 md:py-10 bg-gradient-subtle">
           <div className="container mx-auto px-4">
             <div className="text-center max-w-4xl mx-auto">
-              <h1 className="text-2xl md:text-5xl font-playfair font-bold text-primary mb-3">Programme de Lecture Biblique</h1>
-              <p className="text-base md:text-lg text-muted-foreground">Parcourez les 73 livres de la Bible catholique en 354 jours</p>
+              <h1 className="text-2xl md:text-5xl font-playfair font-bold text-primary mb-3">{t('biblicalReading.title')}</h1>
+              <p className="text-base md:text-lg text-muted-foreground">{t('biblicalReading.subtitle')}</p>
             </div>
           </div>
         </section>
@@ -281,29 +283,25 @@ const BiblicalReading = () => {
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="program" className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  <span>Programme 354j</span>
+                  <span>{t('biblicalReading.programTab')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="books" className="flex items-center gap-2">
                   <Library className="w-4 h-4" />
-                  <span>73 Livres</span>
+                  <span>{t('biblicalReading.booksTab')}</span>
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="program" className="space-y-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">Progression</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{progressPercentage}%</div></CardContent></Card>
-                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">Complétées</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{completedCount}/358</div></CardContent></Card>
-                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">Affichées</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{filteredReadings.length}</div></CardContent></Card>
-                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">Restants</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{358 - completedCount}</div></CardContent></Card>
+                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">{t('biblicalReading.progressLabel')}</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{progressPercentage}%</div></CardContent></Card>
+                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">{t('biblicalReading.completedLabel')}</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{completedCount}/358</div></CardContent></Card>
+                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">{t('biblicalReading.displayedLabel')}</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{filteredReadings.length}</div></CardContent></Card>
+                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">{t('biblicalReading.remainingLabel')}</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{358 - completedCount}</div></CardContent></Card>
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-6">
-                  <Button 
-                    variant={selectedMonth === 'all' ? 'default' : 'outline'} 
-                    size="sm"
-                    onClick={() => setSelectedMonth('all')}
-                  >
-                    Tous
+                  <Button variant={selectedMonth === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setSelectedMonth('all')}>
+                    {t('biblicalReading.all')}
                   </Button>
                   {monthsOrder.map((month) => {
                     const [m, y] = month.key.split('-').map(Number);
@@ -332,9 +330,9 @@ const BiblicalReading = () => {
 
                 <Tabs value={selectedTestament} onValueChange={setSelectedTestament} className="mb-6">
                   <TabsList className="grid w-full max-w-xs mx-auto grid-cols-3">
-                    <TabsTrigger value="all">Tous</TabsTrigger>
-                    <TabsTrigger value="old">A.T.</TabsTrigger>
-                    <TabsTrigger value="new">N.T.</TabsTrigger>
+                    <TabsTrigger value="all">{t('biblicalReading.all')}</TabsTrigger>
+                    <TabsTrigger value="old">{t('biblicalReading.oldTestament')}</TabsTrigger>
+                    <TabsTrigger value="new">{t('biblicalReading.newTestament')}</TabsTrigger>
                   </TabsList>
                 </Tabs>
 
@@ -350,7 +348,7 @@ const BiblicalReading = () => {
                             <div className="flex items-center gap-2">
                               <Calendar className="w-4 h-4 text-primary" />
                               <span className="text-sm font-medium text-primary">
-                                Jour {reading.day_number}
+                                {t('biblicalReading.day')} {reading.day_number}
                               </span>
                             </div>
                             {isCompleted && (
@@ -365,7 +363,7 @@ const BiblicalReading = () => {
                             )}
                           </div>
                           <CardTitle className="text-base md:text-lg font-playfair">
-                            {new Date(reading.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+                            {new Date(reading.date).toLocaleDateString(i18n.language === 'it' ? 'it-IT' : i18n.language === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long' })}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -380,7 +378,7 @@ const BiblicalReading = () => {
                                 : reading.chapters}
                             </Button>
                             <p className="text-xs md:text-sm text-muted-foreground">
-                              {reading.chapters_count} chapitre{reading.chapters_count > 1 ? 's' : ''}
+                              {reading.chapters_count} {reading.chapters_count > 1 ? t('biblicalReading.chaptersPlural') : t('biblicalReading.chapters')}
                             </p>
                             {reading.comment && (
                               <div className="bg-primary/5 rounded-lg p-3">
@@ -394,7 +392,7 @@ const BiblicalReading = () => {
                               onClick={() => toggleReadingComplete(reading)}
                             >
                               <CheckCircle className="w-3 h-3 mr-1" />
-                              {isCompleted ? "Complété" : "Marquer comme lu"}
+                              {isCompleted ? t('biblicalReading.completed') : t('biblicalReading.markAsRead')}
                             </Button>
                           </div>
                         </CardContent>
@@ -409,10 +407,10 @@ const BiblicalReading = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <BookOpen className="w-5 h-5" />
-                      Explorez les 73 Livres Bibliques
+                      {t('biblicalReading.exploreBooks')}
                     </CardTitle>
                     <p className="text-sm text-muted-foreground mt-2">
-                      Accédez à tous les livres de la Bible catholique avec leurs chapitres et abréviations
+                      {t('biblicalReading.exploreBooksDesc')}
                     </p>
                   </CardHeader>
                   <CardContent>

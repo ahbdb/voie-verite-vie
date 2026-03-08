@@ -1,5 +1,6 @@
 import { memo, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ import { generateShareImage, shareImage } from '@/lib/share-utils';
 import { caremeData } from '@/data/careme-2026-data';
 
 const Careme2026 = memo(() => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -162,13 +164,13 @@ const Careme2026 = memo(() => {
         program_key: 'careme-2026',
         date: dateStr,
       }, { onConflict: 'user_id,program_key,date' });
-      toast({ title: 'Jour marqué comme complété ✓' });
+      toast({ title: t('careme.dayMarkedCompleted') });
       // Notification automatique de succès
       const today = new Date();
       const todayDayNum = today.getDate();
       await notifyCareme(todayDayNum, `Jour complété! 🙏`);
     } catch (err) {
-      toast({ title: 'Erreur', description: 'Impossible de sauvegarder', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('careme.saveError'), variant: 'destructive' });
     }
   };
 
@@ -181,7 +183,7 @@ const Careme2026 = memo(() => {
         .eq('user_id', user.id)
         .eq('program_key', 'careme-2026')
         .eq('date', dateStr);
-      toast({ title: 'Jour retiré' });
+      toast({ title: t('careme.dayRemoved') });
     } catch (err) {
       console.error(err);
     }
@@ -295,7 +297,7 @@ const Careme2026 = memo(() => {
     }
     
     setSharingProgress(null);
-    toast({ title: '✝️ Les 40 jours ont été téléchargés/partagés!' });
+    toast({ title: `✝️ ${t('careme.allDaysShared')}` });
   };
 
   useEffect(() => {
@@ -368,7 +370,7 @@ const Careme2026 = memo(() => {
         });
       } else {
         await navigator.clipboard.writeText(window.location.href);
-        toast({ title: 'Lien copié' });
+        toast({ title: t('careme.linkCopied') });
       }
     } catch (err) {
       console.error(err);
@@ -384,7 +386,7 @@ const Careme2026 = memo(() => {
         <div className="fixed top-0 left-0 right-0 bg-violet-600 text-white p-4 z-50 flex items-center gap-4">
           <div className="flex-1">
             <div className="flex justify-between text-sm mb-2">
-              <span>Partage en cours...</span>
+              <span>{t('careme.sharingInProgress')}</span>
               <span>{sharingProgress.current}/{sharingProgress.total}</span>
             </div>
             <div className="w-full bg-violet-800 rounded-full h-2">
@@ -405,10 +407,10 @@ const Careme2026 = memo(() => {
         <div className="container mx-auto relative z-10">
           <div className="flex items-center gap-3 mb-4">
             <Flame className="w-8 h-8 text-violet-200" />
-            <span className="text-sm font-semibold text-violet-200">Entreprendre votre chemin</span>
+            <span className="text-sm font-semibold text-violet-200">{t('careme.undertakeJourney')}</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3">Carême 2026</h1>
-          <p className="text-base sm:text-lg text-violet-100 max-w-2xl">40 jours de transformation spirituelle : prière, pénitence et partage. Un parcours vers la Pâques.</p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3">{t('careme.title')}</h1>
+          <p className="text-base sm:text-lg text-violet-100 max-w-2xl">{t('careme.subtitle')}</p>
         </div>
       </header>
 
@@ -418,25 +420,25 @@ const Careme2026 = memo(() => {
           <Card className="bg-gradient-to-br from-violet-500/10 to-violet-600/10 border-violet-200">
             <CardContent className="pt-6">
               <div className="text-2xl sm:text-3xl font-bold text-violet-700">{nonSundayDays.length}</div>
-              <p className="text-xs sm:text-sm text-gray-600">Jours dans le programme</p>
+              <p className="text-xs sm:text-sm text-gray-600">{t('careme.daysInProgram')}</p>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-green-500/10 to-green-600/10 border-green-200">
             <CardContent className="pt-6">
               <div className="text-2xl sm:text-3xl font-bold text-green-700">{completedDates.length}</div>
-              <p className="text-xs sm:text-sm text-gray-600">Jours complétés</p>
+              <p className="text-xs sm:text-sm text-gray-600">{t('careme.daysCompleted')}</p>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border-blue-200">
             <CardContent className="pt-6">
               <div className="text-2xl sm:text-3xl font-bold text-blue-700">{completionRate}%</div>
-              <p className="text-xs sm:text-sm text-gray-600">Progression</p>
+              <p className="text-xs sm:text-sm text-gray-600">{t('careme.progression')}</p>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/10 border-amber-200">
             <CardContent className="pt-6">
               <div className="text-2xl sm:text-3xl font-bold text-amber-700">40</div>
-              <p className="text-xs sm:text-sm text-gray-600">Jours requis</p>
+              <p className="text-xs sm:text-sm text-gray-600">{t('careme.daysRequired')}</p>
             </CardContent>
           </Card>
         </div>
@@ -444,9 +446,9 @@ const Careme2026 = memo(() => {
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 lg:grid-cols-3 mb-6 bg-slate-100 p-1 rounded-lg dark:bg-slate-800 gap-1">
-            <TabsTrigger value="overview" className="text-xs sm:text-sm px-0 sm:px-3">📅 Vue d'ensemble</TabsTrigger>
-            <TabsTrigger value="calendar" className="text-xs sm:text-sm px-0 sm:px-3">📋 Calendrier</TabsTrigger>
-            <button onClick={() => navigate('/chemin-de-croix')} className="flex gap-1 sm:gap-2 bg-violet-600 hover:bg-violet-700 text-white rounded-md px-2 sm:px-3 py-1.5 text-xs sm:text-sm justify-center items-center transition-colors whitespace-nowrap">✝️ <span className="hidden sm:inline">Chemin de Croix</span><span className="sm:hidden">Chemin</span></button>
+             <TabsTrigger value="overview" className="text-xs sm:text-sm px-0 sm:px-3">📅 {t('careme.overviewTab')}</TabsTrigger>
+            <TabsTrigger value="calendar" className="text-xs sm:text-sm px-0 sm:px-3">📋 {t('careme.calendarTab')}</TabsTrigger>
+            <button onClick={() => navigate('/chemin-de-croix')} className="flex gap-1 sm:gap-2 bg-violet-600 hover:bg-violet-700 text-white rounded-md px-2 sm:px-3 py-1.5 text-xs sm:text-sm justify-center items-center transition-colors whitespace-nowrap">✝️ <span className="hidden sm:inline">{t('careme.stationsOfCross')}</span><span className="sm:hidden">{t('common.stationsOfCross')}</span></button>
           </TabsList>
 
           {/* Overview Tab */}
@@ -457,29 +459,29 @@ const Careme2026 = memo(() => {
                 <CardHeader className="bg-gradient-to-r from-violet-50 to-violet-100/50 dark:bg-gradient-to-r dark:from-violet-950 dark:to-violet-900/50">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Flame className="w-5 h-5 text-violet-600" />
-                    Les 3 Piliers
+                    {t('careme.threePillars')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-3">
                   <div className="flex gap-3 items-start p-3 bg-violet-50 rounded-lg dark:bg-violet-950 dark:text-slate-100">
                     <BookOpen className="w-5 h-5 text-violet-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-semibold text-sm">Prière</p>
-                      <p className="text-xs text-gray-600">Chapelet, Lecture évangélique, Adoration</p>
+                      <p className="font-semibold text-sm">{t('careme.prayer')}</p>
+                      <p className="text-xs text-gray-600">{t('careme.prayerDesc')}</p>
                     </div>
                   </div>
                   <div className="flex gap-3 items-start p-3 bg-rose-50 rounded-lg">
                     <Heart className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-semibold text-sm">Pénitence</p>
-                      <p className="text-xs text-gray-600">Sobriété, Limiter les écrans</p>
+                      <p className="font-semibold text-sm">{t('careme.penance')}</p>
+                      <p className="text-xs text-gray-600">{t('careme.penanceDesc')}</p>
                     </div>
                   </div>
                   <div className="flex gap-3 items-start p-3 bg-amber-50 rounded-lg">
                     <Users className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-semibold text-sm">Partage</p>
-                      <p className="text-xs text-gray-600">Don concret, Service, Visite</p>
+                      <p className="font-semibold text-sm">{t('careme.sharing')}</p>
+                      <p className="text-xs text-gray-600">{t('careme.sharingDesc')}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -490,25 +492,25 @@ const Careme2026 = memo(() => {
                 <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100/50 dark:bg-gradient-to-r dark:from-blue-950 dark:to-blue-900/50">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Calendar className="w-5 h-5 text-blue-600" />
-                    Rythme quotidien
+                    {t('careme.dailyRhythm')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-2 text-sm">
                   <div className="flex justify-between py-2 border-b border-slate-100">
                     <span className="text-gray-600">05:00</span>
-                    <span className="font-medium">Prière d'introduction</span>
+                    <span className="font-medium">{t('careme.introductionPrayer')}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-slate-100">
-                    <span className="text-gray-600">Toute la journée</span>
-                    <span className="font-medium">Jeûne sobre</span>
+                    <span className="text-gray-600">{t('careme.allDay')}</span>
+                    <span className="font-medium">{t('careme.soberFasting')}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-slate-100">
                     <span className="text-gray-600">18:00</span>
-                    <span className="font-medium">Rupture / Prière</span>
+                    <span className="font-medium">{t('careme.breakPrayer')}</span>
                   </div>
                   <div className="flex justify-between py-2">
-                    <span className="text-gray-600">Soir</span>
-                    <span className="font-medium">Examen de conscience</span>
+                    <span className="text-gray-600">{t('careme.evening')}</span>
+                    <span className="font-medium">{t('careme.examConscience')}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -519,7 +521,7 @@ const Careme2026 = memo(() => {
               <CardContent className="pt-6">
                 <div className="mb-3">
                   <div className="flex justify-between mb-2">
-                    <span className="font-semibold text-sm">Votre progression</span>
+                    <span className="font-semibold text-sm">{t('careme.yourProgress')}</span>
                     <span className="text-sm font-bold text-green-600">{completionRate}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
@@ -529,7 +531,7 @@ const Careme2026 = memo(() => {
                     />
                   </div>
                 </div>
-                <p className="text-xs text-gray-500">{completedDates.length} jours complétés sur {nonSundayDays.length}</p>
+                <p className="text-xs text-gray-500">{completedDates.length} {t('careme.completedOf')} {nonSundayDays.length}</p>
               </CardContent>
             </Card>
           </TabsContent>
@@ -540,16 +542,16 @@ const Careme2026 = memo(() => {
               <div className="flex gap-2">
                 <Button size="sm" onClick={printPage} variant="outline" className="gap-2">
                   <Printer className="w-4 h-4" />
-                  <span className="hidden sm:inline">Imprimer</span>
+                  <span className="hidden sm:inline">{t('careme.print')}</span>
                 </Button>
                 <Button size="sm" onClick={shareProgram} variant="outline" className="gap-2">
                   <Share2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Partager</span>
+                  <span className="hidden sm:inline">{t('careme.share')}</span>
                 </Button>
               </div>
               <Button size="sm" onClick={shareAllDays} className="bg-violet-600 hover:bg-violet-700 text-white gap-2 w-full">
                 <Share2 className="w-4 h-4" />
-                Partager tous les 40 jours
+                {t('careme.shareAll40')}
               </Button>
             </div>
 
@@ -612,7 +614,7 @@ const Careme2026 = memo(() => {
           <div className="space-y-4 py-4">
             {selectedDay?.readings && (
               <div className="bg-slate-50 p-3 rounded-lg dark:bg-slate-900 dark:text-slate-100">
-                <p className="text-xs font-semibold text-gray-700 mb-1">Lectures bibliques</p>
+                <p className="text-xs font-semibold text-gray-700 mb-1">{t('careme.biblicalReadings')}</p>
                 <p className="text-sm text-gray-700">{selectedDay.readings}</p>
               </div>
             )}
@@ -621,7 +623,7 @@ const Careme2026 = memo(() => {
               <div className="rounded-lg border-2 border-violet-200 p-4 bg-gradient-to-br from-violet-50 to-violet-100/30 dark:bg-gradient-to-br dark:from-violet-950 dark:to-violet-900/30 dark:border-violet-700 dark:text-slate-100">
                 <div className="flex items-center gap-2 mb-2">
                   <BookOpen className="w-5 h-5 text-violet-600" />
-                  <h3 className="font-semibold text-sm text-violet-700">🪞 Soi</h3>
+                  <h3 className="font-semibold text-sm text-violet-700">🪞 {t('careme.self')}</h3>
                 </div>
                 <p className="text-sm text-gray-700">{selectedDay?.actions?.soi}</p>
               </div>
@@ -629,7 +631,7 @@ const Careme2026 = memo(() => {
               <div className="rounded-lg border-2 border-rose-200 p-4 bg-gradient-to-br from-rose-50 to-rose-100/30 dark:bg-gradient-to-br dark:from-rose-950 dark:to-rose-900/30 dark:border-rose-700 dark:text-slate-100">
                 <div className="flex items-center gap-2 mb-2">
                   <Users className="w-5 h-5 text-rose-600" />
-                  <h3 className="font-semibold text-sm text-rose-700">❤️ Prochain</h3>
+                  <h3 className="font-semibold text-sm text-rose-700">❤️ {t('careme.neighbor')}</h3>
                 </div>
                 <p className="text-sm text-gray-700">{selectedDay?.actions?.prochain}</p>
               </div>
@@ -637,7 +639,7 @@ const Careme2026 = memo(() => {
               <div className="rounded-lg border-2 border-amber-200 p-4 bg-gradient-to-br from-amber-50 to-amber-100/30 dark:bg-gradient-to-br dark:from-amber-950 dark:to-amber-900/30 dark:border-amber-700 dark:text-slate-100">
                 <div className="flex items-center gap-2 mb-2">
                   <Heart className="w-5 h-5 text-amber-600" />
-                  <h3 className="font-semibold text-sm text-amber-700">🙏 Dieu</h3>
+                  <h3 className="font-semibold text-sm text-amber-700">🙏 {t('careme.god')}</h3>
                 </div>
                 <p className="text-sm text-gray-700">{selectedDay?.actions?.dieu}</p>
               </div>
@@ -651,7 +653,7 @@ const Careme2026 = memo(() => {
                     className="flex-1 gap-2 bg-violet-600 hover:bg-violet-700"
                   >
                     <Share2 className="w-4 h-4" />
-                    <span className="hidden sm:inline">Partager</span>
+                    <span className="hidden sm:inline">{t('careme.share')}</span>
                   </Button>
                   <Button
                     className="flex-1 gap-2"
@@ -663,14 +665,14 @@ const Careme2026 = memo(() => {
                     disabled={!isCompletedDate(selectedDay.dateObj) && !canMarkCompleted(selectedDay.dateObj)}
                   >
                     <Check className="w-4 h-4" />
-                    <span className="hidden sm:inline">{isCompletedDate(selectedDay.dateObj) ? 'Complété' : 'Compléter'}</span>
+                    <span className="hidden sm:inline">{isCompletedDate(selectedDay.dateObj) ? t('careme.completed') : t('careme.complete')}</span>
                   </Button>
                   <Button 
                     className="flex-1"
                     onClick={() => setSelectedDay(null)} 
                     variant="outline"
                   >
-                    Fermer
+                    {t('careme.close')}
                   </Button>
                 </div>
               </div>
