@@ -92,8 +92,8 @@ const BibleBookDetail = () => {
               </Button>
               <div className="text-right">
                 <div className="flex items-center gap-2 justify-end">
-                  <h1 className="text-3xl md:text-5xl font-playfair font-bold text-primary">{book.name}</h1>
-                  <Badge variant="default" className="text-lg px-3 py-1 h-fit">{book.abbreviation}</Badge>
+                  <h1 className="text-3xl md:text-5xl font-playfair font-bold text-primary">{localizedName}</h1>
+                  <Badge variant="default" className="text-lg px-3 py-1 h-fit">{localizedAbbr}</Badge>
                 </div>
                 {book.apocrypha && (
                   <Badge variant="secondary" className="mt-2">{t('bibleBook.deuterocanonical')}</Badge>
