@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import Navigation from '@/components/Navigation';
 import HeroSection from '@/components/HeroSection';
 import MissionSection from '@/components/MissionSection';
@@ -25,7 +26,6 @@ const ActiveCallBanner = () => {
 
   useEffect(() => {
     if (!user) return;
-
     const load = async () => {
       const { data } = await db
         .from('video_rooms')
@@ -35,21 +35,23 @@ const ActiveCallBanner = () => {
         .limit(3);
       setActiveRooms((data || []) as ActiveRoom[]);
     };
-
     void load();
-
     const channel = db
       .channel('home-active-calls')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'video_rooms' }, () => void load())
       .subscribe();
-
     return () => { channel.unsubscribe(); };
   }, [user]);
 
   if (!user || activeRooms.length === 0) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md animate-in slide-in-from-bottom-4">
+    <motion.div
+      className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md"
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 25 }}
+    >
       <div className="rounded-2xl border border-primary/30 bg-card shadow-2xl shadow-primary/10 p-4 space-y-3">
         <div className="flex items-center gap-2">
           <span className="flex h-3 w-3 relative">
@@ -65,14 +67,12 @@ const ActiveCallBanner = () => {
               <span className="text-sm font-medium text-foreground truncate max-w-[180px]">{room.title}</span>
             </div>
             <Button size="sm" asChild className="shrink-0">
-              <Link to={`/meeting/${room.id}`}>
-                <Phone className="h-3.5 w-3.5 mr-1" /> Rejoindre
-              </Link>
+              <Link to={`/meeting/${room.id}`}><Phone className="h-3.5 w-3.5 mr-1" /> Rejoindre</Link>
             </Button>
           </div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -104,11 +104,15 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <Navigation />
-      <main>
+      <motion.main
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
         <HeroSection />
         <MissionSection />
         <ProgramSection />
-      </main>
+      </motion.main>
 
       <ActiveCallBanner />
 
