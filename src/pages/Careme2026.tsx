@@ -501,8 +501,8 @@ const Careme2026 = memo(() => {
                     <span className="font-medium">{t('careme.introductionPrayer')}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-slate-100">
-                    <span className="text-gray-600">Toute la journée</span>
-                    <span className="font-medium">Jeûne sobre</span>
+                    <span className="text-gray-600">{t('careme.allDay')}</span>
+                    <span className="font-medium">{t('careme.soberFasting')}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-slate-100">
                     <span className="text-gray-600">18:00</span>
