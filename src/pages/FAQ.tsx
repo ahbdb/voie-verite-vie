@@ -147,16 +147,16 @@ const FAQ = () => {
                 <div className="text-center py-16">
                   <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-xl font-playfair font-semibold text-primary mb-2">
-                    Aucune question trouvée
+                    {t('faq.noResults')}
                   </h3>
                   <p className="text-muted-foreground mb-6">
-                    Essayez avec d'autres mots-clés ou consultez toutes nos questions
+                    {t('faq.noResultsDesc')}
                   </p>
                   <button
                     onClick={() => setSearchTerm('')}
                     className="text-primary hover:underline"
                   >
-                    Voir toutes les questions
+                    {t('faq.seeAll')}
                   </button>
                 </div>
               )}
