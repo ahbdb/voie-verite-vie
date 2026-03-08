@@ -144,7 +144,7 @@ const HeroSection = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentVerse((prev) => (prev + 1) % verses.length);
-    }, 2000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [verses.length]);
 
