@@ -551,7 +551,7 @@ const Careme2026 = memo(() => {
               </div>
               <Button size="sm" onClick={shareAllDays} className="bg-violet-600 hover:bg-violet-700 text-white gap-2 w-full">
                 <Share2 className="w-4 h-4" />
-                Partager tous les 40 jours
+                {t('careme.shareAll40')}
               </Button>
             </div>
 
