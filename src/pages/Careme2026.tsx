@@ -542,11 +542,11 @@ const Careme2026 = memo(() => {
               <div className="flex gap-2">
                 <Button size="sm" onClick={printPage} variant="outline" className="gap-2">
                   <Printer className="w-4 h-4" />
-                  <span className="hidden sm:inline">Imprimer</span>
+                  <span className="hidden sm:inline">{t('careme.print')}</span>
                 </Button>
                 <Button size="sm" onClick={shareProgram} variant="outline" className="gap-2">
                   <Share2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Partager</span>
+                  <span className="hidden sm:inline">{t('careme.share')}</span>
                 </Button>
               </div>
               <Button size="sm" onClick={shareAllDays} className="bg-violet-600 hover:bg-violet-700 text-white gap-2 w-full">
