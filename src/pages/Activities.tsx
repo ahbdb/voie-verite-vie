@@ -354,7 +354,7 @@ const Activities = () => {
         {!user && (
           <div className="container mx-auto px-4 mt-6">
             <div className="max-w-6xl mx-auto text-center text-sm text-muted-foreground">
-              Pour voir les autres activités, veuillez vous inscrire ou vous connecter (si vous avez changé d'appareil).
+              {t('activities.loginToSee')}
             </div>
           </div>
         )}
