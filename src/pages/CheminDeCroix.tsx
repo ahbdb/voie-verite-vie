@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChevronRight, ChevronLeft, Cross, Share2, Printer, BookOpen } from 'lucide-react';
-import { cheminDeCroixData } from '@/data/chemin-de-croix-data';
+import { getCheminDeCroixData } from '@/data/chemin-de-croix-data';
 import { supabase } from '@/integrations/supabase/client';
 import { generateShareImage, shareImage } from '@/lib/share-utils';
 import { useToast } from '@/components/ui/use-toast';
