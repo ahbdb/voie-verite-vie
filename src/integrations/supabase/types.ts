@@ -334,6 +334,57 @@ export type Database = {
         }
         Relationships: []
       }
+      neuvaines: {
+        Row: {
+          common_prayers: Json | null
+          conclusion: Json | null
+          created_at: string | null
+          days: Json | null
+          description: string | null
+          id: string
+          image_url: string | null
+          introduction: string | null
+          is_published: boolean | null
+          pdf_url: string | null
+          saint_name: string
+          title: string
+          total_days: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          common_prayers?: Json | null
+          conclusion?: Json | null
+          created_at?: string | null
+          days?: Json | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          introduction?: string | null
+          is_published?: boolean | null
+          pdf_url?: string | null
+          saint_name: string
+          title: string
+          total_days?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          common_prayers?: Json | null
+          conclusion?: Json | null
+          created_at?: string | null
+          days?: Json | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          introduction?: string | null
+          is_published?: boolean | null
+          pdf_url?: string | null
+          saint_name?: string
+          title?: string
+          total_days?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string

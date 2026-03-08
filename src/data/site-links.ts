@@ -30,6 +30,7 @@ export const siteLinks: SiteCategory[] = [
       { name: 'Forum Prière', href: '/prayer-forum', icon: 'Heart' },
       { name: 'Carême 2026', href: '/careme-2026', icon: 'Cross' },
       { name: 'Chemin de Croix', href: '/chemin-de-croix', icon: 'Cross' },
+      { name: 'Neuvaines', href: '/neuvaines', icon: 'BookOpen' },
     ],
   },
   {

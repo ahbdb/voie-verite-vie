@@ -25,6 +25,8 @@ import PrayerForum from "./pages/PrayerForum";
 import Careme2026 from "./pages/Careme2026";
 import CheminDeCroix from "./pages/CheminDeCroix";
 import ShareDebug from "./pages/ShareDebug";
+import Neuvaines from "./pages/Neuvaines";
+import NeuvaineDayView from "./pages/NeuvaineDayView";
 import Admin from "./pages/Admin";
 import AdminReadings from "./pages/admin/AdminReadings";
 import AdminPrayers from "./pages/admin/AdminPrayers";
@@ -40,6 +42,7 @@ import AdminFAQ from "./pages/admin/AdminFAQ";
 import AdminAI from "./pages/admin/AdminAI";
 import AdminCareme2026 from "./pages/admin/AdminCareme2026";
 import AdminCheminDeCroix from "./pages/admin/AdminCheminDeCroix";
+import AdminNeuvaines from "./pages/admin/AdminNeuvaines";
 import AdminDebugCareme from "./pages/admin/AdminDebugCareme";
 import AdminTestSave from "./pages/admin/AdminTestSave";
 import AdminManagement from "./pages/admin/AdminManagement";
@@ -116,6 +119,8 @@ const App = () => {
                     <Route path="/careme-2026" element={<Careme2026 />} />
                     <Route path="/chemin-de-croix" element={<CheminDeCroix />} />
                     <Route path="/share-debug" element={<ShareDebug />} />
+                    <Route path="/neuvaines" element={<Neuvaines />} />
+                    <Route path="/neuvaines/:id" element={<NeuvaineDayView />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/createur" element={<Creator />} />
                     <Route path="/admin-repair" element={<AdminRepair />} />
@@ -128,6 +133,7 @@ const App = () => {
                     <Route path="/admin/debug-careme" element={<AdminDebugCareme />} />
                     <Route path="/admin/test-save" element={<AdminTestSave />} />
                     <Route path="/admin/chemin-de-croix" element={<AdminCheminDeCroix />} />
+                    <Route path="/admin/neuvaines" element={<AdminNeuvaines />} />
                     <Route path="/admin/activities" element={<AdminActivities />} />
                     <Route path="/admin/readings" element={<AdminReadings />} />
                     <Route path="/admin/prayers" element={<AdminPrayers />} />
