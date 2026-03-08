@@ -233,6 +233,28 @@ const NeuvaineDayView = () => {
                   <p className="text-muted-foreground text-sm mt-1 italic">{day.subtitle}</p>
                 </div>
 
+                {/* Canevas: OUVERTURE */}
+                {neuvaine.common_prayers?.opening && (
+                  <div className="bg-sky-50 dark:bg-sky-950/20 rounded-lg p-4 space-y-3 border border-sky-200/50 dark:border-sky-800/30">
+                    <h3 className="text-sm font-bold text-sky-800 dark:text-sky-300 uppercase tracking-wide">☩ Ouverture</h3>
+                    {neuvaine.common_prayers.opening.signe_de_croix && (
+                      <p className="text-foreground/80 text-sm italic">{neuvaine.common_prayers.opening.signe_de_croix}</p>
+                    )}
+                    {neuvaine.common_prayers.opening.priere_esprit_saint && (
+                      <details className="group">
+                        <summary className="cursor-pointer text-sm font-semibold text-foreground/90 hover:text-foreground">🕊️ Prière à l'Esprit Saint</summary>
+                        <p className="text-foreground/80 text-sm whitespace-pre-line mt-2 pl-2 border-l-2 border-sky-300">{neuvaine.common_prayers.opening.priere_esprit_saint}</p>
+                      </details>
+                    )}
+                    {neuvaine.common_prayers.opening.notre_pere && (
+                      <details className="group">
+                        <summary className="cursor-pointer text-sm font-semibold text-foreground/90 hover:text-foreground">🙏 Notre Père</summary>
+                        <p className="text-foreground/80 text-sm whitespace-pre-line mt-2 pl-2 border-l-2 border-sky-300">{neuvaine.common_prayers.opening.notre_pere}</p>
+                      </details>
+                    )}
+                  </div>
+                )}
+
                 {/* Scripture */}
                 <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-4 border-l-4 border-amber-500">
                   <div className="flex items-start gap-2">
@@ -241,7 +263,7 @@ const NeuvaineDayView = () => {
                   </div>
                 </div>
 
-                {/* Tabs */}
+                {/* Tabs for day content */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsList className="grid w-full grid-cols-2 bg-amber-100/50 dark:bg-amber-900/20">
                     <TabsTrigger value="meditation" className="text-xs data-[state=active]:bg-amber-600 data-[state=active]:text-white">
