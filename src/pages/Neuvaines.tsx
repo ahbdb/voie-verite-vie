@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ interface Neuvaine {
 }
 
 const Neuvaines = () => {
+  const { t } = useTranslation();
   const [neuvaines, setNeuvaines] = useState<Neuvaine[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -40,8 +42,8 @@ const Neuvaines = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50/50 to-background">
       <Helmet>
-        <title>Neuvaines — Voie Vérité Vie</title>
-        <meta name="description" content="Parcourez nos neuvaines de prière jour par jour." />
+        <title>{t('neuvaines.title')} — Voie Vérité Vie</title>
+        <meta name="description" content={t('neuvaines.subtitle')} />
       </Helmet>
       <Navigation />
       <main className="container mx-auto px-4 py-8 pt-24">
@@ -49,11 +51,11 @@ const Neuvaines = () => {
           <div className="inline-flex items-center gap-2 mb-4">
             <BookOpen className="h-8 w-8 text-amber-600" />
             <h1 className="text-3xl md:text-4xl font-bold font-['Playfair_Display'] text-foreground">
-              Neuvaines
+              {t('neuvaines.title')}
             </h1>
           </div>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Neuf jours de prière, de méditation et d'intercession. Choisissez une neuvaine et laissez-vous guider jour après jour.
+            {t('neuvaines.subtitle')}
           </p>
         </div>
 
@@ -62,7 +64,7 @@ const Neuvaines = () => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600" />
           </div>
         ) : neuvaines.length === 0 ? (
-          <p className="text-center text-muted-foreground py-20">Aucune neuvaine disponible pour le moment.</p>
+          <p className="text-center text-muted-foreground py-20">{t('neuvaines.noNeuvaines')}</p>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
             {neuvaines.map((n) => (
@@ -74,7 +76,7 @@ const Neuvaines = () => {
                 <div className="h-2 bg-gradient-to-r from-amber-500 to-amber-600" />
                 <CardContent className="p-6">
                   <Badge variant="secondary" className="mb-3 bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-                    {n.total_days} jours
+                    {n.total_days} {t('neuvaines.days')}
                   </Badge>
                   <h2 className="text-xl font-bold font-['Playfair_Display'] text-foreground mb-2 group-hover:text-amber-700 transition-colors">
                     {n.title}
@@ -84,7 +86,7 @@ const Neuvaines = () => {
                   </p>
                   <div className="flex items-center justify-between">
                     <Button variant="ghost" size="sm" className="text-amber-700 hover:text-amber-800 p-0 gap-1">
-                      Commencer <ChevronRight className="h-4 w-4" />
+                      {t('neuvaines.start')} <ChevronRight className="h-4 w-4" />
                     </Button>
                     {n.pdf_url && (
                       <a
