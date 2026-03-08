@@ -57,7 +57,56 @@ export const BibleChapterViewer = ({
           return;
         }
 
-        // If language is French, use directly
+        // Check for empty verses in French content and patch them
+        const hasEmptyVerses = chapterVerses.some((v: any) => !v.text || v.text.trim() === '');
+        
+        if (lang === 'fr' && hasEmptyVerses) {
+          // Check cache for patched version
+          const patchCacheKey = `bible_patched_fr_${bookId}_${chapterNumber}`;
+          const cachedPatched = localStorage.getItem(patchCacheKey);
+          if (cachedPatched) {
+            try {
+              const parsed = JSON.parse(cachedPatched);
+              if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+                setVerses(parsed);
+                return;
+              }
+            } catch { /* ignore */ }
+          }
+
+          // Patch empty verses via edge function
+          setTranslating(true);
+          try {
+            const { data, error: fnError } = await supabase.functions.invoke('translate-bible-chapter', {
+              body: {
+                verses: chapterVerses,
+                bookName,
+                chapterNumber,
+                bookFileName: bookId,
+                patchEmptyVerses: true
+              }
+            });
+
+            if (!isMounted) return;
+
+            if (!fnError && data?.verses && Array.isArray(data.verses)) {
+              setVerses(data.verses);
+              if (data.patched > 0) {
+                localStorage.setItem(patchCacheKey, JSON.stringify(data.verses));
+              }
+            } else {
+              // Show what we have (with empty gaps)
+              setVerses(chapterVerses);
+            }
+          } catch {
+            if (isMounted) setVerses(chapterVerses);
+          } finally {
+            if (isMounted) setTranslating(false);
+          }
+          return;
+        }
+
+        // If language is French and no empty verses, use directly
         if (lang === 'fr') {
           setVerses(chapterVerses);
           return;
@@ -79,7 +128,6 @@ export const BibleChapterViewer = ({
         // Don't show French text — keep loading state while translating
         setTranslating(true);
 
-        // Translate via edge function (KJV for English canonical, AI for Italian & deuterocanonical)
         try {
           const { data, error: fnError } = await supabase.functions.invoke('translate-bible-chapter', {
             body: {
@@ -95,10 +143,8 @@ export const BibleChapterViewer = ({
 
           if (!fnError && data?.verses && Array.isArray(data.verses) && data.verses.length > 0) {
             setVerses(data.verses);
-            // Cache translation
             localStorage.setItem(cacheKey, JSON.stringify(data.verses));
           } else {
-            // Only show French as absolute last resort
             console.warn('Translation failed, showing French as fallback');
             setVerses(chapterVerses);
           }
