@@ -15,6 +15,7 @@ import { QuizModal } from '@/components/QuizModal';
 import { BibleBookSelector } from '@/components/BibleBookSelector';
 import DayReadingViewer from '@/components/DayReadingViewer';
 import { logger } from '@/lib/logger';
+import { translateBookName } from '@/lib/bible-utils';
 
 interface Reading {
   id: string;
