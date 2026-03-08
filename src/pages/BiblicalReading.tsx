@@ -340,7 +340,7 @@ const BiblicalReading = () => {
       </main>
 
       {showQuiz && quizReading && (
-        <QuizModal reading={quizReading} open={showQuiz} onClose={() => { setShowQuiz(false); setQuizReading(null); }} />
+        <QuizModal reading={quizReading} isOpen={showQuiz} onClose={() => { setShowQuiz(false); setQuizReading(null); }} />
       )}
     </div>
   );
