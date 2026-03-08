@@ -140,7 +140,7 @@ const BiblicalReading = () => {
       if (!wasCompleted) {
         setQuizReading(reading);
         setShowQuiz(true);
-        toast({ title: "Lecture complétée !" });
+        toast({ title: t('biblicalReading.readingCompleted') });
       }
     } catch (error) {
       logger.error('Erreur lors de la mise à jour du statut de lecture', 
