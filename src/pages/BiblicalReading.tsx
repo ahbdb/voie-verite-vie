@@ -330,9 +330,9 @@ const BiblicalReading = () => {
 
                 <Tabs value={selectedTestament} onValueChange={setSelectedTestament} className="mb-6">
                   <TabsList className="grid w-full max-w-xs mx-auto grid-cols-3">
-                    <TabsTrigger value="all">Tous</TabsTrigger>
-                    <TabsTrigger value="old">A.T.</TabsTrigger>
-                    <TabsTrigger value="new">N.T.</TabsTrigger>
+                    <TabsTrigger value="all">{t('biblicalReading.all')}</TabsTrigger>
+                    <TabsTrigger value="old">{t('biblicalReading.oldTestament')}</TabsTrigger>
+                    <TabsTrigger value="new">{t('biblicalReading.newTestament')}</TabsTrigger>
                   </TabsList>
                 </Tabs>
 
