@@ -330,7 +330,7 @@ const AdminUsers = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {profile.created_at ? new Date(profile.created_at).toLocaleDateString('fr-FR') : '-'}
+                        {profile.created_at ? new Date(profile.created_at).toLocaleDateString(i18n.language === 'it' ? 'it-IT' : i18n.language === 'en' ? 'en-US' : 'fr-FR') : '-'}
                       </TableCell>
                       <TableCell className="flex gap-2">
                         {isMainAdmin && !isCurrentUser && (
