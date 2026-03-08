@@ -19,7 +19,9 @@ import {
   ChevronDown,
   Settings,
   Sun,
-  Moon
+  Moon,
+  ZoomIn,
+  ZoomOut
 } from 'lucide-react';
 
 const ICONS: Record<string, any> = {
@@ -37,7 +39,7 @@ const ICONS: Record<string, any> = {
 };
 import { useAuth } from '@/hooks/useAuth';
 import { useAdmin } from '@/hooks/useAdmin';
-import { useSettings } from '@/hooks/useSettings';
+import { useSettings, type TextSize } from '@/hooks/useSettings';
 import siteLinks from '@/data/site-links';
 import { useToast } from '@/components/ui/use-toast';
 import { NotificationBell } from './NotificationBell';
@@ -55,7 +57,14 @@ const Navigation = () => {
   const [isInstallable, setIsInstallable] = useState(false);
   const { user, signOut, loading: authLoading } = useAuth();
   const { isAdmin } = useAdmin();
-  const { settings, setTheme, isDarkMode } = useSettings();
+  const { settings, setTheme, setTextSize, isDarkMode } = useSettings();
+  
+  const textSizes: TextSize[] = ['small', 'normal', 'large', 'extra-large'];
+  const currentSizeIndex = textSizes.indexOf(settings.textSize);
+  const canZoomIn = currentSizeIndex < textSizes.length - 1;
+  const canZoomOut = currentSizeIndex > 0;
+  const handleZoomIn = () => { if (canZoomIn) setTextSize(textSizes[currentSizeIndex + 1]); };
+  const handleZoomOut = () => { if (canZoomOut) setTextSize(textSizes[currentSizeIndex - 1]); };
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -176,7 +185,27 @@ const Navigation = () => {
               )}
             </Button>
 
-            {/* Install button */}
+            {/* Zoom Controls */}
+            <div className="flex items-center gap-0.5">
+              <Button
+                onClick={handleZoomOut}
+                variant="ghost"
+                size="sm"
+                disabled={!canZoomOut}
+                title="Réduire le texte"
+              >
+                <ZoomOut className="w-4 h-4" />
+              </Button>
+              <Button
+                onClick={handleZoomIn}
+                variant="ghost"
+                size="sm"
+                disabled={!canZoomIn}
+                title="Agrandir le texte"
+              >
+                <ZoomIn className="w-4 h-4" />
+              </Button>
+            </div>
             <Button
               onClick={handleInstall}
               variant="ghost"
@@ -298,6 +327,22 @@ const Navigation = () => {
                       </>
                     )}
                   </Button>
+
+                  {/* Zoom Controls Mobile */}
+                  <div className="flex items-center justify-between px-4">
+                    <span className="text-sm text-muted-foreground">Taille texte</span>
+                    <div className="flex items-center gap-1">
+                      <Button onClick={handleZoomOut} variant="ghost" size="sm" disabled={!canZoomOut}>
+                        <ZoomOut className="w-4 h-4" />
+                      </Button>
+                      <span className="text-xs text-muted-foreground w-8 text-center">
+                        {settings.textSize === 'extra-large' ? 'XL' : settings.textSize === 'large' ? 'L' : settings.textSize === 'small' ? 'S' : 'M'}
+                      </span>
+                      <Button onClick={handleZoomIn} variant="ghost" size="sm" disabled={!canZoomIn}>
+                        <ZoomIn className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
 
                   {/* Install button mobile */}
                   <Button
