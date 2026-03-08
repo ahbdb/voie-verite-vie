@@ -60,12 +60,26 @@
     "helpContact": "Aiuto e Contatti",
     "tools": "Strumenti"
   },
+  "brand": {
+    "word1": "Via,",
+    "word2": "Verità,",
+    "word3": "Vita",
+    "fullName": "Via, Verità, Vita",
+    "logoAlt": "Logo 3V - Via, Verità, Vita"
+  },
   "hero": {
     "subtitle": "Un santuario spirituale per la gioventù cattolica",
     "readingOfDay": "Lettura del giorno: {{books}} {{chapters}} (Giorno {{day}})",
     "goodMorning": "Buongiorno",
     "goodAfternoon": "Buon pomeriggio",
     "goodEvening": "Buonasera"
+  },
+  "prayerIntentions": {
+    "sectionTitle": "Intenzioni di Preghiera",
+    "sectionSubtitle": "Condividi le tue intenzioni e prega insieme alla comunità",
+    "cta": "Condividi un'intenzione",
+    "verse": "«Dove sono due o tre riuniti nel mio nome, lì sono io in mezzo a loro.»",
+    "verseRef": "Matteo 18:20"
   },
   "mission": {
     "ourMission": "La Nostra Missione",

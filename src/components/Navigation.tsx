@@ -127,7 +127,7 @@ const Navigation = () => {
           <Link to="/" className="flex items-center space-x-3">
             <AnimatedLogo size="sm" />
             <span className="text-xl font-cinzel font-semibold text-foreground hidden sm:inline">
-              Voie, Vérité, Vie
+              {t('brand.fullName')}
             </span>
           </Link>
 

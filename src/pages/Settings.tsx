@@ -164,7 +164,7 @@ const Settings = memo(() => {
 
             {/* About */}
             <div className="pt-8 text-center">
-              <p className="text-sm font-cinzel text-foreground">Voie, Vérité, Vie</p>
+              <p className="text-sm font-cinzel text-foreground">{t('brand.fullName')}</p>
               <p className="text-xs text-muted-foreground/40 font-inter">v1.0.0</p>
             </div>
           </div>

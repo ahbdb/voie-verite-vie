@@ -60,12 +60,26 @@
     "helpContact": "Aide et Contact",
     "tools": "Outils"
   },
+  "brand": {
+    "word1": "Voie,",
+    "word2": "Vérité,",
+    "word3": "Vie",
+    "fullName": "Voie, Vérité, Vie",
+    "logoAlt": "Logo 3V - Voie, Vérité, Vie"
+  },
   "hero": {
     "subtitle": "Un sanctuaire spirituel pour la jeunesse catholique",
     "readingOfDay": "Lecture du jour : {{books}} {{chapters}} (Jour {{day}})",
     "goodMorning": "Bonjour",
     "goodAfternoon": "Bon après-midi",
     "goodEvening": "Bonsoir"
+  },
+  "prayerIntentions": {
+    "sectionTitle": "Intentions de Prière",
+    "sectionSubtitle": "Déposez vos intentions et priez ensemble en communauté",
+    "cta": "Partager une intention",
+    "verse": "« Là où deux ou trois sont assemblés en mon nom, je suis au milieu d'eux. »",
+    "verseRef": "Matthieu 18:20"
   },
   "mission": {
     "ourMission": "Notre Mission",
