@@ -39,10 +39,13 @@ const About = memo(() => {
         <section className="relative h-[50vh] min-h-[320px] flex items-end overflow-hidden">
           <img src={stainedGlass} alt="" className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+          {/* Floating orbs */}
+          <motion.div className="absolute top-20 right-[20%] w-40 h-40 rounded-full bg-cathedral-gold/10 blur-3xl" animate={{ y: [-15, 15, -15], scale: [1, 1.2, 1] }} transition={{ duration: 7, repeat: Infinity }} />
+          <motion.div className="absolute bottom-40 left-[10%] w-32 h-32 rounded-full bg-stained-blue/10 blur-3xl" animate={{ y: [10, -20, 10] }} transition={{ duration: 9, repeat: Infinity }} />
           <div className="relative container mx-auto px-4 pb-10">
             <motion.div initial="hidden" animate="visible" variants={fadeUp} transition={{ duration: 0.7 }}>
               <p className="text-xs tracking-[0.4em] uppercase text-cathedral-gold/80 mb-3 font-inter">{t('about.ourMission')}</p>
-              <h1 className="text-4xl md:text-6xl font-cinzel font-bold text-foreground mb-3">{t('about.title')}</h1>
+              <h1 className="text-4xl md:text-6xl font-cinzel font-bold text-gradient-gold mb-3">{t('about.title')}</h1>
               <p className="text-lg text-muted-foreground max-w-2xl">{t('about.subtitle')}</p>
             </motion.div>
           </div>
