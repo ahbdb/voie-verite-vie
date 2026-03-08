@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import Navigation from '@/components/Navigation';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, Download, ChevronRight } from 'lucide-react';
@@ -32,7 +32,6 @@ const Neuvaines = () => {
         .select('id, title, saint_name, description, pdf_url, total_days, is_published')
         .eq('is_published', true)
         .order('created_at', { ascending: false });
-
       if (!error && data) setNeuvaines(data);
       setLoading(false);
     };
@@ -40,54 +39,46 @@ const Neuvaines = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50/50 to-background">
+    <div className="min-h-screen bg-background">
       <Helmet>
         <title>{t('neuvaines.title')} — Voie Vérité Vie</title>
         <meta name="description" content={t('neuvaines.subtitle')} />
       </Helmet>
       <Navigation />
-      <main className="container mx-auto px-4 py-8 pt-24">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <BookOpen className="h-8 w-8 text-amber-600" />
-            <h1 className="text-3xl md:text-4xl font-bold font-['Playfair_Display'] text-foreground">
-              {t('neuvaines.title')}
-            </h1>
+      <main className="pt-20 pb-8">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <div className="text-center mb-8">
+            <BookOpen className="h-7 w-7 text-primary mx-auto mb-3" />
+            <h1 className="text-3xl md:text-4xl font-cinzel font-bold text-foreground">{t('neuvaines.title')}</h1>
+            <p className="text-muted-foreground text-sm mt-2 max-w-lg mx-auto">{t('neuvaines.subtitle')}</p>
           </div>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            {t('neuvaines.subtitle')}
-          </p>
-        </div>
 
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600" />
-          </div>
-        ) : neuvaines.length === 0 ? (
-          <p className="text-center text-muted-foreground py-20">{t('neuvaines.noNeuvaines')}</p>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
-            {neuvaines.map((n) => (
-              <Card
-                key={n.id}
-                className="group cursor-pointer hover:shadow-lg transition-all duration-300 border-amber-200/50 hover:border-amber-400/70 overflow-hidden"
-                onClick={() => navigate(`/neuvaines/${n.id}`)}
-              >
-                <div className="h-2 bg-gradient-to-r from-amber-500 to-amber-600" />
-                <CardContent className="p-6">
-                  <Badge variant="secondary" className="mb-3 bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-                    {n.total_days} {t('neuvaines.days')}
-                  </Badge>
-                  <h2 className="text-xl font-bold font-['Playfair_Display'] text-foreground mb-2 group-hover:text-amber-700 transition-colors">
-                    {n.title}
-                  </h2>
-                  <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
-                    {n.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <Button variant="ghost" size="sm" className="text-amber-700 hover:text-amber-800 p-0 gap-1">
-                      {t('neuvaines.start')} <ChevronRight className="h-4 w-4" />
-                    </Button>
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            </div>
+          ) : neuvaines.length === 0 ? (
+            <p className="text-center text-muted-foreground py-20">{t('neuvaines.noNeuvaines')}</p>
+          ) : (
+            <div className="divide-y divide-border">
+              {neuvaines.map((n, idx) => (
+                <motion.button
+                  key={n.id}
+                  className="w-full text-left py-5 flex items-start gap-4 hover:bg-muted/30 transition-colors group"
+                  onClick={() => navigate(`/neuvaines/${n.id}`)}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.05 }}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h2 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors truncate">{n.title}</h2>
+                      <Badge variant="secondary" className="text-[10px] flex-shrink-0">{n.total_days} {t('neuvaines.days')}</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{n.description}</p>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0 mt-1">
                     {n.pdf_url && (
                       <a
                         href={n.pdf_url}
@@ -95,22 +86,18 @@ const Neuvaines = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
+                        className="p-1.5 rounded-full hover:bg-muted transition-colors"
                       >
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-amber-700"
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
+                        <Download className="h-4 w-4 text-muted-foreground" />
                       </a>
                     )}
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-primary transition-colors" />
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                </motion.button>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
