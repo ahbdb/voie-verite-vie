@@ -164,7 +164,7 @@ const Careme2026 = memo(() => {
         program_key: 'careme-2026',
         date: dateStr,
       }, { onConflict: 'user_id,program_key,date' });
-      toast({ title: 'Jour marqué comme complété ✓' });
+      toast({ title: t('careme.dayMarkedCompleted') });
       // Notification automatique de succès
       const today = new Date();
       const todayDayNum = today.getDate();
