@@ -665,26 +665,134 @@ Toutes les couleurs DOIVENT être en HSL.
   }
 }
 
-/* Keyframes pour les animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* ===== EXTRAORDINARY ANIMATIONS ===== */
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+/* Morphing blob */
+@keyframes morph {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+  50% { border-radius: 50% 60% 30% 60% / 30% 50% 70% 50%; }
+  75% { border-radius: 40% 60% 50% 40% / 60% 40% 60% 50%; }
 }
 
-@keyframes fadeInUp {
-  from { 
-    opacity: 0; 
-    transform: translateY(30px); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
-  }
+/* Rotating gradient border */
+@keyframes spin-gradient {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+/* Aurora shifting */
+@keyframes aurora {
+  0%, 100% { background-position: 0% 50%; }
+  25% { background-position: 100% 50%; }
+  50% { background-position: 100% 0%; }
+  75% { background-position: 0% 100%; }
+}
+
+/* Shimmer sweep */
+@keyframes shimmer {
+  0% { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(200%) skewX(-15deg); }
+}
+
+/* Glow pulse */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px hsl(var(--cathedral-gold) / 0.2), 0 0 40px hsl(var(--cathedral-gold) / 0.1); }
+  50% { box-shadow: 0 0 40px hsl(var(--cathedral-gold) / 0.4), 0 0 80px hsl(var(--cathedral-gold) / 0.15), 0 0 120px hsl(var(--cathedral-gold) / 0.05); }
+}
+
+/* Text gradient shift */
+@keyframes gradient-text {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Ripple expand */
+@keyframes ripple {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* Scale breathe */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+/* Orbit */
+@keyframes orbit {
+  0% { transform: rotate(0deg) translateX(50px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(50px) rotate(-360deg); }
+}
+
+/* Utility classes */
+.animate-morph { animation: morph 8s ease-in-out infinite; }
+.animate-aurora { animation: aurora 15s ease infinite; background-size: 400% 400%; }
+.animate-shimmer { animation: shimmer 3s ease-in-out infinite; }
+.animate-glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
+.animate-gradient-text { 
+  background-size: 200% auto;
+  animation: gradient-text 4s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.animate-breathe { animation: breathe 4s ease-in-out infinite; }
+.animate-orbit { animation: orbit 10s linear infinite; }
+
+/* Photo frame with rotating conic gradient */
+.photo-frame-golden {
+  position: relative;
+  padding: 4px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    hsl(var(--cathedral-gold)),
+    hsl(var(--stained-ruby) / 0.6),
+    hsl(var(--cathedral-gold-light)),
+    hsl(var(--stained-blue) / 0.4),
+    hsl(var(--cathedral-gold))
+  );
+  animation: spin-gradient 8s linear infinite;
+}
+.photo-frame-golden::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: hsl(var(--background));
+}
+.photo-frame-golden > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Aurora background */
+.bg-aurora {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--cathedral-gold) / 0.08),
+    hsl(var(--stained-blue) / 0.06),
+    hsl(var(--stained-ruby) / 0.05),
+    hsl(var(--stained-emerald) / 0.06),
+    hsl(var(--cathedral-gold) / 0.08)
+  );
+  background-size: 400% 400%;
+  animation: aurora 20s ease infinite;
+}
+
+/* Gradient text */
+.text-gradient-gold {
+  background: linear-gradient(135deg, hsl(var(--cathedral-gold)), hsl(var(--cathedral-gold-light)), hsl(var(--cathedral-gold)));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-text 4s ease infinite;
 }
 
 /* Text scaling from Settings */

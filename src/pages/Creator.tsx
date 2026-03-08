@@ -170,18 +170,90 @@ const Creator = memo(() => {
       <div className="min-h-screen bg-background">
         <Navigation />
         <main className="pt-16">
-          {/* Hero with photo */}
-          <section className="relative py-16 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-b from-cathedral-navy/5 to-transparent" />
-            <div className="container mx-auto px-4 relative">
-              <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-10">
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7 }} className="flex-shrink-0">
-                  <div className="w-48 h-48 md:w-56 md:h-56 rounded-full overflow-hidden border-4 border-cathedral-gold/30 shadow-[0_0_40px_hsl(var(--cathedral-gold)/0.15)]">
-                    <img src={creatorPhoto} alt={founder.name} className="w-full h-full object-cover" />
+          {/* Hero with photo - EXTRAORDINARY */}
+          <section className="relative py-20 overflow-hidden">
+            {/* Aurora animated background */}
+            <div className="absolute inset-0 bg-aurora" />
+            
+            {/* Floating orbs */}
+            <motion.div className="absolute top-20 left-[10%] w-32 h-32 rounded-full bg-cathedral-gold/5 blur-3xl" animate={{ y: [-20, 20, -20], x: [-10, 10, -10] }} transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }} />
+            <motion.div className="absolute bottom-10 right-[15%] w-40 h-40 rounded-full bg-stained-blue/5 blur-3xl" animate={{ y: [15, -15, 15], x: [10, -10, 10] }} transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }} />
+            <motion.div className="absolute top-1/2 left-[60%] w-24 h-24 rounded-full bg-stained-ruby/5 blur-3xl" animate={{ y: [10, -20, 10] }} transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }} />
+            
+            <div className="container mx-auto px-4 relative z-10">
+              <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-12">
+                {/* Photo with extraordinary frame */}
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.6, rotate: -5 }} 
+                  animate={{ opacity: 1, scale: 1, rotate: 0 }} 
+                  transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex-shrink-0 relative"
+                >
+                  {/* Orbiting particles */}
+                  {[0, 72, 144, 216, 288].map((deg, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute top-1/2 left-1/2 w-2 h-2 rounded-full bg-cathedral-gold"
+                      style={{ marginTop: -4, marginLeft: -4 }}
+                      animate={{
+                        x: [Math.cos((deg * Math.PI) / 180) * 85, Math.cos(((deg + 360) * Math.PI) / 180) * 85],
+                        y: [Math.sin((deg * Math.PI) / 180) * 85, Math.sin(((deg + 360) * Math.PI) / 180) * 85],
+                        opacity: [0.3, 0.8, 0.3],
+                        scale: [0.5, 1.2, 0.5],
+                      }}
+                      transition={{ duration: 8, repeat: Infinity, ease: 'linear', delay: i * 1.6 }}
+                    />
+                  ))}
+                  
+                  {/* Ripple rings */}
+                  {[0, 1, 2].map(i => (
+                    <motion.div
+                      key={`ring-${i}`}
+                      className="absolute inset-0 rounded-full border border-cathedral-gold/20"
+                      animate={{ scale: [1, 1.8], opacity: [0.4, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, delay: i * 1, ease: 'easeOut' }}
+                    />
+                  ))}
+                  
+                  {/* Morphing glow behind */}
+                  <motion.div
+                    className="absolute -inset-4 rounded-full bg-gradient-to-br from-cathedral-gold/20 via-stained-blue/10 to-cathedral-gold/20 blur-xl animate-morph"
+                    animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                    transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+                  />
+                  
+                  {/* Rotating golden border */}
+                  <div className="relative w-52 h-52 md:w-64 md:h-64 animate-glow-pulse" style={{ borderRadius: '50%' }}>
+                    <motion.div
+                      className="absolute -inset-1 rounded-full"
+                      style={{
+                        background: 'conic-gradient(from 0deg, hsl(43 65% 52%), hsl(350 65% 45% / 0.5), hsl(43 55% 72%), hsl(220 75% 55% / 0.3), hsl(43 65% 52%))',
+                      }}
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
+                    />
+                    <div className="absolute inset-1 rounded-full bg-background" />
+                    <div className="absolute inset-2 rounded-full overflow-hidden">
+                      <motion.img 
+                        src={creatorPhoto} 
+                        alt={founder.name} 
+                        className="w-full h-full object-cover"
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ duration: 0.5 }}
+                      />
+                    </div>
                   </div>
                 </motion.div>
-                <motion.div initial="hidden" animate="visible" variants={fadeUp} transition={{ duration: 0.6, delay: 0.2 }}>
-                  <h1 className="text-3xl md:text-5xl font-cinzel font-bold text-foreground mb-2">{founder.name}</h1>
+
+                {/* Name & title with gradient text */}
+                <motion.div initial="hidden" animate="visible" variants={fadeUp} transition={{ duration: 0.6, delay: 0.3 }}>
+                  <motion.h1 
+                    className="text-3xl md:text-5xl font-cinzel font-bold mb-2 text-gradient-gold"
+                    animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+                  >
+                    {founder.name}
+                  </motion.h1>
                   <p className="text-lg text-cathedral-gold/80 font-inter mb-4">{founder.title}</p>
                   <div className="flex flex-wrap gap-3">
                     <Badge variant="outline" className="border-cathedral-gold/30 text-muted-foreground"><Calendar className="w-3 h-3 mr-1" />{founder.birthDate}</Badge>

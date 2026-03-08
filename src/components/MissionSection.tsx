@@ -70,17 +70,22 @@ const MissionSection = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.15 }}
             >
-              <motion.div
+               <motion.div
                 className="group relative rounded-2xl overflow-hidden h-[440px] shadow-cathedral"
-                whileHover={{ y: -8 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                whileHover={{ y: -8, rotateY: 3, rotateX: -2 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+                style={{ perspective: 800, transformStyle: 'preserve-3d' }}
               >
+                {/* Shimmer sweep on hover */}
+                <div className="absolute inset-0 z-20 overflow-hidden pointer-events-none">
+                  <div className="absolute inset-0 -translate-x-full group-hover:animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                </div>
                 <motion.img
                   src={mission.image}
                   alt={mission.title}
                   className="w-full h-full object-cover"
-                  whileHover={{ scale: 1.08 }}
-                  transition={{ duration: 0.7 }}
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.8 }}
                 />
                 
                 {/* Gradient overlay */}

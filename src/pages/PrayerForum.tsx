@@ -128,10 +128,11 @@ const PrayerForum = () => {
       <Navigation />
       <main className="pt-20 pb-16">
         <div className="container mx-auto px-4 max-w-5xl">
-          {/* Header */}
-          <motion.div initial="hidden" animate="visible" variants={fadeUp} className="mb-8">
+          {/* Header with aurora */}
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} className="mb-8 relative">
+            <motion.div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-cathedral-gold/5 blur-3xl" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 5, repeat: Infinity }} />
             <p className="text-xs tracking-[0.3em] uppercase text-cathedral-gold/70 mb-2 font-inter">{t('prayer.community') || 'Communauté'}</p>
-            <h1 className="text-3xl md:text-5xl font-cinzel font-bold text-foreground mb-2">{t('prayer.title')}</h1>
+            <h1 className="text-3xl md:text-5xl font-cinzel font-bold text-gradient-gold mb-2">{t('prayer.title')}</h1>
             <p className="text-sm text-muted-foreground font-inter">{t('prayer.subtitle')} {t('prayer.verse')}</p>
           </motion.div>
 
