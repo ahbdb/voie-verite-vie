@@ -61,7 +61,7 @@ const Creator = memo(() => {
       whatsappGroup: 'https://chat.whatsapp.com/FfvCe9nHwpj5OYoDZBfGER',
       portfolio: 'https://ahdybau.netlify.app',
       email: 'ahdybau@gmail.com',
-      whatsapp: '+39 351 434 0349',
+      whatsapp: '+39 351 343 0349',
     }
   };
 
