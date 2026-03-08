@@ -363,7 +363,7 @@ const BiblicalReading = () => {
                             )}
                           </div>
                           <CardTitle className="text-base md:text-lg font-playfair">
-                            {new Date(reading.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+                            {new Date(reading.date).toLocaleDateString(i18n.language === 'it' ? 'it-IT' : i18n.language === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long' })}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
