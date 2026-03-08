@@ -78,9 +78,12 @@ const Profile = () => {
           {/* Profile info - flat */}
           <motion.div initial="hidden" animate="visible" variants={fadeUp} transition={{ delay: 0.1 }} className="mb-8">
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 rounded-full bg-cathedral-gold/10 border border-cathedral-gold/30 flex items-center justify-center">
+              <motion.div 
+                className="w-16 h-16 rounded-full bg-cathedral-gold/10 border border-cathedral-gold/30 flex items-center justify-center animate-glow-pulse"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+              >
                 <User className="w-8 h-8 text-cathedral-gold" />
-              </div>
+              </motion.div>
               <div>
                 <h2 className="text-xl font-cinzel font-semibold text-foreground">{profile.full_name || t('profile.notProvided')}</h2>
                 <p className="text-sm text-muted-foreground font-inter flex items-center gap-1"><Mail className="w-3 h-3" />{profile.email}</p>
