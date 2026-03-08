@@ -401,6 +401,18 @@
     "prayer6": "Mary, Mother of God, intercede for {{name}}. Cover them with your maternal mantle and lead them to your Son. Amen.",
     "prayer7": "Lord, may {{name}} feel your presence today. Strengthen their faith, revive their hope and set their heart ablaze with love. Amen."
   },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "loading": "Loading...",
+    "noNotifications": "No notifications"
+  },
+  "errorBoundary": {
+    "title": "An error occurred",
+    "description": "The application encountered an unexpected problem. Your data is not lost.",
+    "retry": "Retry",
+    "home": "Home"
+  },
   "activeCall": {
     "callInProgress": "Call in progress",
     "join": "Join"

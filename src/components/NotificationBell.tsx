@@ -210,7 +210,7 @@ export const NotificationBell = () => {
       </PopoverTrigger>
       <PopoverContent className="w-96 p-0" align="end">
         <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-primary/5 to-transparent">
-          <h3 className="font-semibold text-base">Notifications</h3>
+          <h3 className="font-semibold text-base">{t('notifications.title')}</h3>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -219,7 +219,7 @@ export const NotificationBell = () => {
               onClick={markAllAsRead}
             >
               <Check className="w-3 h-3 mr-1" />
-              Tout lire
+              {t('notifications.markAllRead')}
             </Button>
           )}
         </div>
@@ -230,12 +230,12 @@ export const NotificationBell = () => {
               <div className="animate-spin">
                 <Bell className="w-6 h-6 mx-auto opacity-50" />
               </div>
-              <p className="mt-2">Chargement...</p>
+              <p className="mt-2">{t('notifications.loading')}</p>
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-6 text-center text-muted-foreground text-sm">
               <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p>Aucune notification</p>
+              <p>{t('notifications.noNotifications')}</p>
             </div>
           ) : (
             <div className="divide-y">
