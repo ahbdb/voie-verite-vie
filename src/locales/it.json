@@ -625,5 +625,8 @@
     "donationSaved": "Donazione registrata!",
     "donationSavedDesc": "Grazie per la tua generosità. Sarai reindirizzato su WhatsApp per finalizzare la donazione.",
     "donationError": "Si è verificato un errore. Riprova."
+  },
+  "postSignup": {
+    "securityNote": "Per motivi di sicurezza, non possiamo aggiungerti \"automaticamente\" a WhatsApp/YouTube. Ecco però i link ufficiali in un clic."
   }
 }
