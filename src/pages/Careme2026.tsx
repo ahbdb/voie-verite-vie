@@ -531,7 +531,7 @@ const Careme2026 = memo(() => {
                     />
                   </div>
                 </div>
-                <p className="text-xs text-gray-500">{completedDates.length} jours complétés sur {nonSundayDays.length}</p>
+                <p className="text-xs text-gray-500">{completedDates.length} {t('careme.completedOf')} {nonSundayDays.length}</p>
               </CardContent>
             </Card>
           </TabsContent>
