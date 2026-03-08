@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { BookOpen, Search } from 'lucide-react';
 import bibleBooks from '@/data/bible-books.json';
+import { getBookName, getBookAbbreviation } from '@/lib/bible-utils';
 
 interface BookData {
   id: number;
