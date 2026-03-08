@@ -360,10 +360,10 @@ const PrayerForum = () => {
                         </label>
                       </div>
                       <Button type="submit" disabled={submitting} className="w-full" size="sm">
-                        {submitting ? 'Envoi...' : (
+                        {submitting ? t('prayer.sending') : (
                           <>
                             <Send className="w-4 h-4 mr-2" />
-                            Partager
+                            {t('prayer.share')}
                           </>
                         )}
                       </Button>
