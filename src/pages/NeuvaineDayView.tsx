@@ -233,6 +233,28 @@ const NeuvaineDayView = () => {
                   <p className="text-muted-foreground text-sm mt-1 italic">{day.subtitle}</p>
                 </div>
 
+                {/* Canevas: OUVERTURE */}
+                {neuvaine.common_prayers?.opening && (
+                  <div className="bg-sky-50 dark:bg-sky-950/20 rounded-lg p-4 space-y-3 border border-sky-200/50 dark:border-sky-800/30">
+                    <h3 className="text-sm font-bold text-sky-800 dark:text-sky-300 uppercase tracking-wide">☩ Ouverture</h3>
+                    {neuvaine.common_prayers.opening.signe_de_croix && (
+                      <p className="text-foreground/80 text-sm italic">{neuvaine.common_prayers.opening.signe_de_croix}</p>
+                    )}
+                    {neuvaine.common_prayers.opening.priere_esprit_saint && (
+                      <details className="group">
+                        <summary className="cursor-pointer text-sm font-semibold text-foreground/90 hover:text-foreground">🕊️ Prière à l'Esprit Saint</summary>
+                        <p className="text-foreground/80 text-sm whitespace-pre-line mt-2 pl-2 border-l-2 border-sky-300">{neuvaine.common_prayers.opening.priere_esprit_saint}</p>
+                      </details>
+                    )}
+                    {neuvaine.common_prayers.opening.notre_pere && (
+                      <details className="group">
+                        <summary className="cursor-pointer text-sm font-semibold text-foreground/90 hover:text-foreground">🙏 Notre Père</summary>
+                        <p className="text-foreground/80 text-sm whitespace-pre-line mt-2 pl-2 border-l-2 border-sky-300">{neuvaine.common_prayers.opening.notre_pere}</p>
+                      </details>
+                    )}
+                  </div>
+                )}
+
                 {/* Scripture */}
                 <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-4 border-l-4 border-amber-500">
                   <div className="flex items-start gap-2">
@@ -241,7 +263,7 @@ const NeuvaineDayView = () => {
                   </div>
                 </div>
 
-                {/* Tabs */}
+                {/* Tabs for day content */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsList className="grid w-full grid-cols-2 bg-amber-100/50 dark:bg-amber-900/20">
                     <TabsTrigger value="meditation" className="text-xs data-[state=active]:bg-amber-600 data-[state=active]:text-white">
@@ -281,6 +303,32 @@ const NeuvaineDayView = () => {
                     </div>
                   </TabsContent>
                 </Tabs>
+
+                {/* Canevas: CLÔTURE */}
+                {neuvaine.common_prayers?.closing && (
+                  <div className="bg-violet-50 dark:bg-violet-950/20 rounded-lg p-4 space-y-3 border border-violet-200/50 dark:border-violet-800/30 mt-5">
+                    <h3 className="text-sm font-bold text-violet-800 dark:text-violet-300 uppercase tracking-wide">☩ Clôture</h3>
+                    {neuvaine.common_prayers.closing.je_vous_salue_marie && (
+                      <details className="group">
+                        <summary className="cursor-pointer text-sm font-semibold text-foreground/90 hover:text-foreground">🌹 Je vous salue Marie</summary>
+                        <p className="text-foreground/80 text-sm whitespace-pre-line mt-2 pl-2 border-l-2 border-violet-300">{neuvaine.common_prayers.closing.je_vous_salue_marie}</p>
+                      </details>
+                    )}
+                    {neuvaine.common_prayers.closing.je_vous_salue_joseph && (
+                      <details className="group">
+                        <summary className="cursor-pointer text-sm font-semibold text-foreground/90 hover:text-foreground">⚜️ Je vous salue Joseph</summary>
+                        <p className="text-foreground/80 text-sm whitespace-pre-line mt-2 pl-2 border-l-2 border-violet-300">{neuvaine.common_prayers.closing.je_vous_salue_joseph}</p>
+                      </details>
+                    )}
+                    {neuvaine.common_prayers.closing.gloire_au_pere && (
+                      <details className="group">
+                        <summary className="cursor-pointer text-sm font-semibold text-foreground/90 hover:text-foreground">✨ Gloire au Père</summary>
+                        <p className="text-foreground/80 text-sm whitespace-pre-line mt-2 pl-2 border-l-2 border-violet-300">{neuvaine.common_prayers.closing.gloire_au_pere}</p>
+                      </details>
+                    )}
+                    <p className="text-xs text-muted-foreground italic mt-2">🎵 Chant à l'Esprit Saint · Signe de la Croix</p>
+                  </div>
+                )}
               </div>
             )}
 
