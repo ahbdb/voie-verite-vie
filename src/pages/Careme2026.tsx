@@ -426,7 +426,7 @@ const Careme2026 = memo(() => {
           <Card className="bg-gradient-to-br from-green-500/10 to-green-600/10 border-green-200">
             <CardContent className="pt-6">
               <div className="text-2xl sm:text-3xl font-bold text-green-700">{completedDates.length}</div>
-              <p className="text-xs sm:text-sm text-gray-600">Jours complétés</p>
+              <p className="text-xs sm:text-sm text-gray-600">{t('careme.daysCompleted')}</p>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border-blue-200">
