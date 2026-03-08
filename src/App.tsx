@@ -42,6 +42,7 @@ import AdminFAQ from "./pages/admin/AdminFAQ";
 import AdminAI from "./pages/admin/AdminAI";
 import AdminCareme2026 from "./pages/admin/AdminCareme2026";
 import AdminCheminDeCroix from "./pages/admin/AdminCheminDeCroix";
+import AdminNeuvaines from "./pages/admin/AdminNeuvaines";
 import AdminDebugCareme from "./pages/admin/AdminDebugCareme";
 import AdminTestSave from "./pages/admin/AdminTestSave";
 import AdminManagement from "./pages/admin/AdminManagement";
