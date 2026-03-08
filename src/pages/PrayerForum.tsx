@@ -377,7 +377,7 @@ const PrayerForum = () => {
                     <div className="grid grid-cols-2 gap-4 text-center">
                       <div>
                         <div className="text-2xl font-bold text-primary">{requests.length}</div>
-                        <div className="text-xs text-muted-foreground">Intentions</div>
+                        <div className="text-xs text-muted-foreground">{t('prayer.intentions')}</div>
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-primary">
