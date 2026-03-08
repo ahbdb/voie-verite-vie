@@ -639,3 +639,13 @@ Toutes les couleurs DOIVENT être en HSL.
 html {
   font-size: calc(16px * var(--text-scale));
 }
+
+/* Prevent text overflow when scaled */
+* {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+h1, h2, h3, h4, h5, h6, p, span, a, li, td, th, label, button {
+  max-width: 100%;
+}
