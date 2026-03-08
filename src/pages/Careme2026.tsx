@@ -438,7 +438,7 @@ const Careme2026 = memo(() => {
           <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/10 border-amber-200">
             <CardContent className="pt-6">
               <div className="text-2xl sm:text-3xl font-bold text-amber-700">40</div>
-              <p className="text-xs sm:text-sm text-gray-600">Jours requis</p>
+              <p className="text-xs sm:text-sm text-gray-600">{t('careme.daysRequired')}</p>
             </CardContent>
           </Card>
         </div>
