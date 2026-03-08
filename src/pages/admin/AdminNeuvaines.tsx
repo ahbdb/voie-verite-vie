@@ -184,7 +184,7 @@ const AdminNeuvaines = () => {
   };
 
   return (
-    <AdminPageWrapper title="Gestion des Neuvaines" icon={<BookOpen className="h-6 w-6" />}>
+    <AdminPageWrapper title="Gestion des Neuvaines">
       <div className="flex justify-between items-center mb-6">
         <p className="text-muted-foreground text-sm">{neuvaines.length} neuvaine(s)</p>
         <Button onClick={openCreate} className="gap-2 bg-amber-600 hover:bg-amber-700">
