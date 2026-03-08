@@ -59,7 +59,7 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     sitemapPlugin(),
     mode === 'production' && VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       manifestFilename: 'manifest.json',
       includeAssets: ['favicon.ico', 'robots.txt'],
       devOptions: {
