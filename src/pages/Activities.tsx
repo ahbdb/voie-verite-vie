@@ -263,10 +263,10 @@ const Activities = () => {
           <div className="container mx-auto px-4">
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-4xl md:text-6xl font-playfair font-bold text-primary mb-4">
-                Nos Activités
+                {t('activities.title')}
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                Découvrez nos événements, ateliers et moments de partage spirituel
+                {t('activities.subtitle')}
               </p>
             </div>
           </div>
