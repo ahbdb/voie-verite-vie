@@ -273,7 +273,7 @@ const AdminUsers = () => {
 
         <div className="mb-6">
           <h1 className="text-3xl font-bold flex items-center gap-2 mb-2">
-            <Users className="h-8 w-8" /> Gestion des Utilisateurs
+            <Users className="h-8 w-8" /> {t('admin.usersPage.title')}
           </h1>
           <p className="text-sm text-muted-foreground flex items-center gap-1">
             <Shield className="h-4 w-4" /> 
