@@ -137,10 +137,10 @@ const AdminUsers = () => {
 
   const getRoleLabel = (role: UserRole['role']) => {
     switch (role) {
-      case 'admin_principal': return '👑 Admin Principal';
-      case 'admin': return '🔐 Admin';
-      case 'moderator': return '📋 Modérateur';
-      default: return 'Utilisateur';
+      case 'admin_principal': return t('admin.usersPage.adminPrincipal');
+      case 'admin': return t('admin.usersPage.admin');
+      case 'moderator': return t('admin.usersPage.moderator');
+      default: return t('admin.usersPage.user');
     }
   };
 
