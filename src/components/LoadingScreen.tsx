@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import logo3v from '@/assets/logo-3v.png';
 
 const LoadingScreen = () => {
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
