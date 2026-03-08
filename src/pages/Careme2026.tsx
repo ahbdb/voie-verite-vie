@@ -614,7 +614,7 @@ const Careme2026 = memo(() => {
           <div className="space-y-4 py-4">
             {selectedDay?.readings && (
               <div className="bg-slate-50 p-3 rounded-lg dark:bg-slate-900 dark:text-slate-100">
-                <p className="text-xs font-semibold text-gray-700 mb-1">Lectures bibliques</p>
+                <p className="text-xs font-semibold text-gray-700 mb-1">{t('careme.biblicalReadings')}</p>
                 <p className="text-sm text-gray-700">{selectedDay.readings}</p>
               </div>
             )}
