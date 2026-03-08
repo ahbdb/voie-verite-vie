@@ -59,6 +59,9 @@ const Creator = memo(() => {
       youtube: 'https://youtube.com/@voie-verite-vie?si=qD8LmbyREJdQm1Db',
       whatsappChannel: 'https://whatsapp.com/channel/0029VbB0GplLY6d6hkP5930J',
       whatsappGroup: 'https://chat.whatsapp.com/FfvCe9nHwpj5OYoDZBfGER',
+      portfolio: 'https://ahdybau.netlify.app',
+      email: 'ahdybau@gmail.com',
+      whatsapp: '+39 351 434 0349',
     }
   };
 
