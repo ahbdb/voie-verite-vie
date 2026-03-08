@@ -343,7 +343,7 @@ const PrayerForum = () => {
                         maxLength={100}
                       />
                       <Textarea
-                        placeholder="Décrivez votre intention de prière..."
+                        placeholder={t('prayer.intentionContent')}
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         rows={3}
