@@ -498,7 +498,7 @@ const Careme2026 = memo(() => {
                 <CardContent className="pt-6 space-y-2 text-sm">
                   <div className="flex justify-between py-2 border-b border-slate-100">
                     <span className="text-gray-600">05:00</span>
-                    <span className="font-medium">Prière d'introduction</span>
+                    <span className="font-medium">{t('careme.introductionPrayer')}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-slate-100">
                     <span className="text-gray-600">Toute la journée</span>
