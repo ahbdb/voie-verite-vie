@@ -631,7 +631,7 @@ const Careme2026 = memo(() => {
               <div className="rounded-lg border-2 border-rose-200 p-4 bg-gradient-to-br from-rose-50 to-rose-100/30 dark:bg-gradient-to-br dark:from-rose-950 dark:to-rose-900/30 dark:border-rose-700 dark:text-slate-100">
                 <div className="flex items-center gap-2 mb-2">
                   <Users className="w-5 h-5 text-rose-600" />
-                  <h3 className="font-semibold text-sm text-rose-700">❤️ Prochain</h3>
+                  <h3 className="font-semibold text-sm text-rose-700">❤️ {t('careme.neighbor')}</h3>
                 </div>
                 <p className="text-sm text-gray-700">{selectedDay?.actions?.prochain}</p>
               </div>
