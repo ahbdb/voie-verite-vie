@@ -297,11 +297,11 @@ const AdminUsers = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Rôle</TableHead>
-                  <TableHead>Inscrit le</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t('admin.usersPage.name')}</TableHead>
+                  <TableHead>{t('admin.usersPage.email')}</TableHead>
+                  <TableHead>{t('admin.usersPage.role')}</TableHead>
+                  <TableHead>{t('admin.usersPage.memberSince')}</TableHead>
+                  <TableHead>{t('admin.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
