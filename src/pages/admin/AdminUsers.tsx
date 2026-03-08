@@ -430,10 +430,10 @@ const AdminUsers = () => {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setPermissionDialogOpen(false)}>
-              Annuler
+              {t('common.cancel')}
             </Button>
             <Button onClick={savePermissions}>
-              Enregistrer les permissions
+              {t('common.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
