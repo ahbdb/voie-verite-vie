@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import BibleChapterViewer from '@/components/BibleChapterViewer';
 import { preloadBibleChapters, clearBibleCache } from '@/lib/bible-content-loader';
 import bibleBooks from '@/data/bible-books.json';
+import { getBookName, getBookAbbreviation } from '@/lib/bible-utils';
 
 interface BookData {
   id: number;
