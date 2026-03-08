@@ -586,6 +586,10 @@ Toutes les couleurs DOIVENT être en HSL.
     font-family: 'Playfair Display', serif;
   }
   
+  .font-cinzel {
+    font-family: 'Cinzel', 'Playfair Display', serif;
+  }
+  
   .font-inter {
     font-family: 'Inter', sans-serif;
   }
@@ -602,6 +606,18 @@ Toutes les couleurs DOIVENT être en HSL.
     background: var(--gradient-peace);
   }
   
+  .bg-gradient-cathedral {
+    background: var(--gradient-cathedral);
+  }
+  
+  .bg-gradient-stained {
+    background: var(--gradient-stained);
+  }
+  
+  .bg-gradient-subtle {
+    background: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted) / 0.5));
+  }
+  
   .text-primary-glow {
     color: hsl(var(--primary-glow));
   }
@@ -613,8 +629,33 @@ Toutes les couleurs DOIVENT être en HSL.
   .text-divine-gold {
     color: hsl(var(--divine-gold-deep));
   }
+  
+  .text-cathedral-gold {
+    color: hsl(var(--cathedral-gold));
+  }
 
-  /* Hide scrollbar for horizontal carousels */
+  .border-gold {
+    border-color: hsl(var(--cathedral-gold) / 0.3);
+  }
+
+  /* Cathedral decorative line */
+  .cathedral-line {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, hsl(var(--cathedral-gold)), transparent);
+  }
+
+  /* Stained glass shimmer */
+  .stained-shimmer {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--cathedral-gold) / 0.05) 0%,
+      hsl(var(--stained-blue) / 0.05) 25%,
+      hsl(var(--stained-ruby) / 0.05) 50%,
+      hsl(var(--stained-emerald) / 0.05) 75%,
+      hsl(var(--cathedral-gold) / 0.05) 100%
+    );
+  }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
