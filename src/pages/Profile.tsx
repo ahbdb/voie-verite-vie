@@ -63,13 +63,14 @@ const Profile = () => {
       <Navigation />
       <main className="pt-20 pb-16">
         <div className="container mx-auto px-4 max-w-2xl">
-          {/* Header */}
-          <motion.div initial="hidden" animate="visible" variants={fadeUp} className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-cinzel font-bold text-foreground">{t('profile.title')}</h1>
+          {/* Header with glow */}
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} className="flex items-center justify-between mb-8 relative">
+            <motion.div className="absolute -top-8 -left-8 w-32 h-32 rounded-full bg-cathedral-gold/5 blur-3xl" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 5, repeat: Infinity }} />
+            <div className="relative">
+              <h1 className="text-3xl font-cinzel font-bold text-gradient-gold">{t('profile.title')}</h1>
               <p className="text-sm text-muted-foreground font-inter">{t('profile.subtitle')}</p>
             </div>
-            <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10">
+            <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 relative">
               <LogOut className="h-4 w-4" />{t('common.logout')}
             </Button>
           </motion.div>
