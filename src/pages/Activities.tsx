@@ -217,18 +217,18 @@ const Activities = () => {
           {/* Affichage conditionnel selon allow_registration */}
           {(activity.allow_registration ?? true) && (
             <>
-              {/* Nombre d'inscrits - Visible uniquement si inscriptions activées */}
+              {/* Nombre d'inscrits */}
               <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
                 <User className="w-4 h-4 text-primary" />
                 <span>
-                  {registrationCounts[activity.id] || 0} inscrit{(registrationCounts[activity.id] || 0) > 1 ? 's' : ''} 
-                  {activity.max_participants > 0 && ` / ${activity.max_participants} places`}
+                  {registrationCounts[activity.id] || 0} {(registrationCounts[activity.id] || 0) > 1 ? t('activities.registeredPlural') : t('activities.registered')} 
+                  {activity.max_participants > 0 && ` / ${activity.max_participants} ${t('activities.places')}`}
                 </span>
               </div>
               
               <div className="flex items-center justify-between">
                 <span className="text-lg font-semibold text-primary">
-                  {activity.price ?? 'Gratuit'}
+                  {activity.price ?? t('common.free')}
                 </span>
                 {!isPast ? (
                   <Button 
@@ -238,12 +238,12 @@ const Activities = () => {
                     disabled={activity.max_participants > 0 && (registrationCounts[activity.id] || 0) >= activity.max_participants}
                   >
                     {activity.max_participants > 0 && (registrationCounts[activity.id] || 0) >= activity.max_participants 
-                      ? 'Complet' 
-                      : "S'inscrire"}
+                      ? t('activities.full') 
+                      : t('activities.register')}
                   </Button>
                 ) : (
                   <Badge variant="outline" className="text-muted-foreground">
-                    Événement passé
+                    {t('activities.pastEvent')}
                   </Badge>
                 )}
               </div>
