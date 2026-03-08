@@ -62,8 +62,8 @@ export default function DayReadingViewer({ reading, onClose }: DayReadingViewerP
           if (!isNaN(num)) {
             chapters.push({ 
               bookId: book.fileName,
-              bookName: book.name,
-              abbreviation: book.abbreviation,
+              bookName: localizedName,
+              abbreviation: localizedAbbr,
               chapterNumber: num 
             });
           }
