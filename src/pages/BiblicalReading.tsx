@@ -37,6 +37,7 @@ interface UserProgress {
 }
 
 const BiblicalReading = () => {
+  const { t, i18n } = useTranslation();
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [selectedTestament, setSelectedTestament] = useState('all');
   const [activeTab, setActiveTab] = useState('program');
