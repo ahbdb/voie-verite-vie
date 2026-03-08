@@ -260,13 +260,31 @@ const Navigation = () => {
             ))}
           </div>
 
-          {/* Menu Mobile */}
-          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <SheetTrigger asChild className="lg:hidden">
-              <Button variant="ghost" size="sm">
-                <Menu className="w-5 h-5" />
-              </Button>
-            </SheetTrigger>
+          {/* Mobile/Tablet top bar icons + hamburger */}
+          <div className="flex items-center gap-0.5 lg:hidden">
+            <LanguageSelector variant="icon" />
+            <Button
+              onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              title={isDarkMode ? t('common.lightMode') : t('common.darkMode')}
+            >
+              {isDarkMode ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-slate-600" />}
+            </Button>
+            <Button onClick={handleZoomOut} variant="ghost" size="icon" className="h-8 w-8" disabled={!canZoomOut}>
+              <ZoomOut className="w-4 h-4" />
+            </Button>
+            <Button onClick={handleZoomIn} variant="ghost" size="icon" className="h-8 w-8" disabled={!canZoomIn}>
+              <ZoomIn className="w-4 h-4" />
+            </Button>
+            <NotificationBell />
+            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
             <SheetContent side="right" className="w-[30%] min-w-[250px] sm:w-[30%]">
               <div className="flex flex-col h-full py-6">
                 <div className="space-y-4 flex-1 overflow-y-auto">
@@ -308,44 +326,6 @@ const Navigation = () => {
                 })}
               </div>
                 <div className="border-t border-border/50 pt-4 space-y-2">
-                  {/* Language Selector Mobile */}
-                  <LanguageSelector variant="full" />
-
-                  {/* Theme Toggle Mobile */}
-                  <Button
-                    onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
-                    variant="ghost"
-                    className="w-full justify-start gap-2"
-                  >
-                    {isDarkMode ? (
-                      <>
-                        <Sun className="w-4 h-4 text-amber-500" />
-                        {t('common.lightMode')}
-                      </>
-                    ) : (
-                      <>
-                        <Moon className="w-4 h-4 text-slate-600" />
-                        {t('common.darkMode')}
-                      </>
-                    )}
-                  </Button>
-
-                  {/* Zoom Controls Mobile */}
-                  <div className="flex items-center justify-between px-4">
-                    <span className="text-sm text-muted-foreground">{t('common.textSize')}</span>
-                    <div className="flex items-center gap-1">
-                      <Button onClick={handleZoomOut} variant="ghost" size="sm" disabled={!canZoomOut}>
-                        <ZoomOut className="w-4 h-4" />
-                      </Button>
-                      <span className="text-xs text-muted-foreground w-8 text-center">
-                        {settings.textSize === 'extra-large' ? 'XL' : settings.textSize === 'large' ? 'L' : settings.textSize === 'small' ? 'S' : 'M'}
-                      </span>
-                      <Button onClick={handleZoomIn} variant="ghost" size="sm" disabled={!canZoomIn}>
-                        <ZoomIn className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-
                   {/* Install button mobile */}
                   <Button
                     onClick={() => {
@@ -414,7 +394,8 @@ const Navigation = () => {
                 </div>
               </div>
             </SheetContent>
-          </Sheet>
+           </Sheet>
+          </div>
         </div>
       </div>
     </nav>
