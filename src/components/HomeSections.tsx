@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, BookOpen, Calendar, Heart, MessageCircle, Youtube } from 'lucide-react';
@@ -86,7 +86,7 @@ const ActivitiesSection = () => {
 
 const CTASection = () => {
   const ref = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
+  
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
   const scale = useTransform(scrollYProgress, [0, 0.5], [1.08, 1]);
 
@@ -108,10 +108,10 @@ const CTASection = () => {
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Button
             size="default"
-            className="bg-white text-black font-semibold hover:bg-white/90 shadow-lg rounded-full"
-            onClick={() => navigate('/auth')}
+            asChild
+            className="bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-lg rounded-full"
           >
-            Créer un compte
+            <Link to="/auth">Créer un compte</Link>
           </Button>
           <Button size="default" className="bg-green-600 hover:bg-green-700 text-white rounded-full" asChild>
             <a href="https://chat.whatsapp.com/FfvCe9nHwpj5OYoDZBfGER" target="_blank" rel="noopener noreferrer">
