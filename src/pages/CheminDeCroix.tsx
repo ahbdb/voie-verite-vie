@@ -20,7 +20,7 @@ interface Station {
   prayer: string;
 }
 
-const mergeCheminContent = (rawContent: any) => ({ ...cheminDeCroixData, ...rawContent, intro: { ...cheminDeCroixData.intro, ...(rawContent?.intro || {}) }, conclusion: { ...cheminDeCroixData.conclusion, ...(rawContent?.conclusion || {}) }, stations: Array.isArray(rawContent?.stations) && rawContent.stations.length > 0 ? rawContent.stations : cheminDeCroixData.stations, adoration: rawContent?.adoration || cheminDeCroixData.adoration });
+const mergeCheminContent = (rawContent: any, baseData: any) => ({ ...baseData, ...rawContent, intro: { ...baseData.intro, ...(rawContent?.intro || {}) }, conclusion: { ...baseData.conclusion, ...(rawContent?.conclusion || {}) }, stations: Array.isArray(rawContent?.stations) && rawContent.stations.length > 0 ? rawContent.stations : baseData.stations, adoration: rawContent?.adoration || baseData.adoration });
 
 const CheminDeCroix = memo(() => {
   const { t } = useTranslation();
