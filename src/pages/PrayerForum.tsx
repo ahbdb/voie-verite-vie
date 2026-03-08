@@ -396,11 +396,11 @@ const PrayerForum = () => {
                   <TabsList className="grid w-full grid-cols-2 mb-6">
                     <TabsTrigger value="recent" className="flex items-center gap-2">
                       <Clock className="w-4 h-4" />
-                      Récentes
+                      {t('prayer.recent')}
                     </TabsTrigger>
                     <TabsTrigger value="popular" className="flex items-center gap-2">
                       <Flame className="w-4 h-4" />
-                      Les plus priées
+                      {t('prayer.mostPrayed')}
                     </TabsTrigger>
                   </TabsList>
 
