@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
 import { useNotifications } from '@/hooks/useNotifications';
 import { generateShareImage, shareImage } from '@/lib/share-utils';
-import { caremeData } from '@/data/careme-2026-data';
+import { getCaremeData } from '@/data/careme-2026-data';
 
 const Careme2026 = memo(() => {
   const { t } = useTranslation();
