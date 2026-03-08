@@ -598,6 +598,15 @@ Toutes les couleurs DOIVENT être en HSL.
   .text-divine-gold {
     color: hsl(var(--divine-gold-deep));
   }
+
+  /* Hide scrollbar for horizontal carousels */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Keyframes pour les animations */
