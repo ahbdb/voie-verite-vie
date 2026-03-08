@@ -6,6 +6,7 @@
 [build.environment]
   NODE_VERSION = "20"
   NODE_ENV = "production"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 [[redirects]]
   from = "/neuvaines/*.pdf"
