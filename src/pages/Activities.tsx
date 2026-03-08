@@ -279,7 +279,7 @@ const Activities = () => {
               <div className="relative mb-8">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder="Rechercher une activité..."
+                  placeholder={t('activities.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 h-12 bg-card/50 backdrop-blur-sm border-border/50"
