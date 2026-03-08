@@ -37,79 +37,72 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Full-screen background with slow zoom */}
+    <section className="relative h-[85vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+      {/* Full-screen background */}
       <motion.div
         className="absolute inset-0 z-0"
-        initial={{ scale: 1.15 }}
+        initial={{ scale: 1.08 }}
         animate={{ scale: 1 }}
-        transition={{ duration: 12, ease: 'easeOut' }}
+        transition={{ duration: 8, ease: 'easeOut' }}
       >
         <img
           src={heroCathedral}
-          alt="Cathédrale illuminée par la lumière divine"
+          alt="Cathédrale illuminée"
           className="w-full h-full object-cover"
         />
       </motion.div>
-
-      {/* Dark overlay for text readability */}
       <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
 
-      {/* Content */}
       <div className="relative z-10 text-center px-4 max-w-3xl mx-auto">
-        {/* Logo */}
         <motion.img
           src={logo3v}
           alt="Logo 3V"
-          className="h-20 w-auto mx-auto mb-8 drop-shadow-2xl"
-          initial={{ opacity: 0, y: -20 }}
+          className="h-16 w-auto mx-auto mb-4 drop-shadow-2xl"
+          initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
         />
 
-        {/* Greeting */}
         {user && (
           <motion.p
-            className="text-white/80 text-sm tracking-widest uppercase mb-4"
+            className="text-white/80 text-sm tracking-widest uppercase mb-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.4 }}
           >
             {getTimeGreeting()}{userName ? `, ${userName}` : ''}
           </motion.p>
         )}
 
-        {/* Main title */}
         <motion.h1
-          className="text-5xl sm:text-6xl md:text-8xl font-playfair font-bold text-white mb-6 drop-shadow-lg"
-          initial={{ opacity: 0, y: 30 }}
+          className="text-4xl sm:text-5xl md:text-7xl font-playfair font-bold text-white mb-4 drop-shadow-lg"
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ duration: 0.8, delay: 0.3 }}
         >
           Voie, Vérité, Vie
         </motion.h1>
 
-        {/* Divider */}
         <motion.div
-          className="w-20 h-0.5 bg-accent mx-auto mb-8"
+          className="w-16 h-0.5 bg-accent mx-auto mb-5"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
         />
 
         {/* Rotating verse */}
-        <div className="h-16 mb-10 flex items-center justify-center">
+        <div className="h-14 mb-6 flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.p
               key={currentVerse}
-              className="text-white/90 text-lg md:text-xl font-playfair italic max-w-xl"
-              initial={{ opacity: 0, y: 10 }}
+              className="text-white/90 text-base md:text-lg font-playfair italic max-w-xl"
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.5 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.4 }}
             >
               « {biblicalVerses[currentVerse].text} »
-              <span className="block text-accent text-sm mt-2 not-italic font-inter">
+              <span className="block text-accent text-xs mt-1 not-italic font-inter">
                 — {biblicalVerses[currentVerse].reference}
               </span>
             </motion.p>
@@ -118,53 +111,34 @@ const HeroSection = () => {
 
         {/* CTA */}
         <motion.div
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          initial={{ opacity: 0, y: 20 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-3"
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 1.1 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
         >
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-            <Button
-              size="lg"
-              className="text-lg px-8 py-6 bg-white text-foreground hover:bg-white/90 shadow-xl"
-              asChild
-            >
-              <Link to="/auth">
-                <Users className="mr-2 w-5 h-5" />
-                Rejoignez-nous
-              </Link>
-            </Button>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-            <Button
-              variant="outline"
-              size="lg"
-              className="text-lg px-8 py-6 border-white/40 text-white hover:bg-white/10 backdrop-blur-sm"
-              asChild
-            >
-              <Link to="/about">
-                En savoir plus
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
-            </Button>
-          </motion.div>
+          <Button
+            size="lg"
+            className="px-6 py-5 bg-white text-foreground hover:bg-white/90 shadow-xl"
+            asChild
+          >
+            <Link to="/auth">
+              <Users className="mr-2 w-4 h-4" />
+              Rejoignez-nous
+            </Link>
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            className="px-6 py-5 border-white/40 text-white hover:bg-white/10 backdrop-blur-sm"
+            asChild
+          >
+            <Link to="/about">
+              En savoir plus
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Link>
+          </Button>
         </motion.div>
       </div>
-
-      {/* Scroll indicator */}
-      <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
-        animate={{ y: [0, 8, 0] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
-          <motion.div
-            className="w-1 h-3 bg-white/60 rounded-full mt-2"
-            animate={{ opacity: [1, 0.3, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-        </div>
-      </motion.div>
     </section>
   );
 };
