@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +36,7 @@ interface PrayerResponse {
 }
 
 const PrayerForum = () => {
+  const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -310,10 +312,10 @@ const PrayerForum = () => {
           <div className="container mx-auto px-4">
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-4xl md:text-5xl font-playfair font-bold text-primary mb-4">
-                Forum de Prière
+                {t('prayer.title')}
               </h1>
               <p className="text-lg text-muted-foreground">
-                Partagez vos intentions et priez ensemble en communauté. « Car là où deux ou trois sont assemblés en mon nom, je suis au milieu d'eux. » (Matthieu 18:20)
+                {t('prayer.subtitle')} {t('prayer.verse')}
               </p>
             </div>
           </div>
@@ -329,19 +331,19 @@ const PrayerForum = () => {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg font-playfair text-primary flex items-center gap-2">
                       <Plus className="w-5 h-5" />
-                      Nouvelle intention
+                      {t('prayer.newIntention')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-3">
                       <Input
-                        placeholder="Titre de votre intention"
+                        placeholder={t('prayer.intentionTitle')}
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         maxLength={100}
                       />
                       <Textarea
-                        placeholder="Décrivez votre intention de prière..."
+                        placeholder={t('prayer.intentionContent')}
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         rows={3}
@@ -354,14 +356,14 @@ const PrayerForum = () => {
                           onCheckedChange={(checked) => setIsAnonymous(checked as boolean)}
                         />
                         <label htmlFor="anonymous" className="text-sm text-muted-foreground">
-                          Anonyme
+                          {t('common.anonymous')}
                         </label>
                       </div>
                       <Button type="submit" disabled={submitting} className="w-full" size="sm">
-                        {submitting ? 'Envoi...' : (
+                        {submitting ? t('prayer.sending') : (
                           <>
                             <Send className="w-4 h-4 mr-2" />
-                            Partager
+                            {t('prayer.share')}
                           </>
                         )}
                       </Button>
@@ -375,13 +377,13 @@ const PrayerForum = () => {
                     <div className="grid grid-cols-2 gap-4 text-center">
                       <div>
                         <div className="text-2xl font-bold text-primary">{requests.length}</div>
-                        <div className="text-xs text-muted-foreground">Intentions</div>
+                        <div className="text-xs text-muted-foreground">{t('prayer.intentions')}</div>
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-primary">
                           {requests.reduce((sum, r) => sum + r.prayer_count, 0)}
                         </div>
-                        <div className="text-xs text-muted-foreground">Prières</div>
+                        <div className="text-xs text-muted-foreground">{t('prayer.prayers')}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -394,11 +396,11 @@ const PrayerForum = () => {
                   <TabsList className="grid w-full grid-cols-2 mb-6">
                     <TabsTrigger value="recent" className="flex items-center gap-2">
                       <Clock className="w-4 h-4" />
-                      Récentes
+                      {t('prayer.recent')}
                     </TabsTrigger>
                     <TabsTrigger value="popular" className="flex items-center gap-2">
                       <Flame className="w-4 h-4" />
-                      Les plus priées
+                      {t('prayer.mostPrayed')}
                     </TabsTrigger>
                   </TabsList>
 
@@ -412,8 +414,8 @@ const PrayerForum = () => {
                         <Card>
                           <CardContent className="py-8 text-center text-muted-foreground">
                             <HandHeart className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                            <p>Aucune intention de prière pour le moment.</p>
-                            <p className="text-sm">Soyez le premier à partager une intention.</p>
+                            <p>{t('prayer.noPrayers')}</p>
+                            <p className="text-sm">{t('prayer.beFirst')}</p>
                           </CardContent>
                         </Card>
                       ) : (
@@ -438,7 +440,7 @@ const PrayerForum = () => {
                         <Card>
                           <CardContent className="py-8 text-center text-muted-foreground">
                             <TrendingUp className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                            <p>Aucune intention populaire.</p>
+                            <p>{t('prayer.noPopular')}</p>
                           </CardContent>
                         </Card>
                       ) : (
@@ -584,7 +586,7 @@ const PrayerRequestCard = ({
           disabled={isPrayed}
         >
           <Heart className={`w-4 h-4 mr-1 ${isPrayed ? 'fill-current' : ''}`} />
-          {isPrayed ? 'Prié' : 'Je prie'}
+          {isPrayed ? '✓' : '🙏'}
         </Button>
       </div>
     </CardContent>

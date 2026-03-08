@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Tables } from '@/integrations/supabase/types';
 import Navigation from '@/components/Navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -31,6 +32,7 @@ const defaultImages: Record<string, string> = {
 };
 
 const Activities = () => {
+  const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [activities, setActivities] = useState<Activity[]>([]);
   const [registrationCounts, setRegistrationCounts] = useState<Record<string, number>>({});
@@ -117,14 +119,15 @@ const Activities = () => {
   };
 
   const formatDateRange = (activity: Activity) => {
-    const startDate = new Date(activity.start_date || activity.date).toLocaleDateString('fr-FR', {
+    const locale = i18n.language === 'it' ? 'it-IT' : i18n.language === 'en' ? 'en-US' : 'fr-FR';
+    const startDate = new Date(activity.start_date || activity.date).toLocaleDateString(locale, {
       day: 'numeric',
       month: 'short',
       year: 'numeric'
     });
     
     if (activity.end_date) {
-      const endDate = new Date(activity.end_date).toLocaleDateString('fr-FR', {
+      const endDate = new Date(activity.end_date).toLocaleDateString(locale, {
         day: 'numeric',
         month: 'short',
         year: 'numeric'
@@ -171,21 +174,21 @@ const Activities = () => {
           {timeStatus === 'today' && (
             <div className="absolute top-4 right-4 z-10">
               <Badge className="bg-green-500 text-white animate-pulse">
-                <Clock className="w-3 h-3 mr-1" /> Aujourd'hui
+                <Clock className="w-3 h-3 mr-1" /> {t('activities.todayBadge')}
               </Badge>
             </div>
           )}
           {timeStatus === 'ongoing' && (
             <div className="absolute top-4 right-4 z-10">
               <Badge className="bg-blue-500 text-white">
-                <Clock className="w-3 h-3 mr-1" /> En cours
+                <Clock className="w-3 h-3 mr-1" /> {t('activities.ongoingBadge')}
               </Badge>
             </div>
           )}
           {isPast && (
             <div className="absolute top-4 right-4 z-10">
               <Badge variant="secondary">
-                <CheckCircle className="w-3 h-3 mr-1" /> Terminée
+                <CheckCircle className="w-3 h-3 mr-1" /> {t('activities.finishedBadge')}
               </Badge>
             </div>
           )}
@@ -214,18 +217,18 @@ const Activities = () => {
           {/* Affichage conditionnel selon allow_registration */}
           {(activity.allow_registration ?? true) && (
             <>
-              {/* Nombre d'inscrits - Visible uniquement si inscriptions activées */}
+              {/* Nombre d'inscrits */}
               <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
                 <User className="w-4 h-4 text-primary" />
                 <span>
-                  {registrationCounts[activity.id] || 0} inscrit{(registrationCounts[activity.id] || 0) > 1 ? 's' : ''} 
-                  {activity.max_participants > 0 && ` / ${activity.max_participants} places`}
+                  {registrationCounts[activity.id] || 0} {(registrationCounts[activity.id] || 0) > 1 ? t('activities.registeredPlural') : t('activities.registered')} 
+                  {activity.max_participants > 0 && ` / ${activity.max_participants} ${t('activities.places')}`}
                 </span>
               </div>
               
               <div className="flex items-center justify-between">
                 <span className="text-lg font-semibold text-primary">
-                  {activity.price ?? 'Gratuit'}
+                  {activity.price ?? t('common.free')}
                 </span>
                 {!isPast ? (
                   <Button 
@@ -235,12 +238,12 @@ const Activities = () => {
                     disabled={activity.max_participants > 0 && (registrationCounts[activity.id] || 0) >= activity.max_participants}
                   >
                     {activity.max_participants > 0 && (registrationCounts[activity.id] || 0) >= activity.max_participants 
-                      ? 'Complet' 
-                      : "S'inscrire"}
+                      ? t('activities.full') 
+                      : t('activities.register')}
                   </Button>
                 ) : (
                   <Badge variant="outline" className="text-muted-foreground">
-                    Événement passé
+                    {t('activities.pastEvent')}
                   </Badge>
                 )}
               </div>
@@ -260,10 +263,10 @@ const Activities = () => {
           <div className="container mx-auto px-4">
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-4xl md:text-6xl font-playfair font-bold text-primary mb-4">
-                Nos Activités
+                {t('activities.title')}
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                Découvrez nos événements, ateliers et moments de partage spirituel
+                {t('activities.subtitle')}
               </p>
             </div>
           </div>
@@ -276,7 +279,7 @@ const Activities = () => {
               <div className="relative mb-8">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder="Rechercher une activité..."
+                  placeholder={t('activities.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 h-12 bg-card/50 backdrop-blur-sm border-border/50"
@@ -293,18 +296,18 @@ const Activities = () => {
               {loading ? (
                 <div className="text-center py-16">
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-                  <p className="text-muted-foreground mt-4">Chargement des activités...</p>
+                   <p className="text-muted-foreground mt-4">{t('activities.loadingActivities')}</p>
                 </div>
               ) : (
                 <Tabs defaultValue="upcoming" className="w-full">
                   <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
                     <TabsTrigger value="upcoming" className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      À venir ({filteredUpcomingActivities.length})
+                      {t('activities.upcoming')} ({filteredUpcomingActivities.length})
                     </TabsTrigger>
                     <TabsTrigger value="past" className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4" />
-                      Passées ({filteredPastActivities.length})
+                      {t('activities.past')} ({filteredPastActivities.length})
                     </TabsTrigger>
                   </TabsList>
 
@@ -317,10 +320,10 @@ const Activities = () => {
                       <div className="text-center py-16">
                         <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-xl font-playfair font-semibold text-primary mb-2">
-                          Aucune activité à venir
+                          {t('activities.noUpcoming')}
                         </h3>
                         <p className="text-muted-foreground">
-                          De nouvelles activités seront bientôt disponibles
+                          {t('activities.newSoon')}
                         </p>
                       </div>
                     )}
@@ -335,10 +338,10 @@ const Activities = () => {
                       <div className="text-center py-16">
                         <CheckCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-xl font-playfair font-semibold text-primary mb-2">
-                          Aucune activité passée
+                          {t('activities.noPast')}
                         </h3>
                         <p className="text-muted-foreground">
-                          Les activités terminées s'afficheront ici
+                          {t('activities.pastWillShow')}
                         </p>
                       </div>
                     )}
@@ -351,7 +354,7 @@ const Activities = () => {
         {!user && (
           <div className="container mx-auto px-4 mt-6">
             <div className="max-w-6xl mx-auto text-center text-sm text-muted-foreground">
-              Pour voir les autres activités, veuillez vous inscrire ou vous connecter (si vous avez changé d'appareil).
+              {t('activities.loginToSee')}
             </div>
           </div>
         )}

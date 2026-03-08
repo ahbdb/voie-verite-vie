@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import { Input } from '@/components/ui/input';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -15,17 +16,18 @@ interface FAQItem {
 }
 
 const FAQ = () => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [faqData, setFaqData] = useState<FAQItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const faqCategories = [
-    { id: 'general', name: 'Général', icon: HelpCircle, color: 'bg-blue-500/10 text-blue-700' },
-    { id: 'spiritualite', name: 'Spiritualité', icon: Heart, color: 'bg-red-500/10 text-red-700' },
-    { id: 'activites', name: 'Activités', icon: Calendar, color: 'bg-green-500/10 text-green-700' },
-    { id: 'lecture', name: 'Lecture biblique', icon: Book, color: 'bg-purple-500/10 text-purple-700' },
-    { id: 'communaute', name: 'Communauté', icon: Users, color: 'bg-orange-500/10 text-orange-700' },
-    { id: 'contact', name: 'Contact', icon: HelpCircle, color: 'bg-cyan-500/10 text-cyan-700' }
+    { id: 'general', name: t('faq.categories.general'), icon: HelpCircle, color: 'bg-blue-500/10 text-blue-700' },
+    { id: 'spiritualite', name: t('faq.categories.spiritualite'), icon: Heart, color: 'bg-red-500/10 text-red-700' },
+    { id: 'activites', name: t('faq.categories.activites'), icon: Calendar, color: 'bg-green-500/10 text-green-700' },
+    { id: 'lecture', name: t('faq.categories.lecture'), icon: Book, color: 'bg-purple-500/10 text-purple-700' },
+    { id: 'communaute', name: t('faq.categories.communaute'), icon: Users, color: 'bg-orange-500/10 text-orange-700' },
+    { id: 'contact', name: t('faq.categories.contact'), icon: HelpCircle, color: 'bg-cyan-500/10 text-cyan-700' }
   ];
 
   useEffect(() => {
@@ -73,17 +75,17 @@ const FAQ = () => {
           <div className="container mx-auto px-4">
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-4xl md:text-6xl font-playfair font-bold text-primary mb-4">
-                Questions Fréquentes
+                {t('faq.title')}
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed mb-6">
-                Trouvez des réponses à vos questions spirituelles et pratiques
+                {t('faq.subtitle')}
               </p>
               
               {/* Search Bar */}
               <div className="relative max-w-md mx-auto">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder="Rechercher une question..."
+                  placeholder={t('faq.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 h-12 bg-card/50 backdrop-blur-sm border-border/50"
@@ -113,7 +115,7 @@ const FAQ = () => {
                         {category.name}
                       </h2>
                       <Badge className={`ml-3 ${category.color}`}>
-                        {categoryFAQs.length} questions
+                        {categoryFAQs.length} {t('faq.questions')}
                       </Badge>
                     </div>
 
@@ -145,16 +147,16 @@ const FAQ = () => {
                 <div className="text-center py-16">
                   <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-xl font-playfair font-semibold text-primary mb-2">
-                    Aucune question trouvée
+                    {t('faq.noResults')}
                   </h3>
                   <p className="text-muted-foreground mb-6">
-                    Essayez avec d'autres mots-clés ou consultez toutes nos questions
+                    {t('faq.noResultsDesc')}
                   </p>
                   <button
                     onClick={() => setSearchTerm('')}
                     className="text-primary hover:underline"
                   >
-                    Voir toutes les questions
+                    {t('faq.seeAll')}
                   </button>
                 </div>
               )}
@@ -164,16 +166,16 @@ const FAQ = () => {
                 <div className="bg-card/50 backdrop-blur-sm rounded-2xl p-8 shadow-elegant border border-border/50">
                   <HelpCircle className="w-12 h-12 text-primary mx-auto mb-4" />
                   <h3 className="text-xl font-playfair font-semibold text-primary mb-3">
-                    Vous ne trouvez pas votre réponse ?
+                    {t('faq.notFound')}
                   </h3>
                   <p className="text-muted-foreground mb-6">
-                    Notre équipe est là pour vous accompagner dans votre cheminement spirituel
+                    {t('faq.notFoundDesc')}
                   </p>
                   <a
                     href="/contact"
                     className="inline-flex items-center px-6 py-3 bg-gradient-peace text-white rounded-lg hover:shadow-glow transition-all duration-300 divine-glow"
                   >
-                    Nous contacter
+                    {t('faq.contactUs')}
                   </a>
                 </div>
               </div>

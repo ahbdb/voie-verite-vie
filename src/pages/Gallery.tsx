@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { X, Image as ImageIcon, ChevronLeft, ChevronRight, Grid } from 'lucide-react';
@@ -23,6 +24,7 @@ interface GalleryGroup {
 }
 
 const Gallery = () => {
+  const { t } = useTranslation();
   const [selectedGroup, setSelectedGroup] = useState<GalleryGroup | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [galleryGroups, setGalleryGroups] = useState<GalleryGroup[]>([]);
@@ -123,10 +125,10 @@ const Gallery = () => {
           <div className="container mx-auto px-4">
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-4xl md:text-6xl font-playfair font-bold text-primary mb-4">
-                Notre Galerie
+                {t('gallery.title')}
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                Revivez nos moments de partage, de prière et de croissance spirituelle
+                {t('gallery.subtitle')}
               </p>
             </div>
           </div>
@@ -178,10 +180,10 @@ const Gallery = () => {
                 <div className="text-center py-16">
                   <ImageIcon className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-xl font-playfair font-semibold text-primary mb-2">
-                    Aucune image dans la galerie
+                    {t('gallery.noImages')}
                   </h3>
                   <p className="text-muted-foreground">
-                    Des photos seront bientôt disponibles
+                    {t('gallery.photosSoon')}
                   </p>
                 </div>
               )}
