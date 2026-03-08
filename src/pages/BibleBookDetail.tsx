@@ -108,8 +108,8 @@ const BibleBookDetail = () => {
             {selectedChapter ? (
               <BibleChapterViewer
                 bookId={book.fileName}
-                bookName={book.name}
-                abbreviation={book.abbreviation}
+                bookName={localizedName}
+                abbreviation={localizedAbbr}
                 chapterNumber={selectedChapter}
                 onBack={() => setSelectedChapter(null)}
               />
