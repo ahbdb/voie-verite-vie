@@ -161,7 +161,7 @@ const AdminUsers = () => {
         const insertRes = await supabase.from('user_roles').insert({ user_id: userId, role: newRole });
         if (insertRes.error) {
           console.error('❌ Insert role error:', insertRes.error);
-          toast.error('Erreur: ' + insertRes.error.message);
+          toast.error(t('admin.genericError') + ': ' + insertRes.error.message);
           return;
         }
       }
