@@ -331,7 +331,7 @@ const PrayerForum = () => {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg font-playfair text-primary flex items-center gap-2">
                       <Plus className="w-5 h-5" />
-                      Nouvelle intention
+                      {t('prayer.newIntention')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
