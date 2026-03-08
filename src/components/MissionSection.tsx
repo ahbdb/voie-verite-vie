@@ -1,5 +1,7 @@
+import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Cross, BookOpen, Users, Heart, Shield, Star } from 'lucide-react';
+import { AnimatedSection, staggerContainer, staggerItem, scaleOnHover } from '@/components/AnimatedSection';
 
 const MissionSection = () => {
   const missions = [
@@ -27,53 +29,43 @@ const MissionSection = () => {
   ];
 
   const objectives = [
-    {
-      icon: Shield,
-      title: "Refuge Spirituel",
-      description: "Offrir un sanctuaire sûr aux jeunes confrontés aux défis de la société moderne"
-    },
-    {
-      icon: BookOpen,
-      title: "Éducation Spirituelle",
-      description: "Éduquer et sensibiliser la jeunesse aux principes moraux de la foi chrétienne"
-    },
-    {
-      icon: Users,
-      title: "Formation de Leaders",
-      description: "Former des leaders chrétiens, agents de transformation dans leurs communautés"
-    },
-    {
-      icon: Star,
-      title: "Mode de Vie Équilibré",
-      description: "Promouvoir un mode de vie sain fondé sur les valeurs évangéliques"
-    }
+    { icon: Shield, title: "Refuge Spirituel", description: "Offrir un sanctuaire sûr aux jeunes confrontés aux défis de la société moderne" },
+    { icon: BookOpen, title: "Éducation Spirituelle", description: "Éduquer et sensibiliser la jeunesse aux principes moraux de la foi chrétienne" },
+    { icon: Users, title: "Formation de Leaders", description: "Former des leaders chrétiens, agents de transformation dans leurs communautés" },
+    { icon: Star, title: "Mode de Vie Équilibré", description: "Promouvoir un mode de vie sain fondé sur les valeurs évangéliques" }
   ];
 
   return (
     <section className="py-20 bg-gradient-divine">
       <div className="container mx-auto px-4">
-        {/* En-tête de section */}
-        <div className="text-center mb-16 fade-in-up">
+        <AnimatedSection className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-playfair font-bold text-foreground mb-6">
             Notre Mission
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Fondée sur les principes intemporels de la foi chrétienne, 3V se dresse comme 
+            Fondée sur les principes intemporels de la foi chrétienne, 3V se dresse comme
             un rempart face aux tempêtes de la dépravation morale qui assaillent notre société.
           </p>
-        </div>
+        </AnimatedSection>
 
-        {/* Les trois piliers : Voie, Vérité, Vie */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-          {missions.map((mission, index) => {
+        {/* Three pillars */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-80px' }}
+        >
+          {missions.map((mission) => {
             const Icon = mission.icon;
             return (
-              <div
+              <motion.div
                 key={mission.title}
-                className="fade-in-up spiritual-card text-center group hover:scale-105 transition-all duration-500"
-                style={{ animationDelay: `${index * 0.2}s` }}
+                variants={staggerItem}
+                {...scaleOnHover}
+                className="spiritual-card text-center group"
               >
-                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-white to-gray-50 mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg dark:bg-gradient-to-br dark:from-slate-800 dark:to-slate-700`}>
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-white to-gray-50 mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg dark:from-slate-800 dark:to-slate-700">
                   <Icon className={`w-8 h-8 ${mission.color} dark:text-white`} />
                 </div>
                 <h3 className="text-2xl font-playfair font-semibold mb-4 text-foreground">
@@ -85,69 +77,79 @@ const MissionSection = () => {
                 <div className={`italic text-sm ${mission.color} font-medium dark:text-white`}>
                   "{mission.verse}"
                 </div>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
 
-        {/* Séparateur spirituel */}
-        <div className="flex items-center justify-center mb-16">
-          <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent w-full max-w-md"></div>
-          <div className="mx-6 w-8 h-8 bg-gradient-peace rounded-full flex items-center justify-center">
+        {/* Separator */}
+        <AnimatedSection className="flex items-center justify-center mb-16">
+          <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent w-full max-w-md" />
+          <motion.div
+            className="mx-6 w-8 h-8 bg-gradient-peace rounded-full flex items-center justify-center"
+            animate={{ rotate: [0, 360] }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+          >
             <Cross className="w-4 h-4 text-white" />
-          </div>
-          <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent w-full max-w-md"></div>
-        </div>
+          </motion.div>
+          <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent w-full max-w-md" />
+        </AnimatedSection>
 
-        {/* Nos objectifs */}
-        <div className="text-center mb-12">
+        {/* Objectives */}
+        <AnimatedSection className="text-center mb-12">
           <h3 className="text-3xl font-playfair font-bold text-foreground mb-4">
             Nos Objectifs
           </h3>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Un engagement concret pour la transformation spirituelle et morale de la jeunesse
           </p>
-        </div>
+        </AnimatedSection>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {objectives.map((objective, index) => {
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-60px' }}
+        >
+          {objectives.map((objective) => {
             const Icon = objective.icon;
             return (
-              <Card
-                key={objective.title}
-                className="fade-in-up border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-2"
-                style={{ animationDelay: `${index * 0.15}s` }}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg mb-4">
-                    <Icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <h4 className="font-semibold mb-3 text-foreground">
-                    {objective.title}
-                  </h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {objective.description}
-                  </p>
-                </CardContent>
-              </Card>
+              <motion.div key={objective.title} variants={staggerItem}>
+                <motion.div whileHover={{ y: -6, boxShadow: '0 15px 40px -15px hsl(201 84% 65% / 0.3)' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
+                  <Card className="border-border/50 transition-all duration-300">
+                    <CardContent className="p-6 text-center">
+                      <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg mb-4">
+                        <Icon className="w-6 h-6 text-primary" />
+                      </div>
+                      <h4 className="font-semibold mb-3 text-foreground">{objective.title}</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{objective.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
 
-        {/* Citation inspirante */}
-        <div className="mt-16 text-center">
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 max-w-4xl mx-auto shadow-lg dark:bg-slate-900/80 dark:text-slate-100">
+        {/* Quote */}
+        <AnimatedSection delay={0.2} className="mt-16 text-center">
+          <motion.div
+            className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 max-w-4xl mx-auto shadow-lg dark:bg-slate-900/80 dark:text-slate-100"
+            whileHover={{ boxShadow: '0 20px 50px -15px hsl(201 84% 65% / 0.25)' }}
+            transition={{ duration: 0.4 }}
+          >
             <blockquote className="text-xl md:text-2xl font-playfair text-primary mb-4 leading-relaxed italic">
-              "Voie, Vérité, Vie se tient comme un phare dans les ténèbres, 
-              offrant un refuge spirituel et une éducation morale pour aider 
-              les jeunes à résister aux influences délétères et à embrasser 
+              "Voie, Vérité, Vie se tient comme un phare dans les ténèbres,
+              offrant un refuge spirituel et une éducation morale pour aider
+              les jeunes à résister aux influences délétères et à embrasser
               la vérité de l'Évangile."
             </blockquote>
             <cite className="text-muted-foreground font-medium">
               — Charte de l'Association 3V
             </cite>
-          </div>
-        </div>
+          </motion.div>
+        </AnimatedSection>
       </div>
     </section>
   );
