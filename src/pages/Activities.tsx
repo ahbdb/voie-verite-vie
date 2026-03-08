@@ -296,7 +296,7 @@ const Activities = () => {
               {loading ? (
                 <div className="text-center py-16">
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-                  <p className="text-muted-foreground mt-4">Chargement des activités...</p>
+                   <p className="text-muted-foreground mt-4">{t('activities.loadingActivities')}</p>
                 </div>
               ) : (
                 <Tabs defaultValue="upcoming" className="w-full">
