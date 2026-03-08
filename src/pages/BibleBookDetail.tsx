@@ -175,7 +175,7 @@ const BibleBookDetail = () => {
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
                       <p className="text-muted-foreground">
-                        {t('bibleBook.bookOrder', { name: book.name, order: book.order })}
+                        {t('bibleBook.bookOrder', { name: localizedName, order: book.order })}
                       </p>
                       {book.apocrypha && (
                         <p className="text-amber-600 bg-amber-50 p-2 rounded">
