@@ -46,6 +46,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { NotificationBell } from './NotificationBell';
 import LanguageSelector from './LanguageSelector';
 import logo3v from '@/assets/logo-3v.png';
+import AnimatedLogo from './AnimatedLogo';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
