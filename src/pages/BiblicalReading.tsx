@@ -199,7 +199,7 @@ const BiblicalReading = () => {
     await loadUserProgress();
     setQuizReading(reading);
     setShowQuiz(true);
-    toast({ title: "Lecture marquée comme complétée !" });
+    toast({ title: t('biblicalReading.readingMarkedCompleted') });
   };
 
   const filteredReadings = useMemo(() => {
