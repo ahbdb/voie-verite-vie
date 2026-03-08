@@ -27,6 +27,7 @@ export const BibleChapterViewer = ({
   const { t, i18n } = useTranslation();
   const [verses, setVerses] = useState<BibleVerse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
