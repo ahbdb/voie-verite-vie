@@ -268,7 +268,7 @@ const AdminUsers = () => {
       <Navigation />
       <main className="flex-1 container mx-auto px-4 py-8 pt-24">
         <Button variant="ghost" onClick={() => navigate('/admin')} className="mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" /> Retour
+          <ArrowLeft className="h-4 w-4 mr-2" /> {t('admin.back')}
         </Button>
 
         <div className="mb-6">
