@@ -672,7 +672,7 @@ const Careme2026 = memo(() => {
                     onClick={() => setSelectedDay(null)} 
                     variant="outline"
                   >
-                    Fermer
+                    {t('careme.close')}
                   </Button>
                 </div>
               </div>
