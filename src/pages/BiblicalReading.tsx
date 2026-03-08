@@ -300,12 +300,8 @@ const BiblicalReading = () => {
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-6">
-                  <Button 
-                    variant={selectedMonth === 'all' ? 'default' : 'outline'} 
-                    size="sm"
-                    onClick={() => setSelectedMonth('all')}
-                  >
-                    Tous
+                  <Button variant={selectedMonth === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setSelectedMonth('all')}>
+                    {t('biblicalReading.all')}
                   </Button>
                   {monthsOrder.map((month) => {
                     const [m, y] = month.key.split('-').map(Number);
