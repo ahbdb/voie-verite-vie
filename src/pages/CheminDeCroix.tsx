@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChevronRight, ChevronLeft, Cross, Share2, Printer, BookOpen } from 'lucide-react';
-import { cheminDeCroixData } from '@/data/chemin-de-croix-data';
+import { getCheminDeCroixData } from '@/data/chemin-de-croix-data';
 import { supabase } from '@/integrations/supabase/client';
 import { generateShareImage, shareImage } from '@/lib/share-utils';
 import { useToast } from '@/components/ui/use-toast';
@@ -20,10 +20,11 @@ interface Station {
   prayer: string;
 }
 
-const mergeCheminContent = (rawContent: any) => ({ ...cheminDeCroixData, ...rawContent, intro: { ...cheminDeCroixData.intro, ...(rawContent?.intro || {}) }, conclusion: { ...cheminDeCroixData.conclusion, ...(rawContent?.conclusion || {}) }, stations: Array.isArray(rawContent?.stations) && rawContent.stations.length > 0 ? rawContent.stations : cheminDeCroixData.stations, adoration: rawContent?.adoration || cheminDeCroixData.adoration });
+const mergeCheminContent = (rawContent: any, baseData: any) => ({ ...baseData, ...rawContent, intro: { ...baseData.intro, ...(rawContent?.intro || {}) }, conclusion: { ...baseData.conclusion, ...(rawContent?.conclusion || {}) }, stations: Array.isArray(rawContent?.stations) && rawContent.stations.length > 0 ? rawContent.stations : baseData.stations, adoration: rawContent?.adoration || baseData.adoration });
 
 const CheminDeCroix = memo(() => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const cheminDeCroixData = getCheminDeCroixData(i18n.language);
   const [selectedStation, setSelectedStation] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState('intro');
   const [sharingProgress, setSharingProgress] = useState<{ current: number, total: number } | null>(null);
@@ -132,12 +133,12 @@ const CheminDeCroix = memo(() => {
         const { data, error } = await supabase.from('page_content').select('*').eq('page_key', 'chemin-de-croix').single();
         if (error) { console.warn('⚠️ [CheminDeCroix] Error loading content:', error.message); return; }
         const content = data.content as { stations?: Station[] } | null;
-        if (content) setContentData(mergeCheminContent(content));
+        if (content) setContentData(mergeCheminContent(content, cheminDeCroixData));
       } catch (err) { console.error('❌ [CheminDeCroix] Failed to load content:', err); }
     };
     void loadContent();
     if (!subscriptionRef.current) {
-      subscriptionRef.current = supabase.channel('chemin_de_croix_updates').on('postgres_changes', { event: '*', schema: 'public', table: 'page_content', filter: `page_key=eq.chemin-de-croix` }, (payload: any) => { if (payload.new?.content) { setContentData(mergeCheminContent(payload.new.content)); } else { void loadContent(); } }).subscribe();
+      subscriptionRef.current = supabase.channel('chemin_de_croix_updates').on('postgres_changes', { event: '*', schema: 'public', table: 'page_content', filter: `page_key=eq.chemin-de-croix` }, (payload: any) => { if (payload.new?.content) { setContentData(mergeCheminContent(payload.new.content, cheminDeCroixData)); } else { void loadContent(); } }).subscribe();
     }
     return () => { subscriptionRef.current?.unsubscribe(); subscriptionRef.current = null; };
   }, []);
@@ -148,7 +149,7 @@ const CheminDeCroix = memo(() => {
         const loadContent = async () => {
           try {
             const { data, error } = await supabase.from('page_content').select('*').eq('page_key', 'chemin-de-croix').single();
-            if (data?.content && !error) setContentData(mergeCheminContent(data.content));
+            if (data?.content && !error) setContentData(mergeCheminContent(data.content, cheminDeCroixData));
           } catch (err) { console.warn('⚠️ [CheminDeCroix] Reload failed:', err); }
         };
         loadContent();
