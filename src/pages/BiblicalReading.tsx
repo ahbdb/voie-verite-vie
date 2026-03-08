@@ -283,11 +283,11 @@ const BiblicalReading = () => {
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="program" className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  <span>Programme 354j</span>
+                  <span>{t('biblicalReading.programTab')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="books" className="flex items-center gap-2">
                   <Library className="w-4 h-4" />
-                  <span>73 Livres</span>
+                  <span>{t('biblicalReading.booksTab')}</span>
                 </TabsTrigger>
               </TabsList>
 
