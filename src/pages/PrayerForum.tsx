@@ -383,7 +383,7 @@ const PrayerForum = () => {
                         <div className="text-2xl font-bold text-primary">
                           {requests.reduce((sum, r) => sum + r.prayer_count, 0)}
                         </div>
-                        <div className="text-xs text-muted-foreground">Prières</div>
+                        <div className="text-xs text-muted-foreground">{t('prayer.prayers')}</div>
                       </div>
                     </div>
                   </CardContent>
