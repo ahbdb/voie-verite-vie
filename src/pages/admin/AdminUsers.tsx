@@ -152,7 +152,7 @@ const AdminUsers = () => {
         const deleteRes = await supabase.from('user_roles').delete().eq('user_id', userId);
         if (deleteRes.error) {
           console.error('❌ Delete role error:', deleteRes.error);
-          toast.error('Erreur: ' + deleteRes.error.message);
+          toast.error(t('admin.genericError') + ': ' + deleteRes.error.message);
           return;
         }
       }
