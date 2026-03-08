@@ -404,11 +404,11 @@ const AdminUsers = () => {
           </DialogHeader>
 
           <div className="space-y-6 py-4">
-            {['Contenu', 'Utilisateurs', 'Communications', 'Analytics'].map(category => (
-              <div key={category}>
-                <h3 className="font-semibold mb-3 text-sm">{category}</h3>
+            {Array.from(new Set(AVAILABLE_PERMISSIONS.map(p => p.categoryKey))).map(categoryKey => (
+              <div key={categoryKey}>
+                <h3 className="font-semibold mb-3 text-sm">{t(categoryKey)}</h3>
                 <div className="space-y-2 pl-4">
-                  {AVAILABLE_PERMISSIONS.filter(p => p.category === category).map(permission => (
+                  {AVAILABLE_PERMISSIONS.filter(p => p.categoryKey === categoryKey).map(permission => (
                     <div key={permission.id} className="flex items-center gap-2">
                       <Checkbox
                         id={permission.id}
