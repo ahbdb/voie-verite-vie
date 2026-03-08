@@ -1,10 +1,10 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Calendar, BookOpen, CheckCircle, Brain, Library } from 'lucide-react';
@@ -16,6 +16,7 @@ import { BibleBookSelector } from '@/components/BibleBookSelector';
 import DayReadingViewer from '@/components/DayReadingViewer';
 import { logger } from '@/lib/logger';
 import { translateBookName } from '@/lib/bible-utils';
+import bibleAltar from '@/assets/bible-altar.jpg';
 
 interface Reading {
   id: string;
@@ -61,30 +62,19 @@ const BiblicalReading = () => {
       
       if (error) {
         logger.error('Erreur Supabase: ', {}, error);
-        // Essayer de charger depuis le cache si la requête échoue
         const cached = localStorage.getItem('biblical_readings_cache');
         if (cached) {
-          try {
-            setAllReadings(JSON.parse(cached));
-          } catch (e) {
-            setAllReadings([]);
-          }
+          try { setAllReadings(JSON.parse(cached)); } catch (e) { setAllReadings([]); }
         }
       } else if (data) {
         setAllReadings(data);
-        // Mettre en cache pour les chargements futurs
         localStorage.setItem('biblical_readings_cache', JSON.stringify(data));
       }
     } catch (error) {
       logger.error('Erreur chargement lectures', {}, error instanceof Error ? error : new Error(String(error)));
-      // Fallback au cache
       const cached = localStorage.getItem('biblical_readings_cache');
       if (cached) {
-        try {
-          setAllReadings(JSON.parse(cached));
-        } catch (e) {
-          setAllReadings([]);
-        }
+        try { setAllReadings(JSON.parse(cached)); } catch (e) { setAllReadings([]); }
       }
     } finally {
       setLoading(false);
@@ -101,30 +91,18 @@ const BiblicalReading = () => {
   }, [user]);
 
   useEffect(() => {
-    // Charger depuis cache d'abord pour une expérience rapide
     const cached = localStorage.getItem('biblical_readings_cache');
     if (cached) {
-      try {
-        setAllReadings(JSON.parse(cached));
-        setLoading(false);
-      } catch (e) {
-        setLoading(true);
-      }
-    } else {
-      setLoading(true);
-    }
-    
-    // Puis charger les données fraîches en arrière-plan
+      try { setAllReadings(JSON.parse(cached)); setLoading(false); } catch (e) { setLoading(true); }
+    } else { setLoading(true); }
     loadAllReadings();
     if (user) loadUserProgress();
   }, [user, loadAllReadings, loadUserProgress]);
 
   const toggleReadingComplete = async (reading: Reading) => {
     if (!user) return navigate('/auth');
-    
     const existing = userProgress.find(p => p.reading_id === reading.id);
     const wasCompleted = existing?.completed;
-    
     try {
       if (existing) {
         await supabase.from('user_reading_progress')
@@ -134,69 +112,37 @@ const BiblicalReading = () => {
         await supabase.from('user_reading_progress')
           .insert({ user_id: user.id, reading_id: reading.id, completed: true, completed_at: new Date().toISOString() });
       }
-      
       await loadUserProgress();
-      
-      // Si on vient de marquer comme lu, proposer le quiz
       if (!wasCompleted) {
         setQuizReading(reading);
         setShowQuiz(true);
         toast({ title: t('biblicalReading.readingCompleted') });
       }
     } catch (error) {
-      logger.error('Erreur lors de la mise à jour du statut de lecture', 
-        { readingId: reading.id, userId: user.id }, 
-        error instanceof Error ? error : new Error(String(error))
-      );
+      logger.error('Erreur lors de la mise à jour du statut de lecture', { readingId: reading.id, userId: user.id }, error instanceof Error ? error : new Error(String(error)));
       toast({ title: t('common.error'), description: t('biblicalReading.updateError'), variant: "destructive" });
     }
   };
 
-  const openDayReading = (reading: Reading) => {
-    setSelectedDayReading(reading);
-  };
-
-  const closeDayReading = () => {
-    setSelectedDayReading(null);
-  };
-
-  const openQuizForReading = (reading: Reading) => {
-    setQuizReading(reading);
-    setShowQuiz(true);
-  };
+  const openDayReading = (reading: Reading) => setSelectedDayReading(reading);
+  const closeDayReading = () => setSelectedDayReading(null);
+  const openQuizForReading = (reading: Reading) => { setQuizReading(reading); setShowQuiz(true); };
 
   const toggleGroupComplete = async (reading: Reading) => {
     if (!user) return navigate('/auth');
-    
-    // Marquer cette lecture comme complétée
     try {
       const existing = userProgress.find(p => p.reading_id === reading.id);
-      
       if (existing) {
         if (!existing.completed) {
-          // Marquer comme complété
-          await supabase.from('user_reading_progress')
-            .update({ completed: true, completed_at: new Date().toISOString() })
-            .eq('user_id', user.id).eq('reading_id', reading.id);
+          await supabase.from('user_reading_progress').update({ completed: true, completed_at: new Date().toISOString() }).eq('user_id', user.id).eq('reading_id', reading.id);
         }
       } else {
-        // Créer une entrée
-        await supabase.from('user_reading_progress')
-          .insert({ 
-            user_id: user.id, 
-            reading_id: reading.id, 
-            completed: true, 
-            completed_at: new Date().toISOString() 
-          });
+        await supabase.from('user_reading_progress').insert({ user_id: user.id, reading_id: reading.id, completed: true, completed_at: new Date().toISOString() });
       }
     } catch (error) {
-      logger.error('Erreur lors de la mise à jour du statut de lecture', 
-        { readingId: reading.id, userId: user.id }, 
-        error instanceof Error ? error : new Error(String(error))
-      );
+      logger.error('Erreur lors de la mise à jour du statut de lecture', { readingId: reading.id, userId: user.id }, error instanceof Error ? error : new Error(String(error)));
       toast({ title: t('common.error'), description: t('biblicalReading.updateError'), variant: "destructive" });
     }
-    
     await loadUserProgress();
     setQuizReading(reading);
     setShowQuiz(true);
@@ -205,19 +151,16 @@ const BiblicalReading = () => {
 
   const filteredReadings = useMemo(() => {
     let filtered = allReadings;
-    
     if (selectedMonth !== 'all') {
       const [month, year] = selectedMonth.split('-').map(Number);
       filtered = filtered.filter(r => r.month === month && r.year === year);
     }
-    
     if (selectedTestament !== 'all') {
       const ntBooks = ['Matthieu', 'Marc', 'Luc', 'Jean', 'Actes', 'Romains', 'Corinthiens', 'Galates', 'Éphésiens', 'Philippiens', 'Colossiens', 'Thessaloniciens', 'Timothée', 'Tite', 'Philémon', 'Hébreux', 'Jacques', 'Pierre', 'Jude', 'Apocalypse'];
-      filtered = selectedTestament === 'old' 
+      filtered = selectedTestament === 'old'
         ? filtered.filter(r => !ntBooks.some(nt => r.books.includes(nt)))
         : filtered.filter(r => ntBooks.some(nt => r.books.includes(nt)));
     }
-    
     return filtered;
   }, [allReadings, selectedMonth, selectedTestament]);
 
@@ -236,23 +179,22 @@ const BiblicalReading = () => {
       return { key: `${m}-${y}`, name: `${label.charAt(0).toUpperCase() + label.slice(1)} ${y}` };
     });
   }, [i18n.language]);
-  
+
   const completedCount = useMemo(() => userProgress.filter(p => p.completed).length, [userProgress]);
   const progressPercentage = useMemo(() => Math.round((completedCount / 358) * 100), [completedCount]);
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-2"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-2" />
         <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
       </div>
     </div>
   );
 
-  // Afficher la lecture du jour si sélectionnée
   if (selectedDayReading) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-background">
         <Navigation />
         <main className="pt-16 pb-8">
           <section className="py-8">
@@ -266,19 +208,26 @@ const BiblicalReading = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Navigation />
       <main className="pt-16">
-        <section className="py-6 md:py-10 bg-gradient-subtle">
-          <div className="container mx-auto px-4">
-            <div className="text-center max-w-4xl mx-auto">
-              <h1 className="text-2xl md:text-5xl font-playfair font-bold text-primary mb-3">{t('biblicalReading.title')}</h1>
-              <p className="text-base md:text-lg text-muted-foreground">{t('biblicalReading.subtitle')}</p>
-            </div>
-          </div>
+        {/* Cathedral Hero */}
+        <section className="relative h-[45vh] min-h-[320px] flex items-center justify-center overflow-hidden">
+          <img src={bibleAltar} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[hsl(220,55%,5%,0.7)] via-[hsl(220,55%,5%,0.5)] to-[hsl(220,55%,5%,0.8)]" />
+          <motion.div
+            className="relative z-10 text-center px-4 max-w-3xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <BookOpen className="w-10 h-10 text-cathedral-gold mx-auto mb-4" />
+            <h1 className="text-3xl md:text-5xl font-cinzel font-bold text-white mb-3">{t('biblicalReading.title')}</h1>
+            <p className="text-white/60 text-sm md:text-base font-inter">{t('biblicalReading.subtitle')}</p>
+          </motion.div>
         </section>
 
-        <section className="py-4 md:py-6">
+        <section className="py-6 md:py-10">
           <div className="container mx-auto px-4 max-w-6xl">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
@@ -293,35 +242,41 @@ const BiblicalReading = () => {
               </TabsList>
 
               <TabsContent value="program" className="space-y-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">{t('biblicalReading.progressLabel')}</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{progressPercentage}%</div></CardContent></Card>
-                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">{t('biblicalReading.completedLabel')}</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{completedCount}/358</div></CardContent></Card>
-                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">{t('biblicalReading.displayedLabel')}</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{filteredReadings.length}</div></CardContent></Card>
-                  <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-xs">{t('biblicalReading.remainingLabel')}</CardTitle></CardHeader><CardContent className="pb-3"><div className="text-lg md:text-xl font-bold text-primary">{358 - completedCount}</div></CardContent></Card>
+                {/* Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { label: t('biblicalReading.progressLabel'), value: `${progressPercentage}%` },
+                    { label: t('biblicalReading.completedLabel'), value: `${completedCount}/358` },
+                    { label: t('biblicalReading.displayedLabel'), value: `${filteredReadings.length}` },
+                    { label: t('biblicalReading.remainingLabel'), value: `${358 - completedCount}` },
+                  ].map((stat) => (
+                    <div key={stat.label} className="rounded-xl border border-border bg-card p-4">
+                      <p className="text-xs text-muted-foreground mb-1">{stat.label}</p>
+                      <p className="text-xl font-cinzel font-bold text-primary">{stat.value}</p>
+                    </div>
+                  ))}
                 </div>
 
-                <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-6">
+                {/* Month filter */}
+                <div className="flex flex-wrap justify-center gap-2 md:gap-3">
                   <Button variant={selectedMonth === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setSelectedMonth('all')}>
                     {t('biblicalReading.all')}
                   </Button>
                   {monthsOrder.map((month) => {
                     const [m, y] = month.key.split('-').map(Number);
                     const monthReadings = allReadings.filter(r => r.month === m && r.year === y);
-                    const readingsInMonth = monthReadings.length;
-                    if (readingsInMonth === 0) return null;
-                    const completedInMonth = monthReadings.filter(r => 
-                      userProgress.some(p => p.reading_id === r.id && p.completed)
-                    ).length;
-                    const monthProgress = Math.round((completedInMonth / readingsInMonth) * 100);
+                    if (monthReadings.length === 0) return null;
+                    const completedInMonth = monthReadings.filter(r => userProgress.some(p => p.reading_id === r.id && p.completed)).length;
+                    const monthProgress = Math.round((completedInMonth / monthReadings.length) * 100);
                     return (
                       <div key={month.key} className="flex flex-col items-center gap-1">
-                        <Button 
-                          variant={selectedMonth === month.key ? 'default' : 'outline'} 
+                        <Button
+                          variant={selectedMonth === month.key ? 'default' : 'outline'}
                           size="sm"
                           onClick={() => setSelectedMonth(month.key)}
                           className="w-full"
                         >
-                          {month.name} <Badge variant="secondary" className="ml-1 text-xs">{completedInMonth}/{readingsInMonth}</Badge>
+                          {month.name} <Badge variant="secondary" className="ml-1 text-xs">{completedInMonth}/{monthReadings.length}</Badge>
                         </Button>
                         <Progress value={monthProgress} className="w-full h-1.5" />
                       </div>
@@ -329,7 +284,8 @@ const BiblicalReading = () => {
                   })}
                 </div>
 
-                <Tabs value={selectedTestament} onValueChange={setSelectedTestament} className="mb-6">
+                {/* Testament filter */}
+                <Tabs value={selectedTestament} onValueChange={setSelectedTestament} className="mb-4">
                   <TabsList className="grid w-full max-w-xs mx-auto grid-cols-3">
                     <TabsTrigger value="all">{t('biblicalReading.all')}</TabsTrigger>
                     <TabsTrigger value="old">{t('biblicalReading.oldTestament')}</TabsTrigger>
@@ -337,98 +293,82 @@ const BiblicalReading = () => {
                   </TabsList>
                 </Tabs>
 
-                {/* Afficher chaque jour comme une carte séparée */}
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                {/* Reading cards */}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredReadings.map((reading) => {
                     const isCompleted = userProgress.some(p => p.reading_id === reading.id && p.completed);
-
                     return (
-                      <Card key={reading.id} className={isCompleted ? 'ring-2 ring-primary/20' : ''}>
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <Calendar className="w-4 h-4 text-primary" />
-                              <span className="text-sm font-medium text-primary">
-                                {t('biblicalReading.day')} {reading.day_number}
-                              </span>
+                      <motion.div
+                        key={reading.id}
+                        className={`rounded-xl border bg-card p-5 transition-all hover:shadow-elegant ${isCompleted ? 'border-primary/30 bg-primary/5' : 'border-border'}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-primary" />
+                            <span className="text-sm font-medium text-primary">{t('biblicalReading.day')} {reading.day_number}</span>
+                          </div>
+                          {isCompleted && (
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => openQuizForReading(reading)}>
+                              <Brain className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                        <h3 className="text-base font-playfair font-semibold text-foreground mb-2">
+                          {new Date(reading.date).toLocaleDateString(i18n.language === 'it' ? 'it-IT' : i18n.language === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long' })}
+                        </h3>
+                        <div className="space-y-2">
+                          <Button
+                            variant="ghost"
+                            className="p-0 h-auto font-semibold text-primary hover:text-primary/80 justify-start w-full text-left break-words"
+                            onClick={() => openDayReading(reading)}
+                          >
+                            {translateBookName(reading.books, i18n.language)} {reading.chapters.includes('-')
+                              ? `${reading.chapters.split('-')[0]} ${t('biblicalReading.to', { defaultValue: 'à' })} ${reading.chapters.split('-')[1]}`
+                              : reading.chapters}
+                          </Button>
+                          <p className="text-xs text-muted-foreground">
+                            {reading.chapters_count} {reading.chapters_count > 1 ? t('biblicalReading.chaptersPlural') : t('biblicalReading.chapters')}
+                          </p>
+                          {reading.comment && (
+                            <div className="bg-primary/5 rounded-lg p-3">
+                              <p className="text-xs italic text-muted-foreground">{reading.comment}</p>
                             </div>
-                            {isCompleted && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 px-2"
-                                onClick={() => openQuizForReading(reading)}
-                              >
-                                <Brain className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
-                          <CardTitle className="text-base md:text-lg font-playfair">
-                            {new Date(reading.date).toLocaleDateString(i18n.language === 'it' ? 'it-IT' : i18n.language === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long' })}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-3">
-                            <Button
-                              variant="ghost"
-                              className="p-0 h-auto font-semibold text-primary hover:text-primary/80 justify-start w-full text-left break-words"
-                              onClick={() => openDayReading(reading)}
-                            >
-                              {translateBookName(reading.books, i18n.language)} {reading.chapters.includes('-') 
-                                ? `${reading.chapters.split('-')[0]} ${t('biblicalReading.to', { defaultValue: 'à' })} ${reading.chapters.split('-')[1]}`
-                                : reading.chapters}
-                            </Button>
-                            <p className="text-xs md:text-sm text-muted-foreground">
-                              {reading.chapters_count} {reading.chapters_count > 1 ? t('biblicalReading.chaptersPlural') : t('biblicalReading.chapters')}
-                            </p>
-                            {reading.comment && (
-                              <div className="bg-primary/5 rounded-lg p-3">
-                                <p className="text-xs italic text-muted-foreground">{reading.comment}</p>
-                              </div>
-                            )}
-                            <Button 
-                              size="sm" 
-                              variant={isCompleted ? "default" : "outline"} 
-                              className="w-full text-xs" 
-                              onClick={() => toggleReadingComplete(reading)}
-                            >
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              {isCompleted ? t('biblicalReading.completed') : t('biblicalReading.markAsRead')}
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
+                          )}
+                          <Button
+                            size="sm"
+                            variant={isCompleted ? "default" : "outline"}
+                            className="w-full text-xs"
+                            onClick={() => toggleReadingComplete(reading)}
+                          >
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            {isCompleted ? t('biblicalReading.completed') : t('biblicalReading.markAsRead')}
+                          </Button>
+                        </div>
+                      </motion.div>
                     );
                   })}
                 </div>
               </TabsContent>
 
               <TabsContent value="books" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BookOpen className="w-5 h-5" />
-                      {t('biblicalReading.exploreBooks')}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      {t('biblicalReading.exploreBooksDesc')}
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <BibleBookSelector />
-                  </CardContent>
-                </Card>
+                <div className="rounded-xl border border-border bg-card p-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <BookOpen className="w-5 h-5 text-primary" />
+                    <h3 className="text-lg font-playfair font-bold">{t('biblicalReading.exploreBooks')}</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">{t('biblicalReading.exploreBooksDesc')}</p>
+                  <BibleBookSelector />
+                </div>
               </TabsContent>
             </Tabs>
           </div>
         </section>
       </main>
 
-      <QuizModal
-        isOpen={showQuiz}
-        onClose={() => setShowQuiz(false)}
-        reading={quizReading}
-      />
+      <QuizModal isOpen={showQuiz} onClose={() => setShowQuiz(false)} reading={quizReading} />
     </div>
   );
 };

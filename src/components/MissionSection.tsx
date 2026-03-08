@@ -1,12 +1,15 @@
-import { motion } from 'framer-motion';
+import { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { AnimatedSection } from '@/components/AnimatedSection';
 import missionVoie from '@/assets/mission-voie.jpg';
 import missionVerite from '@/assets/mission-verite.jpg';
 import missionVie from '@/assets/mission-vie.jpg';
 
 const MissionSection = () => {
   const { t } = useTranslation();
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'end start'] });
+  const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '15%']);
 
   const missions = [
     {
@@ -16,6 +19,7 @@ const MissionSection = () => {
       ref: 'Jean 14:6',
       description: t('mission.wayDescription'),
       image: missionVoie,
+      accent: 'cathedral-gold',
     },
     {
       title: t('mission.truth'),
@@ -24,6 +28,7 @@ const MissionSection = () => {
       ref: 'Jean 8:32',
       description: t('mission.truthDescription'),
       image: missionVerite,
+      accent: 'stained-blue',
     },
     {
       title: t('mission.life'),
@@ -32,58 +37,77 @@ const MissionSection = () => {
       ref: 'Jean 10:10',
       description: t('mission.lifeDescription'),
       image: missionVie,
+      accent: 'stained-emerald',
     },
   ];
 
   return (
-    <section className="py-12 bg-background">
+    <section ref={sectionRef} className="relative py-20 overflow-hidden bg-background">
+      {/* Decorative gold line */}
+      <div className="cathedral-line w-full mb-16" />
+      
       <div className="container mx-auto px-4">
-        <AnimatedSection className="text-center mb-8">
-          <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-2">{t('mission.ourMission')}</p>
-          <h2 className="text-3xl md:text-4xl font-playfair font-bold text-foreground mb-2">
+        <motion.div
+          className="text-center mb-14"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <p className="text-xs tracking-[0.4em] uppercase text-muted-foreground mb-3 font-inter">{t('mission.ourMission')}</p>
+          <h2 className="text-4xl md:text-5xl font-cinzel font-bold text-foreground mb-4">
             {t('mission.threePillars')}
           </h2>
-          <div className="w-12 h-0.5 bg-accent mx-auto" />
-        </AnimatedSection>
+          <div className="cathedral-line w-20 mx-auto" />
+        </motion.div>
 
-        <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-3 md:overflow-visible md:pb-0">
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
           {missions.map((mission, index) => (
             <motion.div
               key={mission.title}
-              className="min-w-[75vw] sm:min-w-[55vw] md:min-w-0 snap-center"
-              initial={{ opacity: 0, x: 40 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              transition={{ duration: 0.6, delay: index * 0.15 }}
             >
               <motion.div
-                className="group relative rounded-xl overflow-hidden h-[380px]"
-                whileHover={{ y: -4 }}
-                transition={{ type: 'spring' as const, stiffness: 300, damping: 25 }}
+                className="group relative rounded-2xl overflow-hidden h-[440px] shadow-cathedral"
+                whileHover={{ y: -8 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
               >
                 <motion.img
                   src={mission.image}
                   alt={mission.title}
                   className="w-full h-full object-cover"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.5 }}
+                  whileHover={{ scale: 1.08 }}
+                  transition={{ duration: 0.7 }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[hsl(220,55%,5%,0.9)] via-[hsl(220,55%,5%,0.3)] to-transparent" />
+                
+                {/* Gold accent line at top */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cathedral-gold to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
-                  <p className="text-[10px] tracking-[0.25em] uppercase text-white/50 mb-1">{mission.subtitle}</p>
-                  <h3 className="text-2xl font-playfair font-bold mb-2">{mission.title}</h3>
-                  <p className="text-white/70 text-sm leading-relaxed mb-2">{mission.description}</p>
-                  <p className="text-accent text-sm italic font-playfair">
-                    {mission.verse}
-                    <span className="block text-white/40 text-xs mt-0.5 not-italic font-inter">— {mission.ref}</span>
-                  </p>
+                <div className="absolute inset-0 flex flex-col justify-end p-7">
+                  <p className="text-[10px] tracking-[0.3em] uppercase text-cathedral-gold/70 mb-2 font-inter">{mission.subtitle}</p>
+                  <h3 className="text-3xl font-cinzel font-bold text-white mb-3">{mission.title}</h3>
+                  <p className="text-white/65 text-sm leading-relaxed mb-3 font-inter">{mission.description}</p>
+                  <div className="border-t border-white/10 pt-3">
+                    <p className="text-cathedral-gold/80 text-sm italic font-playfair">
+                      {mission.verse}
+                      <span className="block text-white/30 text-xs mt-1 not-italic font-inter">— {mission.ref}</span>
+                    </p>
+                  </div>
                 </div>
               </motion.div>
             </motion.div>
           ))}
         </div>
       </div>
+      
+      {/* Bottom decorative line */}
+      <div className="cathedral-line w-full mt-20" />
     </section>
   );
 };

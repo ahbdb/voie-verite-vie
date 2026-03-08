@@ -7,8 +7,8 @@ import { ArrowRight, Users, BookOpen } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import bibleBooksData from '@/data/bible-books.json';
-import { loadBibleChapter, type BibleVerse } from '@/lib/bible-content-loader';
-import heroCathedral from '@/assets/hero-cathedral.jpg';
+import { loadBibleChapter } from '@/lib/bible-content-loader';
+import heroCathedral from '@/assets/hero-cathedral-interior.jpg';
 import logo3v from '@/assets/logo-3v.png';
 
 function getTimeGreeting(t: (key: string) => string) {
@@ -106,7 +106,17 @@ const HeroSection = () => {
     return getPersonalPrayer(userName || null, t);
   }, [userName, t]);
 
+  // FIX: Reset verses when language changes (bible content is French-only)
+  useEffect(() => {
+    if (lang !== 'fr') {
+      setVerses(fallbackVersesByLang[lang] || fallbackVersesByLang.fr);
+    }
+  }, [lang]);
+
   const loadTodayVerses = useCallback(async () => {
+    // Bible content files are in French only — skip DB verse loading for other languages
+    if (lang !== 'fr') return;
+    
     try {
       const today = new Date().toISOString().split('T')[0];
       const { data } = await (supabase as any)
@@ -147,7 +157,7 @@ const HeroSection = () => {
     } catch (e) {
       // Keep fallback verses
     }
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
     loadTodayVerses();
@@ -163,31 +173,45 @@ const HeroSection = () => {
   const titleWords = ["Voie,", "Vérité,", "Vie"];
 
   return (
-    <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[100vh] flex items-center justify-center overflow-hidden">
+      {/* Background with Ken Burns effect */}
       <div className="absolute inset-0 z-0">
         <motion.img
           src={heroCathedral}
           alt=""
           className="w-full h-full object-cover"
-          initial={{ scale: 1.12 }}
+          initial={{ scale: 1.15 }}
           animate={{ scale: 1 }}
-          transition={{ duration: 14, ease: 'easeOut' }}
+          transition={{ duration: 20, ease: 'easeOut' }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[hsl(220,55%,8%,0.75)] via-[hsl(220,55%,8%,0.55)] to-[hsl(220,55%,8%,0.85)]" />
+        {/* Golden light glow */}
+        <motion.div
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-[hsl(43,65%,52%,0.12)]"
+          animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+        />
       </div>
 
-      <div className="relative z-10 text-center px-4 sm:px-6 max-w-2xl mx-auto flex flex-col items-center pt-20">
-        <motion.img
-          src={logo3v}
-          alt="Logo 3V"
-          className="h-32 sm:h-44 md:h-52 w-auto mb-6 drop-shadow-2xl"
+      <div className="relative z-10 text-center px-4 sm:px-6 max-w-2xl mx-auto flex flex-col items-center pt-24 pb-12">
+        {/* Logo with golden glow */}
+        <motion.div
+          className="relative mb-8"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-        />
+          transition={{ duration: 0.7, delay: 0.1 }}
+        >
+          <div className="absolute inset-0 blur-3xl bg-[hsl(43,65%,52%,0.2)] rounded-full scale-150" />
+          <img
+            src={logo3v}
+            alt="Logo 3V"
+            className="relative h-28 sm:h-40 md:h-48 w-auto drop-shadow-2xl"
+          />
+        </motion.div>
 
+        {/* Title with staggered gold animation */}
         <motion.h1
-          className="text-4xl sm:text-5xl md:text-6xl font-playfair font-bold text-white mb-3 leading-tight drop-shadow-lg flex flex-wrap items-center justify-center gap-x-3"
+          className="text-5xl sm:text-6xl md:text-7xl font-cinzel font-bold text-white mb-4 leading-none tracking-wide flex flex-wrap items-center justify-center gap-x-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
@@ -195,25 +219,28 @@ const HeroSection = () => {
           {titleWords.map((word, i) => (
             <motion.span
               key={word}
-              className={i === 2 ? "text-accent" : ""}
-              initial={{ opacity: 0, y: 20 }}
+              className={i === 2 ? "text-cathedral-gold" : "text-white"}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 + i * 0.2 }}
+              transition={{ duration: 0.6, delay: 0.3 + i * 0.2 }}
+              style={{ textShadow: '0 2px 20px rgba(201, 168, 76, 0.3)' }}
             >
               {word}
             </motion.span>
           ))}
         </motion.h1>
 
+        {/* Cathedral gold divider */}
         <motion.div
-          className="w-16 h-[2px] bg-accent mb-5"
+          className="w-24 h-[1px] mb-6"
+          style={{ background: 'linear-gradient(90deg, transparent, hsl(43, 65%, 52%), transparent)' }}
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
-          transition={{ duration: 0.5, delay: 0.9 }}
+          transition={{ duration: 0.7, delay: 0.9 }}
         />
 
         <motion.p
-          className="text-[#ffffffcc] text-sm sm:text-base mb-5 max-w-md leading-relaxed"
+          className="text-white/70 text-sm sm:text-base mb-6 max-w-md leading-relaxed font-inter tracking-wide"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
@@ -221,23 +248,24 @@ const HeroSection = () => {
           {t('hero.subtitle')}
         </motion.p>
 
+        {/* Personalized greeting card */}
         {user && (
           <motion.div
-            className="w-full max-w-md mb-6 rounded-xl border border-white/20 bg-white/10 px-5 py-4 text-left"
+            className="w-full max-w-md mb-8 rounded-xl border border-[hsl(43,65%,52%,0.25)] bg-[hsl(220,55%,12%,0.5)] backdrop-blur-md px-6 py-5 text-left"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.5 }}
           >
-            <p className="text-white font-semibold text-base mb-1.5">
+            <p className="text-white font-semibold text-base mb-1.5 font-playfair">
               {getTimeGreeting(t)}{userName ? `, ${userName}` : ''} 🙏
             </p>
-            <p className="text-[#ffffffaa] text-sm italic leading-relaxed">
+            <p className="text-white/60 text-sm italic leading-relaxed font-inter">
               « {todayPrayer} »
             </p>
             {todayReading && (
               <Link
                 to="/biblical-reading"
-                className="mt-3 flex items-center gap-2 text-accent text-xs font-medium hover:underline"
+                className="mt-3 flex items-center gap-2 text-cathedral-gold text-xs font-medium hover:underline"
               >
                 <BookOpen className="w-3.5 h-3.5" />
                 <span>📖 {t('hero.readingOfDay', { books: todayReading.books, chapters: todayReading.chapters, day: todayReading.day_number })}</span>
@@ -246,8 +274,9 @@ const HeroSection = () => {
           </motion.div>
         )}
 
+        {/* CTA Buttons */}
         <motion.div
-          className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full mb-6"
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full mb-8"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.9 }}
@@ -255,7 +284,7 @@ const HeroSection = () => {
           <Button
             size="lg"
             asChild
-            className="w-full sm:w-auto px-8 py-5 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-xl rounded-full"
+            className="w-full sm:w-auto px-8 py-5 bg-cathedral-gold text-secondary font-semibold hover:bg-cathedral-gold/90 shadow-xl shadow-cathedral-gold/20 rounded-full font-cinzel tracking-wider"
           >
             <Link to="/auth">
               <Users className="mr-2 w-5 h-5" />
@@ -266,7 +295,7 @@ const HeroSection = () => {
             variant="outline"
             size="lg"
             asChild
-            className="w-full sm:w-auto px-8 py-5 border-white/50 text-white bg-white/10 hover:bg-white/20 rounded-full"
+            className="w-full sm:w-auto px-8 py-5 border-white/30 text-white bg-white/5 hover:bg-white/10 rounded-full backdrop-blur-sm"
           >
             <Link to="/about">
               {t('common.learnMore')}
@@ -275,8 +304,9 @@ const HeroSection = () => {
           </Button>
         </motion.div>
 
+        {/* Rotating verses */}
         <motion.div
-          className="w-full max-w-lg min-h-[3.5rem] flex items-center justify-center"
+          className="w-full max-w-lg min-h-[4rem] flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.1 }}
@@ -284,20 +314,31 @@ const HeroSection = () => {
           <AnimatePresence mode="wait">
             <motion.p
               key={currentVerse}
-              className="text-[#ffffffd0] text-xs sm:text-sm font-playfair italic text-center leading-relaxed"
-              initial={{ opacity: 0, y: 6 }}
+              className="text-white/60 text-xs sm:text-sm font-playfair italic text-center leading-relaxed"
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.25 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3 }}
             >
               « {verses[currentVerse]?.text} »
-              <span className="block text-accent text-[10px] sm:text-xs mt-0.5 not-italic font-medium">
+              <span className="block text-cathedral-gold/80 text-[10px] sm:text-xs mt-1 not-italic font-medium tracking-wider">
                 — {verses[currentVerse]?.ref}
               </span>
             </motion.p>
           </AnimatePresence>
         </motion.div>
       </div>
+
+      {/* Bottom scroll indicator */}
+      <motion.div
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10"
+        animate={{ y: [0, 8, 0] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      >
+        <div className="w-5 h-8 rounded-full border border-white/20 flex items-start justify-center pt-1.5">
+          <div className="w-1 h-2 rounded-full bg-cathedral-gold/60" />
+        </div>
+      </motion.div>
     </section>
   );
 };
