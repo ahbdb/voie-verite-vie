@@ -115,7 +115,7 @@ const FAQ = () => {
                         {category.name}
                       </h2>
                       <Badge className={`ml-3 ${category.color}`}>
-                        {categoryFAQs.length} questions
+                        {categoryFAQs.length} {t('faq.questions')}
                       </Badge>
                     </div>
 
