@@ -266,7 +266,12 @@ const it: CaremeData = {
 
 const allData: Record<string, CaremeData> = { fr, en, it };
 
-export const getCaremeData = (lang: string): CaremeData => allData[lang] || fr;
+const normalizeLang = (lang: string) => (lang || 'fr').toLowerCase().split('-')[0];
+
+export const getCaremeData = (lang: string): CaremeData => {
+  const key = normalizeLang(lang);
+  return allData[key] || fr;
+};
 
 // Keep backward compatibility
 export const caremeData = fr;
