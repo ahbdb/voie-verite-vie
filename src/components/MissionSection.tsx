@@ -1,155 +1,121 @@
-import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
-import { Cross, BookOpen, Users, Heart, Shield, Star } from 'lucide-react';
-import { AnimatedSection, staggerContainer, staggerItem, scaleOnHover } from '@/components/AnimatedSection';
+import { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { AnimatedSection, staggerContainer, staggerItem } from '@/components/AnimatedSection';
+import missionVoie from '@/assets/mission-voie.jpg';
+import missionVerite from '@/assets/mission-verite.jpg';
+import missionVie from '@/assets/mission-vie.jpg';
+
+const missions = [
+  {
+    title: 'Voie',
+    subtitle: 'Le Chemin',
+    verse: '« Je suis le chemin »',
+    ref: 'Jean 14:6',
+    description: "Le chemin tracé par Jésus-Christ, suivre ses pas et embrasser ses enseignements d'amour et de salut.",
+    image: missionVoie,
+  },
+  {
+    title: 'Vérité',
+    subtitle: 'La Lumière',
+    verse: '« La vérité vous affranchira »',
+    ref: 'Jean 8:32',
+    description: "La lumière révélée par Jésus, vérité absolue et libératrice qui nous affranchit des illusions du monde.",
+    image: missionVerite,
+  },
+  {
+    title: 'Vie',
+    subtitle: 'La Plénitude',
+    verse: '« Je suis venu pour qu\'ils aient la vie »',
+    ref: 'Jean 10:10',
+    description: "L'abondance spirituelle offerte par le Christ, une plénitude emplie de joie, de paix et de communion avec Dieu.",
+    image: missionVie,
+  },
+];
 
 const MissionSection = () => {
-  const missions = [
-    {
-      icon: Cross,
-      title: "Voie",
-      description: "Le chemin tracé par Jésus-Christ, suivre ses pas et embrasser ses enseignements d'amour et de salut.",
-      verse: "Je suis le chemin, la vérité et la vie",
-      color: "text-primary"
-    },
-    {
-      icon: BookOpen,
-      title: "Vérité",
-      description: "La lumière révélée par Jésus, vérité absolue et libératrice qui nous affranchit des illusions du monde.",
-      verse: "La vérité vous affranchira",
-      color: "text-secondary"
-    },
-    {
-      icon: Heart,
-      title: "Vie",
-      description: "L'abondance spirituelle offerte par le Christ, une plénitude emplie de joie, de paix et de communion avec Dieu.",
-      verse: "Je suis venu pour qu'ils aient la vie",
-      color: "text-accent"
-    }
-  ];
-
-  const objectives = [
-    { icon: Shield, title: "Refuge Spirituel", description: "Offrir un sanctuaire sûr aux jeunes confrontés aux défis de la société moderne" },
-    { icon: BookOpen, title: "Éducation Spirituelle", description: "Éduquer et sensibiliser la jeunesse aux principes moraux de la foi chrétienne" },
-    { icon: Users, title: "Formation de Leaders", description: "Former des leaders chrétiens, agents de transformation dans leurs communautés" },
-    { icon: Star, title: "Mode de Vie Équilibré", description: "Promouvoir un mode de vie sain fondé sur les valeurs évangéliques" }
-  ];
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start end', 'end start'],
+  });
+  const bgY = useTransform(scrollYProgress, [0, 1], ['-5%', '5%']);
 
   return (
-    <section className="py-20 bg-gradient-divine">
-      <div className="container mx-auto px-4">
+    <section ref={containerRef} className="py-24 bg-background relative overflow-hidden">
+      {/* Subtle moving bg */}
+      <motion.div
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        style={{ y: bgY }}
+      >
+        <div className="w-full h-full bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary))_0%,transparent_50%),radial-gradient(circle_at_70%_50%,hsl(var(--secondary))_0%,transparent_50%)]" />
+      </motion.div>
+
+      <div className="container mx-auto px-4 relative z-10">
         <AnimatedSection className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-playfair font-bold text-foreground mb-6">
-            Notre Mission
+          <p className="text-sm tracking-[0.3em] uppercase text-muted-foreground mb-4">Notre Mission</p>
+          <h2 className="text-4xl md:text-5xl font-playfair font-bold text-foreground mb-4">
+            Trois piliers de foi
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Fondée sur les principes intemporels de la foi chrétienne, 3V se dresse comme
-            un rempart face aux tempêtes de la dépravation morale qui assaillent notre société.
-          </p>
+          <div className="w-16 h-0.5 bg-accent mx-auto" />
         </AnimatedSection>
 
-        {/* Three pillars */}
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20"
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-80px' }}
-        >
-          {missions.map((mission) => {
-            const Icon = mission.icon;
-            return (
+        {/* Horizontal scroll cards on mobile, grid on desktop */}
+        <div className="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-3 md:overflow-visible md:pb-0">
+          {missions.map((mission, index) => (
+            <motion.div
+              key={mission.title}
+              className="min-w-[85vw] sm:min-w-[60vw] md:min-w-0 snap-center"
+              initial={{ opacity: 0, x: 60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.7, delay: index * 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
               <motion.div
-                key={mission.title}
-                variants={staggerItem}
-                {...scaleOnHover}
-                className="spiritual-card text-center group"
+                className="group relative rounded-2xl overflow-hidden h-[480px] cursor-pointer"
+                whileHover={{ y: -8 }}
+                transition={{ type: 'spring' as const, stiffness: 300, damping: 25 }}
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-white to-gray-50 mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg dark:from-slate-800 dark:to-slate-700">
-                  <Icon className={`w-8 h-8 ${mission.color} dark:text-white`} />
+                {/* Image */}
+                <div className="absolute inset-0">
+                  <motion.img
+                    src={mission.image}
+                    alt={mission.title}
+                    className="w-full h-full object-cover"
+                    whileHover={{ scale: 1.08 }}
+                    transition={{ duration: 0.6 }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                 </div>
-                <h3 className="text-2xl font-playfair font-semibold mb-4 text-foreground">
-                  {mission.title}
-                </h3>
-                <p className="text-muted-foreground mb-4 leading-relaxed">
-                  {mission.description}
-                </p>
-                <div className={`italic text-sm ${mission.color} font-medium dark:text-white`}>
-                  "{mission.verse}"
+
+                {/* Content overlay */}
+                <div className="absolute inset-0 flex flex-col justify-end p-8 text-white">
+                  <motion.div
+                    initial={{ y: 20 }}
+                    whileInView={{ y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 + index * 0.1 }}
+                  >
+                    <p className="text-xs tracking-[0.25em] uppercase text-white/60 mb-2">
+                      {mission.subtitle}
+                    </p>
+                    <h3 className="text-3xl font-playfair font-bold mb-3">
+                      {mission.title}
+                    </h3>
+                    <p className="text-white/80 text-sm leading-relaxed mb-4 line-clamp-3 group-hover:line-clamp-none transition-all">
+                      {mission.description}
+                    </p>
+                    <p className="text-accent text-sm italic font-playfair">
+                      {mission.verse}
+                      <span className="block text-white/50 text-xs mt-1 not-italic font-inter">
+                        — {mission.ref}
+                      </span>
+                    </p>
+                  </motion.div>
                 </div>
               </motion.div>
-            );
-          })}
-        </motion.div>
-
-        {/* Separator */}
-        <AnimatedSection className="flex items-center justify-center mb-16">
-          <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent w-full max-w-md" />
-          <motion.div
-            className="mx-6 w-8 h-8 bg-gradient-peace rounded-full flex items-center justify-center"
-            animate={{ rotate: [0, 360] }}
-            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-          >
-            <Cross className="w-4 h-4 text-white" />
-          </motion.div>
-          <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent w-full max-w-md" />
-        </AnimatedSection>
-
-        {/* Objectives */}
-        <AnimatedSection className="text-center mb-12">
-          <h3 className="text-3xl font-playfair font-bold text-foreground mb-4">
-            Nos Objectifs
-          </h3>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Un engagement concret pour la transformation spirituelle et morale de la jeunesse
-          </p>
-        </AnimatedSection>
-
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-60px' }}
-        >
-          {objectives.map((objective) => {
-            const Icon = objective.icon;
-            return (
-              <motion.div key={objective.title} variants={staggerItem}>
-                <motion.div whileHover={{ y: -6, boxShadow: '0 15px 40px -15px hsl(201 84% 65% / 0.3)' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
-                  <Card className="border-border/50 transition-all duration-300">
-                    <CardContent className="p-6 text-center">
-                      <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg mb-4">
-                        <Icon className="w-6 h-6 text-primary" />
-                      </div>
-                      <h4 className="font-semibold mb-3 text-foreground">{objective.title}</h4>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{objective.description}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
-
-        {/* Quote */}
-        <AnimatedSection delay={0.2} className="mt-16 text-center">
-          <motion.div
-            className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 max-w-4xl mx-auto shadow-lg dark:bg-slate-900/80 dark:text-slate-100"
-            whileHover={{ boxShadow: '0 20px 50px -15px hsl(201 84% 65% / 0.25)' }}
-            transition={{ duration: 0.4 }}
-          >
-            <blockquote className="text-xl md:text-2xl font-playfair text-primary mb-4 leading-relaxed italic">
-              "Voie, Vérité, Vie se tient comme un phare dans les ténèbres,
-              offrant un refuge spirituel et une éducation morale pour aider
-              les jeunes à résister aux influences délétères et à embrasser
-              la vérité de l'Évangile."
-            </blockquote>
-            <cite className="text-muted-foreground font-medium">
-              — Charte de l'Association 3V
-            </cite>
-          </motion.div>
-        </AnimatedSection>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );

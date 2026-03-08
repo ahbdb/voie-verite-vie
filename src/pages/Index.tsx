@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import Navigation from '@/components/Navigation';
 import HeroSection from '@/components/HeroSection';
 import MissionSection from '@/components/MissionSection';
-import ProgramSection from '@/components/ProgramSection';
+import { ActivitiesSection, CTASection } from '@/components/HomeSections';
 import PostSignupCommunityModal from '@/components/PostSignupCommunityModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -104,15 +104,12 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <Navigation />
-      <motion.main
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
-      >
+      <main>
         <HeroSection />
         <MissionSection />
-        <ProgramSection />
-      </motion.main>
+        <ActivitiesSection />
+        <CTASection />
+      </main>
 
       <ActiveCallBanner />
 
