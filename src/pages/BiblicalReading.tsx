@@ -378,7 +378,7 @@ const BiblicalReading = () => {
                                 : reading.chapters}
                             </Button>
                             <p className="text-xs md:text-sm text-muted-foreground">
-                              {reading.chapters_count} chapitre{reading.chapters_count > 1 ? 's' : ''}
+                              {reading.chapters_count} {reading.chapters_count > 1 ? t('biblicalReading.chaptersPlural') : t('biblicalReading.chapters')}
                             </p>
                             {reading.comment && (
                               <div className="bg-primary/5 rounded-lg p-3">
