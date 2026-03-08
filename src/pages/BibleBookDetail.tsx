@@ -24,7 +24,7 @@ interface BookData {
 }
 
 const BibleBookDetail = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
   const [book, setBook] = useState<BookData | null>(null);
