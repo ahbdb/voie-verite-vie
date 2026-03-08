@@ -103,140 +103,155 @@ Toutes les couleurs DOIVENT être en HSL.
 
 @layer base {
   :root {
-    /* Échelle de taille du texte */
     --text-scale: 1;
     
-    /* Couleurs spirituelles principales */
-    --background: 0 0% 100%;
-    --foreground: 221 39% 11%;
+    /* Cathédrale moderne — tons ivoire, navy, or */
+    --background: 40 25% 97%;
+    --foreground: 220 50% 8%;
     
-    /* Bleu ciel - Paix spirituelle */
-    --sky-blue: 201 94% 87%;
-    --sky-blue-deep: 201 84% 65%;
-    --sky-blue-dark: 201 74% 45%;
+    /* Navy profond */
+    --cathedral-navy: 220 55% 12%;
+    --cathedral-navy-light: 220 40% 20%;
     
-    /* Vert - Vie et croissance */
-    --life-green: 152 57% 75%;
-    --life-green-deep: 152 67% 55%;
-    --life-green-dark: 152 77% 35%;
+    /* Or sacré */
+    --cathedral-gold: 43 65% 52%;
+    --cathedral-gold-light: 43 55% 72%;
+    --cathedral-gold-dark: 43 70% 38%;
     
-    /* Blanc pur - Pureté */
+    /* Bordeaux */
+    --cathedral-burgundy: 350 55% 35%;
+    --cathedral-burgundy-light: 350 45% 55%;
+    
+    /* Vitrail */
+    --stained-blue: 220 75% 55%;
+    --stained-ruby: 350 65% 45%;
+    --stained-emerald: 155 55% 38%;
+    --stained-amber: 38 85% 55%;
+    
+    /* Couleurs spirituelles */
+    --sky-blue: 220 60% 85%;
+    --sky-blue-deep: 220 55% 55%;
+    --sky-blue-dark: 220 55% 35%;
+    
+    --life-green: 155 45% 72%;
+    --life-green-deep: 155 55% 45%;
+    --life-green-dark: 155 60% 30%;
+    
     --pure-white: 0 0% 100%;
-    --soft-white: 210 20% 98%;
-    --gentle-white: 210 10% 95%;
+    --soft-white: 40 20% 98%;
+    --gentle-white: 40 15% 95%;
     
-    /* Couleurs spirituelles complémentaires */
-    --divine-gold: 43 84% 85%;
-    --divine-gold-deep: 43 94% 65%;
-    --sacred-purple: 269 43% 85%;
+    --divine-gold: 43 55% 82%;
+    --divine-gold-deep: 43 65% 52%;
+    --sacred-purple: 269 35% 78%;
     
-    /* Système de couleurs sémantiques */
-    --primary: 201 84% 65%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 201 94% 87%;
+    /* Système sémantique — Cathédrale */
+    --primary: 43 65% 52%;
+    --primary-foreground: 220 50% 8%;
+    --primary-glow: 43 55% 72%;
     
-    --secondary: 152 67% 55%;
-    --secondary-foreground: 0 0% 100%;
-    --secondary-light: 152 57% 75%;
+    --secondary: 220 55% 25%;
+    --secondary-foreground: 40 25% 97%;
+    --secondary-light: 220 40% 40%;
     
-    --accent: 43 94% 65%;
-    --accent-foreground: 221 39% 11%;
-    --accent-light: 43 84% 85%;
+    --accent: 350 55% 42%;
+    --accent-foreground: 0 0% 100%;
+    --accent-light: 350 40% 65%;
     
-    /* Interface */
     --card: 0 0% 100%;
-    --card-foreground: 221 39% 11%;
-    --card-soft: 210 20% 98%;
+    --card-foreground: 220 50% 8%;
+    --card-soft: 40 20% 98%;
     
-    --muted: 210 10% 95%;
-    --muted-foreground: 221 15% 45%;
+    --muted: 40 15% 93%;
+    --muted-foreground: 220 15% 42%;
     
-    --border: 210 20% 90%;
-    --input: 210 20% 95%;
-    --ring: 201 84% 65%;
+    --border: 40 15% 87%;
+    --input: 40 15% 93%;
+    --ring: 43 65% 52%;
     
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 221 39% 11%;
+    --popover-foreground: 220 50% 8%;
     
-    /* Gradients spirituels */
-    --gradient-heaven: linear-gradient(135deg, hsl(201 94% 87%), hsl(152 57% 75%));
-    --gradient-divine: linear-gradient(180deg, hsl(0 0% 100%), hsl(201 94% 87%));
-    --gradient-peace: linear-gradient(45deg, hsl(201 84% 65%), hsl(152 67% 55%));
-    --gradient-pure: linear-gradient(90deg, hsl(210 20% 98%), hsl(0 0% 100%));
+    /* Gradients cathédrale */
+    --gradient-heaven: linear-gradient(135deg, hsl(220 55% 12%), hsl(220 40% 20%));
+    --gradient-divine: linear-gradient(180deg, hsl(40 25% 97%), hsl(43 55% 82% / 0.3));
+    --gradient-peace: linear-gradient(45deg, hsl(43 65% 52%), hsl(350 55% 42%));
+    --gradient-pure: linear-gradient(90deg, hsl(40 20% 98%), hsl(0 0% 100%));
+    --gradient-cathedral: linear-gradient(180deg, hsl(220 55% 12%), hsl(220 40% 20%), hsl(220 55% 12%));
+    --gradient-stained: linear-gradient(135deg, hsl(220 75% 55% / 0.15), hsl(350 65% 45% / 0.1), hsl(43 65% 52% / 0.15));
     
-    /* Ombres spirituelles */
-    --shadow-divine: 0 10px 30px -10px hsl(201 84% 65% / 0.3);
-    --shadow-gentle: 0 4px 20px -8px hsl(201 84% 65% / 0.2);
-    --shadow-pure: 0 2px 10px -4px hsl(221 39% 11% / 0.1);
+    /* Ombres cathédrale */
+    --shadow-divine: 0 12px 35px -10px hsl(43 65% 52% / 0.25);
+    --shadow-gentle: 0 4px 20px -8px hsl(220 50% 8% / 0.12);
+    --shadow-pure: 0 2px 10px -4px hsl(220 50% 8% / 0.08);
+    --shadow-cathedral: 0 20px 60px -20px hsl(220 55% 12% / 0.3);
     
-    /* Animations et transitions */
     --transition-divine: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
     --transition-gentle: all 0.3s ease-out;
     
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 40 20% 97%;
+    --sidebar-foreground: 220 40% 20%;
+    --sidebar-primary: 43 65% 52%;
+    --sidebar-primary-foreground: 220 50% 8%;
+    --sidebar-accent: 40 15% 93%;
+    --sidebar-accent-foreground: 220 50% 8%;
+    --sidebar-border: 40 15% 87%;
+    --sidebar-ring: 43 65% 52%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 222 50% 5%;
+    --foreground: 40 20% 95%;
+    
+    --cathedral-navy: 220 40% 85%;
+    --cathedral-navy-light: 220 30% 70%;
+    --cathedral-gold: 43 65% 60%;
+    --cathedral-gold-light: 43 55% 75%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 222 45% 7%;
+    --card-foreground: 40 20% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 222 45% 7%;
+    --popover-foreground: 40 20% 95%;
 
-    --primary: 210 40% 96%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 43 65% 60%;
+    --primary-foreground: 222 50% 5%;
 
-    --secondary: 152 67% 70%;
-    --secondary-foreground: 222.2 84% 4.9%;
+    --secondary: 220 40% 70%;
+    --secondary-foreground: 222 50% 5%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 210 14% 80%;
+    --muted: 220 30% 14%;
+    --muted-foreground: 40 15% 70%;
 
-    --accent: 43 94% 75%;
-    --accent-foreground: 222.2 84% 4.9%;
+    --accent: 350 50% 60%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62% 35%;
+    --destructive-foreground: 40 20% 95%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --border: 220 30% 16%;
+    --input: 220 30% 16%;
+    --ring: 43 65% 60%;
+    
+    --sidebar-background: 222 50% 6%;
+    --sidebar-foreground: 40 15% 90%;
+    --sidebar-primary: 43 65% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 220 30% 12%;
+    --sidebar-accent-foreground: 40 15% 90%;
+    --sidebar-border: 220 30% 16%;
+    --sidebar-ring: 43 65% 60%;
 
-    /* Gradients dark mode */
-    --gradient-heaven: linear-gradient(135deg, hsl(201 84% 45%), hsl(152 77% 35%));
-    --gradient-divine: linear-gradient(180deg, hsl(222.2 84% 4.9%), hsl(201 74% 45%));
-    --gradient-peace: linear-gradient(45deg, hsl(201 84% 65%), hsl(152 67% 55%));
-    --gradient-pure: linear-gradient(90deg, hsl(222.2 84% 4.9%), hsl(222.2 84% 10%));
+    --gradient-heaven: linear-gradient(135deg, hsl(222 50% 8%), hsl(220 40% 14%));
+    --gradient-divine: linear-gradient(180deg, hsl(222 50% 5%), hsl(43 65% 60% / 0.1));
+    --gradient-peace: linear-gradient(45deg, hsl(43 65% 60%), hsl(350 50% 60%));
+    --gradient-pure: linear-gradient(90deg, hsl(222 50% 5%), hsl(222 45% 8%));
+    --gradient-cathedral: linear-gradient(180deg, hsl(222 50% 5%), hsl(220 40% 10%), hsl(222 50% 5%));
   }
 }
 
