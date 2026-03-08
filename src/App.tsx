@@ -119,6 +119,8 @@ const App = () => {
                     <Route path="/careme-2026" element={<Careme2026 />} />
                     <Route path="/chemin-de-croix" element={<CheminDeCroix />} />
                     <Route path="/share-debug" element={<ShareDebug />} />
+                    <Route path="/neuvaines" element={<Neuvaines />} />
+                    <Route path="/neuvaines/:id" element={<NeuvaineDayView />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/createur" element={<Creator />} />
                     <Route path="/admin-repair" element={<AdminRepair />} />
