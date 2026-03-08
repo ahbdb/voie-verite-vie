@@ -629,5 +629,47 @@
   },
   "postSignup": {
     "securityNote": "Pour des raisons de sécurité, on ne peut pas vous ajouter \"automatiquement\" à WhatsApp/YouTube. Par contre, voici les accès officiels en un clic."
+  },
+  "dayReading": {
+    "close": "Fermer",
+    "dayTitle": "Jour {{day}}: {{books}} {{chapters}}",
+    "chapterCount": "{{count}} chapitre",
+    "chapterCountPlural": "{{count}} chapitres",
+    "chaptersToRead": "Chapitres à lire",
+    "howToContinue": "Comment continuer",
+    "tipClickChapter": "Cliquez sur un chapitre ci-dessus pour lire les versets",
+    "tipTakeTime": "Prenez votre temps - c'est un voyage spirituel",
+    "tipMeditate": "Méditez sur ce que Dieu vous dit",
+    "tipMarkComplete": "Revenez marquer ce jour comme complété"
+  },
+  "bibleBookSelector": {
+    "searchPlaceholder": "Rechercher un livre biblique...",
+    "allBooks": "Tous ({{count}})",
+    "oldTestament": "Ancien ({{count}})",
+    "newTestament": "Nouveau ({{count}})",
+    "deuterocanonical": "Deutérocanonique",
+    "noBookFound": "Aucun livre trouvé",
+    "oldTestamentTitle": "Testament Ancien",
+    "deuterocanonicalTitle": "Livres Deutérocanoniques",
+    "otBooks": "Livres AT",
+    "ntBooks": "Livres NT",
+    "total": "Total"
+  },
+  "bibleChapter": {
+    "chapterNotAvailable": "Le chapitre {{chapter}} de {{book}} n'est pas disponible.",
+    "loadError": "Erreur lors du chargement: {{error}}",
+    "copied": "Copié",
+    "verseCopied": "Le verset a été copié",
+    "refCopied": "{{ref}} copié",
+    "verseSaved": "Verset sauvegardé",
+    "verseSavedDesc": "{{ref}} ajouté à vos mémorisations",
+    "alreadySaved": "Déjà sauvegardé",
+    "alreadySavedDesc": "{{ref}} est déjà dans vos mémorisations",
+    "back": "Retour",
+    "retry": "Réessayer",
+    "copyVerse": "Copier ce verset",
+    "shareVerse": "Partager ce verset",
+    "saveVerse": "Mémoriser ce verset",
+    "noVerses": "Aucun verset disponible pour ce chapitre."
   }
 }
