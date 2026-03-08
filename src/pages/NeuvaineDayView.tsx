@@ -303,6 +303,32 @@ const NeuvaineDayView = () => {
                     </div>
                   </TabsContent>
                 </Tabs>
+
+                {/* Canevas: CLÔTURE */}
+                {neuvaine.common_prayers?.closing && (
+                  <div className="bg-violet-50 dark:bg-violet-950/20 rounded-lg p-4 space-y-3 border border-violet-200/50 dark:border-violet-800/30 mt-5">
+                    <h3 className="text-sm font-bold text-violet-800 dark:text-violet-300 uppercase tracking-wide">☩ Clôture</h3>
+                    {neuvaine.common_prayers.closing.je_vous_salue_marie && (
+                      <details className="group">
+                        <summary className="cursor-pointer text-sm font-semibold text-foreground/90 hover:text-foreground">🌹 Je vous salue Marie</summary>
+                        <p className="text-foreground/80 text-sm whitespace-pre-line mt-2 pl-2 border-l-2 border-violet-300">{neuvaine.common_prayers.closing.je_vous_salue_marie}</p>
+                      </details>
+                    )}
+                    {neuvaine.common_prayers.closing.je_vous_salue_joseph && (
+                      <details className="group">
+                        <summary className="cursor-pointer text-sm font-semibold text-foreground/90 hover:text-foreground">⚜️ Je vous salue Joseph</summary>
+                        <p className="text-foreground/80 text-sm whitespace-pre-line mt-2 pl-2 border-l-2 border-violet-300">{neuvaine.common_prayers.closing.je_vous_salue_joseph}</p>
+                      </details>
+                    )}
+                    {neuvaine.common_prayers.closing.gloire_au_pere && (
+                      <details className="group">
+                        <summary className="cursor-pointer text-sm font-semibold text-foreground/90 hover:text-foreground">✨ Gloire au Père</summary>
+                        <p className="text-foreground/80 text-sm whitespace-pre-line mt-2 pl-2 border-l-2 border-violet-300">{neuvaine.common_prayers.closing.gloire_au_pere}</p>
+                      </details>
+                    )}
+                    <p className="text-xs text-muted-foreground italic mt-2">🎵 Chant à l'Esprit Saint · Signe de la Croix</p>
+                  </div>
+                )}
               </div>
             )}
 
