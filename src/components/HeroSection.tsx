@@ -10,6 +10,7 @@ import bibleBooksData from '@/data/bible-books.json';
 import { loadBibleChapter } from '@/lib/bible-content-loader';
 import heroCathedral from '@/assets/hero-cathedral-interior.jpg';
 import logo3v from '@/assets/logo-3v.png';
+import AnimatedLogo from './AnimatedLogo';
 
 function getTimeGreeting(t: (key: string) => string) {
   const h = new Date().getHours();
