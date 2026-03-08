@@ -1,90 +1,98 @@
-// Index de tous les livres bibliques
-// Généré automatiquement - ne pas modifier manuellement
+// Index de tous les livres bibliques — LAZY LOADING
+// Chaque livre n'est chargé qu'à la demande
 
-import genesis from './01-genesis.json';
-import exodus from './02-exodus.json';
-import leviticus from './03-leviticus.json';
-import numbers from './04-numbers.json';
-import deuteronomy from './05-deuteronomy.json';
-import joshua from './06-joshua.json';
-import judges from './07-judges.json';
-import ruth from './08-ruth.json';
-import samuel1 from './09-1-samuel.json';
-import samuel2 from './10-2-samuel.json';
-import kings1 from './11-1-kings.json';
-import kings2 from './12-2-kings.json';
-import chronicles1 from './13-1-chronicles.json';
-import chronicles2 from './14-2-chronicles.json';
-import ezra from './15-ezra.json';
-import nehemiah from './16-nehemiah.json';
-import esther from './17-esther.json';
-import job from './18-job.json';
-import psalms from './19-psalms.json';
-import proverbs from './20-proverbs.json';
-import ecclesiastes from './21-ecclesiastes.json';
-import songOfSongs from './22-song-of-solomon.json';
-import isaiah from './23-isaiah.json';
-import jeremiah from './24-jeremiah.json';
-import lamentations from './25-lamentations.json';
-import ezekiel from './26-ezekiel.json';
-import daniel from './27-daniel.json';
-import hosea from './28-hosea.json';
-import joel from './29-joel.json';
-import amos from './30-amos.json';
-import obadiah from './31-obadiah.json';
-import jonah from './32-jonah.json';
-import micah from './33-micah.json';
-import nahum from './34-nahum.json';
-import habakkuk from './35-habakkuk.json';
-import zephaniah from './36-zephaniah.json';
-import haggai from './37-haggai.json';
-import zechariah from './38-zechariah.json';
-import malachi from './39-malachi.json';
-import baruch from './40-baruch.json';
-import tobit from './41-tobit.json';
-import judith from './42-judith.json';
-import maccabees1 from './43-1-maccabees.json';
-import maccabees2 from './44-2-maccabees.json';
-import wisdom from './45-wisdom.json';
-import sirach from './46-sirach.json';
-import matthew from './47-matthew.json';
-import mark from './48-mark.json';
-import luke from './49-luke.json';
-import john from './50-john.json';
-import acts from './51-acts.json';
-import romans from './52-romans.json';
-import corinthians1 from './53-1-corinthians.json';
-import corinthians2 from './54-2-corinthians.json';
-import galatians from './55-galatians.json';
-import ephesians from './56-ephesians.json';
-import philippians from './57-philippians.json';
-import colossians from './58-colossians.json';
-import thessalonians1 from './59-1-thessalonians.json';
-import thessalonians2 from './60-2-thessalonians.json';
-import timothy1 from './61-1-timothy.json';
-import timothy2 from './62-2-timothy.json';
-import titus from './63-titus.json';
-import philemon from './64-philemon.json';
-import hebrews from './65-hebrews.json';
-import james from './66-james.json';
-import peter1 from './67-1-peter.json';
-import peter2 from './68-2-peter.json';
-import john1 from './69-1-john.json';
-import john2 from './70-2-john.json';
-import john3 from './71-3-john.json';
-import jude from './72-jude.json';
-import revelation from './73-revelation.json';
+const lazyImports: Record<string, () => Promise<any>> = {
+  genesis: () => import('./01-genesis.json'),
+  exodus: () => import('./02-exodus.json'),
+  leviticus: () => import('./03-leviticus.json'),
+  numbers: () => import('./04-numbers.json'),
+  deuteronomy: () => import('./05-deuteronomy.json'),
+  joshua: () => import('./06-joshua.json'),
+  judges: () => import('./07-judges.json'),
+  ruth: () => import('./08-ruth.json'),
+  samuel1: () => import('./09-1-samuel.json'),
+  samuel2: () => import('./10-2-samuel.json'),
+  kings1: () => import('./11-1-kings.json'),
+  kings2: () => import('./12-2-kings.json'),
+  chronicles1: () => import('./13-1-chronicles.json'),
+  chronicles2: () => import('./14-2-chronicles.json'),
+  ezra: () => import('./15-ezra.json'),
+  nehemiah: () => import('./16-nehemiah.json'),
+  esther: () => import('./17-esther.json'),
+  job: () => import('./18-job.json'),
+  psalms: () => import('./19-psalms.json'),
+  proverbs: () => import('./20-proverbs.json'),
+  ecclesiastes: () => import('./21-ecclesiastes.json'),
+  songOfSongs: () => import('./22-song-of-solomon.json'),
+  isaiah: () => import('./23-isaiah.json'),
+  jeremiah: () => import('./24-jeremiah.json'),
+  lamentations: () => import('./25-lamentations.json'),
+  ezekiel: () => import('./26-ezekiel.json'),
+  daniel: () => import('./27-daniel.json'),
+  hosea: () => import('./28-hosea.json'),
+  joel: () => import('./29-joel.json'),
+  amos: () => import('./30-amos.json'),
+  obadiah: () => import('./31-obadiah.json'),
+  jonah: () => import('./32-jonah.json'),
+  micah: () => import('./33-micah.json'),
+  nahum: () => import('./34-nahum.json'),
+  habakkuk: () => import('./35-habakkuk.json'),
+  zephaniah: () => import('./36-zephaniah.json'),
+  haggai: () => import('./37-haggai.json'),
+  zechariah: () => import('./38-zechariah.json'),
+  malachi: () => import('./39-malachi.json'),
+  baruch: () => import('./40-baruch.json'),
+  tobit: () => import('./41-tobit.json'),
+  judith: () => import('./42-judith.json'),
+  maccabees1: () => import('./43-1-maccabees.json'),
+  maccabees2: () => import('./44-2-maccabees.json'),
+  wisdom: () => import('./45-wisdom.json'),
+  sirach: () => import('./46-sirach.json'),
+  matthew: () => import('./47-matthew.json'),
+  mark: () => import('./48-mark.json'),
+  luke: () => import('./49-luke.json'),
+  john: () => import('./50-john.json'),
+  acts: () => import('./51-acts.json'),
+  romans: () => import('./52-romans.json'),
+  corinthians1: () => import('./53-1-corinthians.json'),
+  corinthians2: () => import('./54-2-corinthians.json'),
+  galatians: () => import('./55-galatians.json'),
+  ephesians: () => import('./56-ephesians.json'),
+  philippians: () => import('./57-philippians.json'),
+  colossians: () => import('./58-colossians.json'),
+  thessalonians1: () => import('./59-1-thessalonians.json'),
+  thessalonians2: () => import('./60-2-thessalonians.json'),
+  timothy1: () => import('./61-1-timothy.json'),
+  timothy2: () => import('./62-2-timothy.json'),
+  titus: () => import('./63-titus.json'),
+  philemon: () => import('./64-philemon.json'),
+  hebrews: () => import('./65-hebrews.json'),
+  james: () => import('./66-james.json'),
+  peter1: () => import('./67-1-peter.json'),
+  peter2: () => import('./68-2-peter.json'),
+  john1: () => import('./69-1-john.json'),
+  john2: () => import('./70-2-john.json'),
+  john3: () => import('./71-3-john.json'),
+  jude: () => import('./72-jude.json'),
+  revelation: () => import('./73-revelation.json'),
+};
 
-export const bibleContent: Record<string, any> = {
-  genesis, exodus, leviticus, numbers, deuteronomy, joshua, judges, ruth,
-  samuel1, samuel2, kings1, kings2, chronicles1, chronicles2, ezra, nehemiah,
-  esther, job, psalms, proverbs, ecclesiastes, songOfSongs, isaiah, jeremiah,
-  lamentations, ezekiel, daniel, hosea, joel, amos, obadiah, jonah, micah, nahum,
-  habakkuk, zephaniah, haggai, zechariah, malachi, baruch, tobit, judith,
-  maccabees1, maccabees2, wisdom, sirach, matthew, mark, luke, john, acts,
-  romans, corinthians1, corinthians2, galatians, ephesians, philippians,
-  colossians, thessalonians1, thessalonians2, timothy1, timothy2, titus,
-  philemon, hebrews, james, peter1, peter2, john1, john2, john3, jude, revelation,
+// Cache en mémoire pour les livres déjà chargés
+const loadedBooks: Record<string, any> = {};
+
+/**
+ * Charge un livre de manière lazy et le met en cache
+ */
+export const loadBibleBookLazy = async (moduleKey: string): Promise<any | null> => {
+  if (loadedBooks[moduleKey]) return loadedBooks[moduleKey];
+  
+  const loader = lazyImports[moduleKey];
+  if (!loader) return null;
+  
+  const mod = await loader();
+  const content = mod.default || mod;
+  loadedBooks[moduleKey] = content;
+  return content;
 };
 
 // Map fileName to module key
