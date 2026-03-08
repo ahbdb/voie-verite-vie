@@ -70,23 +70,19 @@ interface UserPermissionData {
   granted_at: string;
 }
 
-const AVAILABLE_PERMISSIONS: { id: UserPermission; label: string; category: string }[] = [
-  // Content Management
-  { id: 'manage_readings', label: 'Gérer les lectures bibliques', category: 'Contenu' },
-  { id: 'manage_prayers', label: 'Gérer les prières', category: 'Contenu' },
-  { id: 'manage_gallery', label: 'Gérer la galerie', category: 'Contenu' },
-  { id: 'manage_activities', label: 'Gérer les activités', category: 'Contenu' },
-  { id: 'manage_faq', label: 'Gérer la FAQ', category: 'Contenu' },
-  { id: 'manage_about', label: 'Gérer la page À propos', category: 'Contenu' },
-  { id: 'moderate_content', label: 'Modérer les contenus', category: 'Contenu' },
-  // User Management
-  { id: 'manage_users', label: 'Gérer les utilisateurs', category: 'Utilisateurs' },
-  // Communications
-  { id: 'manage_contacts', label: 'Gérer les contacts (voir/supprimer)', category: 'Communications' },
-  { id: 'view_contacts', label: 'Voir les contacts (lecture seule)', category: 'Communications' },
-  { id: 'create_notifications', label: 'Créer des notifications', category: 'Communications' },
-  // Analytics
-  { id: 'view_analytics', label: 'Voir les analytics', category: 'Analytics' },
+const AVAILABLE_PERMISSIONS: { id: UserPermission; labelKey: string; categoryKey: string }[] = [
+  { id: 'manage_readings', labelKey: 'admin.usersPage.perms.manageReadings', categoryKey: 'admin.usersPage.permCategories.content' },
+  { id: 'manage_prayers', labelKey: 'admin.usersPage.perms.managePrayers', categoryKey: 'admin.usersPage.permCategories.content' },
+  { id: 'manage_gallery', labelKey: 'admin.usersPage.perms.manageGallery', categoryKey: 'admin.usersPage.permCategories.content' },
+  { id: 'manage_activities', labelKey: 'admin.usersPage.perms.manageActivities', categoryKey: 'admin.usersPage.permCategories.content' },
+  { id: 'manage_faq', labelKey: 'admin.usersPage.perms.manageFAQ', categoryKey: 'admin.usersPage.permCategories.content' },
+  { id: 'manage_about', labelKey: 'admin.usersPage.perms.manageAbout', categoryKey: 'admin.usersPage.permCategories.content' },
+  { id: 'moderate_content', labelKey: 'admin.usersPage.perms.moderateContent', categoryKey: 'admin.usersPage.permCategories.content' },
+  { id: 'manage_users', labelKey: 'admin.usersPage.perms.manageUsers', categoryKey: 'admin.usersPage.permCategories.users' },
+  { id: 'manage_contacts', labelKey: 'admin.usersPage.perms.manageContacts', categoryKey: 'admin.usersPage.permCategories.communications' },
+  { id: 'view_contacts', labelKey: 'admin.usersPage.perms.viewContacts', categoryKey: 'admin.usersPage.permCategories.communications' },
+  { id: 'create_notifications', labelKey: 'admin.usersPage.perms.createNotifications', categoryKey: 'admin.usersPage.permCategories.communications' },
+  { id: 'view_analytics', labelKey: 'admin.usersPage.perms.viewAnalytics', categoryKey: 'admin.usersPage.permCategories.analytics' },
 ];
 
 const AdminUsers = () => {
