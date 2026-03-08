@@ -15,6 +15,7 @@ const sizes = {
 };
 
 const AnimatedLogo = ({ size = 'md', className = '' }: AnimatedLogoProps) => {
+  const { t } = useTranslation();
   const s = sizes[size];
 
   return (
