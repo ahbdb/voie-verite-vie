@@ -70,15 +70,25 @@ const Navigation = () => {
   const handleZoomIn = () => { if (canZoomIn) setTextSize(textSizes[currentSizeIndex + 1]); };
   const handleZoomOut = () => { if (canZoomOut) setTextSize(textSizes[currentSizeIndex - 1]); };
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname;
   const { toast } = useToast();
 
+  const isPathActive = (href: string) => {
+    if (href === '/') return currentPath === '/';
+    return currentPath === href || currentPath.startsWith(href + '/');
+  };
+
+  // When opening the mobile menu, expand the group that contains the current page.
   useEffect(() => {
-    console.log('📱 [Navigation] State update:', { 
-      user: user?.email, 
-      isAdmin,
-      userExists: !!user 
-    });
-  }, [user, isAdmin]);
+    if (!isMenuOpen) return;
+    const activeCat = siteLinks.find((cat) =>
+      cat.items
+        .filter((i) => i.showInNav !== false)
+        .some((item) => isPathActive(item.href))
+    );
+    if (activeCat) setExpandedCategory(activeCat.id);
+  }, [isMenuOpen, currentPath]);
 
   // PWA install prompt
   useEffect(() => {
@@ -115,9 +125,6 @@ const Navigation = () => {
     });
     navigate('/');
   };
-
-  const flatLinks = siteLinks.flatMap((c) => c.items);
-  const navItems = flatLinks.filter((i) => i.showInNav !== false);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50">
