@@ -195,19 +195,14 @@ const HeroSection = () => {
       </div>
 
       <div className="relative z-10 text-center px-4 sm:px-6 max-w-2xl mx-auto flex flex-col items-center pt-24 pb-12">
-        {/* Logo with golden glow */}
+        {/* Animated Logo */}
         <motion.div
           className="relative mb-8"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, delay: 0.1 }}
         >
-          <div className="absolute inset-0 blur-3xl bg-[hsl(43,65%,52%,0.2)] rounded-full scale-150" />
-          <img
-            src={logo3v}
-            alt="Logo 3V"
-            className="relative h-28 sm:h-40 md:h-48 w-auto drop-shadow-2xl"
-          />
+          <AnimatedLogo size="xl" />
         </motion.div>
 
         {/* Title with staggered gold animation */}
