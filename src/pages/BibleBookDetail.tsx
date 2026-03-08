@@ -75,6 +75,8 @@ const BibleBookDetail = () => {
     );
   }
 
+  const localizedName = getBookName(book, i18n.language);
+  const localizedAbbr = getBookAbbreviation(book, i18n.language);
   const testamentName = book.testament === 'old' ? t('bibleBook.oldTestament') : t('bibleBook.newTestament');
   const chapters = Array.from({ length: book.chapters }, (_, i) => i + 1);
 
