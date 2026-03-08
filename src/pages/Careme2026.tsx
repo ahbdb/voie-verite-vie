@@ -466,8 +466,8 @@ const Careme2026 = memo(() => {
                   <div className="flex gap-3 items-start p-3 bg-violet-50 rounded-lg dark:bg-violet-950 dark:text-slate-100">
                     <BookOpen className="w-5 h-5 text-violet-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-semibold text-sm">Prière</p>
-                      <p className="text-xs text-gray-600">Chapelet, Lecture évangélique, Adoration</p>
+                      <p className="font-semibold text-sm">{t('careme.prayer')}</p>
+                      <p className="text-xs text-gray-600">{t('careme.prayerDesc')}</p>
                     </div>
                   </div>
                   <div className="flex gap-3 items-start p-3 bg-rose-50 rounded-lg">
