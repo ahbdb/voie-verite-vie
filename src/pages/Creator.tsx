@@ -13,23 +13,18 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
 const Creator = memo(() => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  const founder = {
+  const founderFr = {
     name: 'AHOUFACK Dylanne Baudouin',
     title: 'Fondateur & Promoteur de VOIE, VÉRITÉ, VIE (3V)',
     birthDate: '14 septembre 2001',
     birthPlace: 'Fossong-Wentcheng, Cameroun',
-    bio: `Jeune Entrepreneur; enseignant; Concepteur Designer; Community Manager; Développeur d'applications; Formateur...
-    sont les différentes casquettes qui définissent ma modeste personne dans le domaine Informatique. 
-    Passionné par la technologie et la foi catholique, j'ai créé l'application 3V pour aider les jeunes à découvrir 
-    et approfondir leur foi à travers une lecture structurée de la Bible. Actuellement étudiant en Intelligence Artificielle en Italie.`,
-    vision: `Ma vision est de créer un "sanctuaire spirituel" numérique accessible à tous, combinant technologie et spiritualité 
-    pour aider des milliers de catholiques à approfondir leur foi. En utilisant mes talents en informatique et en théologie 
-    au service de l'Église, je souhaite bâtir une communauté unie par la foi biblique.`,
+    bio: `Jeune Entrepreneur; enseignant; Concepteur Designer; Community Manager; Développeur d'applications; Formateur... sont les différentes casquettes qui définissent ma modeste personne dans le domaine Informatique. Passionné par la technologie et la foi catholique, j'ai créé l'application 3V pour aider les jeunes à découvrir et approfondir leur foi à travers une lecture structurée de la Bible. Actuellement étudiant en Intelligence Artificielle en Italie.`,
+    vision: `Ma vision est de créer un "sanctuaire spirituel" numérique accessible à tous, combinant technologie et spiritualité pour aider des milliers de catholiques à approfondir leur foi. En utilisant mes talents en informatique et en théologie au service de l'Église, je souhaite bâtir une communauté unie par la foi biblique.`,
     education: [
       { degree: 'Étudiant en Intelligence Artificielle', institution: 'Università della Calabria, Italie', year: 'Depuis 2025', icon: Code },
-      { degree: 'Diplôme en Théologie', institution: 'ECATHED - École Cathédrale de Théologie pour les laïcs de l\'Archidiocèse de Douala', year: 'Juillet 2025', icon: Cross },
+      { degree: 'Diplôme en Théologie', institution: "ECATHED - École Cathédrale de Théologie pour les laïcs de l'Archidiocèse de Douala", year: 'Juillet 2025', icon: Cross },
       { degree: 'CILS B2 - Certificazione di Italiano come Lingua Straniera', institution: 'CLID, Douala', year: '2022', icon: Globe },
       { degree: 'Licence Professionnelle en Génie Logiciel', institution: 'IUG - Institut Universitaire du Golf de Guinée', year: '2021', icon: Code },
       { degree: 'Licence Académique en Mathématiques', institution: 'Université de Douala', year: '2021', icon: Target },
@@ -37,14 +32,14 @@ const Creator = memo(() => {
     ],
     experience: [
       { role: 'Chef des départements Mathématiques et Informatique', company: 'Plateforme EXAM-PREP', description: 'Direction académique et pédagogique des programmes de préparation aux examens', since: '2023', icon: GraduationCap },
-      { role: 'Enseignant d\'Informatique', company: 'Collège Catholique Saint Nicolas & Collège BAHO', description: 'Transmission du savoir informatique aux jeunes dans le cadre de l\'éducation catholique', since: '2023', icon: Book },
-      { role: 'Responsable Informatique et Communication', company: 'ONG GEN Cameroon & Youth Business Cameroon', description: 'Développement des outils numériques et stratégies de communication pour l\'impact social', since: '2023', icon: MessageSquare },
-      { role: 'Formateur', company: 'PI Startup (Progress Intelligent Startup)', description: 'Formation en développement d\'applications et technologies numériques', since: '2021', icon: Award },
-      { role: 'Présentateur et Chroniqueur', company: 'Radio et Télé catholique VERITAS - Émission Canal Campus', description: 'Animation d\'émissions dédiées à la jeunesse catholique et à l\'évangélisation', since: '2022', icon: Radio },
+      { role: "Enseignant d'Informatique", company: 'Collège Catholique Saint Nicolas & Collège BAHO', description: "Transmission du savoir informatique aux jeunes dans le cadre de l'éducation catholique", since: '2023', icon: Book },
+      { role: 'Responsable Informatique et Communication', company: 'ONG GEN Cameroon & Youth Business Cameroon', description: "Développement des outils numériques et stratégies de communication pour l'impact social", since: '2023', icon: MessageSquare },
+      { role: 'Formateur', company: 'PI Startup (Progress Intelligent Startup)', description: "Formation en développement d'applications et technologies numériques", since: '2021', icon: Award },
+      { role: 'Présentateur et Chroniqueur', company: 'Radio et Télé catholique VERITAS - Émission Canal Campus', description: "Animation d'émissions dédiées à la jeunesse catholique et à l'évangélisation", since: '2022', icon: Radio },
     ],
     skills: [
       { name: 'Enseignement', icon: GraduationCap },
-      { name: 'Développement d\'applications', icon: Code },
+      { name: "Développement d'applications", icon: Code },
       { name: 'Community Management', icon: Users },
       { name: 'Conception & Design', icon: PenTool },
       { name: 'Secrétariat Bureautique', icon: Briefcase },
@@ -64,6 +59,88 @@ const Creator = memo(() => {
       whatsappGroup: 'https://chat.whatsapp.com/FfvCe9nHwpj5OYoDZBfGER',
     }
   };
+
+  const founderEn = {
+    ...founderFr,
+    title: 'Founder & Promoter of WAY, TRUTH, LIFE (3V)',
+    birthDate: 'September 14, 2001',
+    birthPlace: 'Fossong-Wentcheng, Cameroon',
+    bio: `Young entrepreneur, teacher, designer, community manager, app developer and trainer... these are the many hats that define me in the tech field. Passionate about technology and the Catholic faith, I created the 3V app to help young people discover and deepen their faith through a structured Bible reading path. I am currently studying Artificial Intelligence in Italy.`,
+    vision: `My vision is to build a digital "spiritual sanctuary" accessible to everyone, combining technology and spirituality to help thousands of Catholics deepen their faith. By putting my tech and theology skills at the service of the Church, I want to build a community united by biblical faith.`,
+    education: [
+      { degree: 'Artificial Intelligence Student', institution: 'Università della Calabria, Italy', year: 'Since 2025', icon: Code },
+      { degree: 'Diploma in Theology', institution: 'ECATHED - Cathedral School of Theology for Lay People of the Archdiocese of Douala', year: 'July 2025', icon: Cross },
+      { degree: 'CILS B2 - Certificazione di Italiano come Lingua Straniera', institution: 'CLID, Douala', year: '2022', icon: Globe },
+      { degree: 'Professional Bachelor in Software Engineering', institution: 'IUG - Gulf of Guinea University Institute', year: '2021', icon: Code },
+      { degree: 'Academic Bachelor in Mathematics', institution: 'University of Douala', year: '2021', icon: Target },
+      { degree: 'Higher National Diploma in Software Engineering', institution: 'ISTG-AC, Douala', year: '2020', icon: Code },
+    ],
+    experience: [
+      { role: 'Head of Mathematics and Computer Science Departments', company: 'EXAM-PREP Platform', description: 'Academic and pedagogical leadership of exam preparation programs', since: '2023', icon: GraduationCap },
+      { role: 'Computer Science Teacher', company: 'Saint Nicolas Catholic College & BAHO College', description: 'Teaching computer science to young people within Catholic education', since: '2023', icon: Book },
+      { role: 'IT and Communication Manager', company: 'GEN Cameroon NGO & Youth Business Cameroon', description: 'Development of digital tools and communication strategies for social impact', since: '2023', icon: MessageSquare },
+      { role: 'Trainer', company: 'PI Startup (Progress Intelligent Startup)', description: 'Training in app development and digital technologies', since: '2021', icon: Award },
+      { role: 'Presenter and Columnist', company: 'VERITAS Catholic Radio & TV - Canal Campus Show', description: 'Hosting programs dedicated to Catholic youth and evangelization', since: '2022', icon: Radio },
+    ],
+    skills: [
+      { name: 'Teaching', icon: GraduationCap },
+      { name: 'App Development', icon: Code },
+      { name: 'Community Management', icon: Users },
+      { name: 'Design', icon: PenTool },
+      { name: 'Office Administration', icon: Briefcase },
+      { name: 'Training', icon: Award },
+      { name: 'Communication', icon: Mic },
+    ],
+    languages: [
+      { name: 'French', level: 'Native' },
+      { name: 'English', level: 'Fluent' },
+      { name: 'Italian', level: 'Certified B2' },
+      { name: 'Yemba', level: 'Fluent' },
+    ],
+    qualities: ['Courageous', 'Disciplined', 'Rigorous', 'Punctual', 'Adaptable', 'Passionate', 'Creative'],
+  };
+
+  const founderIt = {
+    ...founderFr,
+    title: 'Fondatore & Promotore di VIA, VERITÀ, VITA (3V)',
+    birthDate: '14 settembre 2001',
+    birthPlace: 'Fossong-Wentcheng, Camerun',
+    bio: `Giovane imprenditore, insegnante, designer, community manager, sviluppatore di applicazioni e formatore... sono i diversi ruoli che mi definiscono nel settore informatico. Appassionato di tecnologia e fede cattolica, ho creato l'app 3V per aiutare i giovani a scoprire e approfondire la loro fede attraverso una lettura strutturata della Bibbia. Attualmente studio Intelligenza Artificiale in Italia.`,
+    vision: `La mia visione è creare un "santuario spirituale" digitale accessibile a tutti, unendo tecnologia e spiritualità per aiutare migliaia di cattolici ad approfondire la propria fede. Mettendo i miei talenti nell'informatica e nella teologia al servizio della Chiesa, desidero costruire una comunità unita dalla fede biblica.`,
+    education: [
+      { degree: 'Studente in Intelligenza Artificiale', institution: 'Università della Calabria, Italia', year: 'Dal 2025', icon: Code },
+      { degree: 'Diploma in Teologia', institution: "ECATHED - Scuola Cattedrale di Teologia per i laici dell'Arcidiocesi di Douala", year: 'Luglio 2025', icon: Cross },
+      { degree: 'CILS B2 - Certificazione di Italiano come Lingua Straniera', institution: 'CLID, Douala', year: '2022', icon: Globe },
+      { degree: 'Laurea Professionale in Ingegneria del Software', institution: 'IUG - Istituto Universitario del Golfo di Guinea', year: '2021', icon: Code },
+      { degree: 'Laurea in Matematica', institution: 'Università di Douala', year: '2021', icon: Target },
+      { degree: 'BTS in Ingegneria del Software', institution: 'ISTG-AC, Douala', year: '2020', icon: Code },
+    ],
+    experience: [
+      { role: 'Responsabile dei dipartimenti di Matematica e Informatica', company: 'Piattaforma EXAM-PREP', description: 'Direzione accademica e pedagogica dei programmi di preparazione agli esami', since: '2023', icon: GraduationCap },
+      { role: 'Docente di Informatica', company: 'Collegio Cattolico Saint Nicolas & Collegio BAHO', description: "Trasmissione del sapere informatico ai giovani nel contesto dell'educazione cattolica", since: '2023', icon: Book },
+      { role: 'Responsabile IT e Comunicazione', company: 'ONG GEN Cameroon & Youth Business Cameroon', description: 'Sviluppo di strumenti digitali e strategie di comunicazione per impatto sociale', since: '2023', icon: MessageSquare },
+      { role: 'Formatore', company: 'PI Startup (Progress Intelligent Startup)', description: 'Formazione nello sviluppo di applicazioni e tecnologie digitali', since: '2021', icon: Award },
+      { role: 'Presentatore e Cronista', company: 'Radio e TV cattolica VERITAS - Trasmissione Canal Campus', description: 'Conduzione di programmi dedicati ai giovani cattolici e all’evangelizzazione', since: '2022', icon: Radio },
+    ],
+    skills: [
+      { name: 'Insegnamento', icon: GraduationCap },
+      { name: 'Sviluppo di applicazioni', icon: Code },
+      { name: 'Community Management', icon: Users },
+      { name: 'Progettazione & Design', icon: PenTool },
+      { name: 'Segreteria e ufficio', icon: Briefcase },
+      { name: 'Formazione', icon: Award },
+      { name: 'Comunicazione', icon: Mic },
+    ],
+    languages: [
+      { name: 'Francese', level: 'Madrelingua' },
+      { name: 'Inglese', level: 'Fluente' },
+      { name: 'Italiano', level: 'B2 Certificato' },
+      { name: 'Yemba', level: 'Fluente' },
+    ],
+    qualities: ['Coraggioso', 'Disciplinato', 'Rigoroso', 'Puntuale', 'Adattabile', 'Appassionato', 'Creativo'],
+  };
+
+  const founder = i18n.language.startsWith('en') ? founderEn : i18n.language.startsWith('it') ? founderIt : founderFr;
 
   const structuredData = {
     "@context": "https://schema.org",
