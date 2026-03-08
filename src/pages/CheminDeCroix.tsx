@@ -149,7 +149,7 @@ const CheminDeCroix = memo(() => {
         const loadContent = async () => {
           try {
             const { data, error } = await supabase.from('page_content').select('*').eq('page_key', 'chemin-de-croix').single();
-            if (data?.content && !error) setContentData(mergeCheminContent(data.content));
+            if (data?.content && !error) setContentData(mergeCheminContent(data.content, cheminDeCroixData));
           } catch (err) { console.warn('⚠️ [CheminDeCroix] Reload failed:', err); }
         };
         loadContent();
