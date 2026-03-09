@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Copy, Share2, Heart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { loadBibleChapterCached, clearBibleCache, BibleVerse } from '@/lib/bible-content-loader';
 import { supabase } from '@/integrations/supabase/client';
