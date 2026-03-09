@@ -14,6 +14,8 @@ export interface NotificationPayload {
   silent?: boolean;
   badge_count?: number;
   requireInteraction?: boolean;
+  vibrate?: number[];
+  renotify?: boolean;
 }
 
 const NOTIFICATION_SW_PATH = '/notification-sw.js';
