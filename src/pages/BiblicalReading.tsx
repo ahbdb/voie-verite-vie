@@ -384,7 +384,7 @@ const BiblicalReading = () => {
                     }`}
                   >
                     <ListFilter className="w-3.5 h-3.5" />
-                    {onlyUnread ? 'Lectures non lues' : 'Toutes les lectures'}
+                    {onlyUnread ? t('about.unreadReadings') : t('about.allReadings')}
                   </button>
                 </div>
 
