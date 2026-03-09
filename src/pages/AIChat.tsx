@@ -586,9 +586,16 @@ const AIChat = () => {
                   />
                 </div>
 
-                <Button onClick={() => void handleSend()} disabled={isLoading || !input.trim()} size="sm" className="h-[52px] px-4">
-                  <Send className="w-4 h-4" />
-                </Button>
+                {isLoading ? (
+                  <Button onClick={handleStopGeneration} variant="outline" size="sm" className="h-[52px] px-4 gap-2">
+                    <X className="w-4 h-4" />
+                    Stop
+                  </Button>
+                ) : (
+                  <Button onClick={() => void handleSend()} disabled={!input.trim()} size="sm" className="h-[52px] px-4">
+                    <Send className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
 
               <p className="text-[11px] text-muted-foreground px-1">
