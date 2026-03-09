@@ -160,14 +160,16 @@ const BibleBookDetail = () => {
     if (!window.speechSynthesis) return;
 
     if (isPaused) {
+      pauseRequestedRef.current = false;
       // Resume from last known position
       const absoluteOffset = startOffsetRef.current + charOffsetRef.current;
       speakFrom(absoluteOffset);
     } else {
       // Pause: cancel and save position
+      pauseRequestedRef.current = true;
       window.speechSynthesis.cancel();
       setIsPaused(true);
-      setIsSpeaking(true); // Still logically "speaking" but paused
+      setIsSpeaking(true);
     }
   }, [isPaused, speakFrom]);
 
