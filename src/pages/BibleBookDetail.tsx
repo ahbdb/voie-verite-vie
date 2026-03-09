@@ -61,6 +61,7 @@ const BibleBookDetail = () => {
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
+      setIsPaused(false);
     }
   }, [selectedChapter]);
 
