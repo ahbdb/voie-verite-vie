@@ -101,7 +101,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     updateDarkMode(theme, prefersDark);
     const updated = { ...settings, theme };
     setSettings(updated);
-    localStorage.setItem('app-settings', JSON-stringify(updated));
+    localStorage.setItem('app-settings', JSON.stringify(updated));
   };
 
   const setTextSize = (size: TextSize) => {
