@@ -187,8 +187,12 @@ const BiblicalReading = () => {
           : filtered.filter((r) => ntBooks.some((nt) => r.books.includes(nt)));
     }
 
+    if (onlyUnread) {
+      filtered = filtered.filter((r) => !completedSet.has(r.id));
+    }
+
     return filtered;
-  }, [allReadings, selectedMonth, selectedTestament]);
+  }, [allReadings, selectedMonth, selectedTestament, onlyUnread, completedSet]);
 
   const completedCount = useMemo(() => userProgress.filter((p) => p.completed).length, [userProgress]);
   const progressPercentage = useMemo(
