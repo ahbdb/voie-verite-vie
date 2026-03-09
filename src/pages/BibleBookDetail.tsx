@@ -189,10 +189,16 @@ const BibleBookDetail = () => {
                   {t('bibleBook.voiceRead', 'Lire')}
                 </Button>
               ) : (
-                <Button onClick={handleStopVoice} variant="outline" size="sm">
-                  <Square className="w-4 h-4 mr-1" />
-                  {t('bibleBook.voiceStop', 'Stop')}
-                </Button>
+                <>
+                  <Button onClick={handlePauseResume} variant="outline" size="sm">
+                    {isPaused ? <Play className="w-4 h-4 mr-1" /> : <Pause className="w-4 h-4 mr-1" />}
+                    {isPaused ? t('bibleBook.voiceResume', 'Reprendre') : t('bibleBook.voicePause', 'Pause')}
+                  </Button>
+                  <Button onClick={handleStopVoice} variant="outline" size="sm">
+                    <Square className="w-4 h-4 mr-1" />
+                    {t('bibleBook.voiceStop', 'Stop')}
+                  </Button>
+                </>
               )}
             </div>
           </div>
