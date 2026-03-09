@@ -43,6 +43,7 @@ const BibleBookDetail = () => {
   const [chapterText, setChapterText] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const chapterButtonsRef = useRef<Map<number, HTMLButtonElement>>(new Map());
 
   // Refs for pause/resume functionality
   const fullTextRef = useRef<string>('');
