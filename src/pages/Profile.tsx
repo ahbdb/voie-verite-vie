@@ -264,7 +264,7 @@ const Profile = () => {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Date de naissance</label>
-                  <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+                  <Input type="date" value={birthDate} max={new Date().toISOString().split('T')[0]} onChange={(e) => setBirthDate(e.target.value)} />
                 </div>
               </div>
 
