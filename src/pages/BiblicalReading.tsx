@@ -149,6 +149,23 @@ const BiblicalReading = () => {
     });
   }, [i18n.language]);
 
+  const monthStats = useMemo(() => {
+    return monthsOrder.reduce<Record<string, { total: number; completed: number; ratio: number }>>((acc, month) => {
+      const [m, y] = month.key.split('-').map(Number);
+      const monthReadings = allReadings.filter((r) => r.month === m && r.year === y);
+      const completed = monthReadings.filter((r) => completedSet.has(r.id)).length;
+      const total = monthReadings.length;
+
+      acc[month.key] = {
+        total,
+        completed,
+        ratio: total > 0 ? Math.round((completed / total) * 100) : 0,
+      };
+
+      return acc;
+    }, {});
+  }, [monthsOrder, allReadings, completedSet]);
+
   const filteredReadings = useMemo(() => {
     let filtered = allReadings;
 
