@@ -563,7 +563,7 @@
     "bookNotFound": "Livre non trouvé",
     "bookNotFoundDesc": "Le livre que vous cherchez n'existe pas.",
     "backToReadings": "Retour aux lectures",
-    "chaptersTitle": "Chapitres",
+    "chaptersTitle": "Chapitre",
     "info": "Informations",
     "fullName": "Nom complet",
     "abbreviation": "Abréviation",
@@ -576,7 +576,14 @@
     "bookOrder": "{{name}} est le {{order}}e livre de la Bible catholique.",
     "deuterocanonical": "Deutérocanonique",
     "deuterocanonicalNote": "Ce livre fait partie des livres deutérocanoniques (livres supplémentaires reconnus par l'Église catholique).",
-    "chapterInstruction": "Vous pouvez consulter les {{count}} chapitres de ce livre en cliquant sur les numéros ci-dessus."
+    "chapterInstruction": "Vous pouvez consulter les {{count}} chapitres de ce livre en cliquant sur les numéros ci-dessus.",
+    "voiceRead": "Lire",
+    "voiceStop": "Stop",
+    "voicePause": "Pause",
+    "voiceResume": "Reprendre",
+    "voiceUnsupported": "Lecture vocale non supportée sur cet appareil.",
+    "voiceNoTextTitle": "Aucun texte à lire",
+    "voiceNoTextDesc": "Chargez un chapitre puis relancez la lecture vocale."
   },
   "creator": {
     "aboutMe": "À Propos de Moi",
