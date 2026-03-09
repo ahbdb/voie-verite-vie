@@ -98,14 +98,17 @@ const BibleBookDetail = () => {
     utterance.onstart = () => {
       setIsSpeaking(true);
       setIsPaused(false);
+      pauseRequestedRef.current = false;
     };
 
     utterance.onend = () => {
+      if (pauseRequestedRef.current) return;
       setIsSpeaking(false);
       setIsPaused(false);
     };
 
     utterance.onerror = (e) => {
+      if (pauseRequestedRef.current) return;
       if (e.error !== 'canceled' && e.error !== 'interrupted') {
         setIsSpeaking(false);
         setIsPaused(false);
