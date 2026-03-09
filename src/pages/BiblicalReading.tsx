@@ -475,12 +475,14 @@ const BiblicalReading = () => {
 
                           <div className="flex-1 min-w-0 space-y-1">
                             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Jour {reading.day_number}</p>
-                            <button
-                              className="text-left font-semibold text-sm text-foreground hover:text-primary transition-colors leading-snug"
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className="p-0 h-auto text-left font-semibold text-sm text-foreground hover:text-primary leading-snug justify-start"
                               onClick={() => setSelectedDayReading(reading)}
                             >
                               {translateBookName(reading.books, i18n.language)} {reading.chapters}
-                            </button>
+                            </Button>
                             <p className="text-xs text-muted-foreground">
                               {reading.chapters_count}{' '}
                               {reading.chapters_count > 1

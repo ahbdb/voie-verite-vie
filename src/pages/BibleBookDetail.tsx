@@ -115,78 +115,53 @@ const BibleBookDetail = () => {
               />
             ) : (
               <>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BookOpen className="w-5 h-5" />
-                      {t('bibleBook.chaptersTitle')} ({book.chapters})
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ScrollArea className="h-[500px] border rounded-lg p-4">
-                      <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-                        {chapters.map((chapter) => (
-                          <Button
-                            key={chapter}
-                            onClick={() => setSelectedChapter(chapter)}
-                            variant="outline"
-                            className="h-10 p-0 text-sm font-semibold hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all cursor-pointer"
-                          >
-                            {chapter}
-                          </Button>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                      <BookOpen className="w-5 h-5 text-primary" />
+                      {t('bibleBook.chaptersTitle')}
+                    </h2>
+                    <span className="text-sm text-muted-foreground">{book.chapters} {t('bibleBook.chaptersCount').toLowerCase()}</span>
+                  </div>
 
-                <div className="mt-8 grid md:grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base">{t('bibleBook.info')}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">{t('bibleBook.fullName')}:</span>
-                        <span className="font-semibold">{localizedName}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">{t('bibleBook.abbreviation')}:</span>
-                        <span className="font-semibold">{localizedAbbr}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">{t('bibleBook.chaptersCount')}:</span>
-                        <span className="font-semibold">{book.chapters}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">{t('bibleBook.testament')}:</span>
-                        <span className="font-semibold">{testamentName}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">{t('bibleBook.position')}:</span>
-                        <span className="font-semibold">{book.order}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-10 gap-2">
+                    {chapters.map((chapter) => (
+                      <button
+                        key={chapter}
+                        onClick={() => setSelectedChapter(chapter)}
+                        className="aspect-square flex items-center justify-center rounded-lg bg-primary/10 text-primary font-semibold text-sm hover:bg-primary hover:text-primary-foreground transition-all"
+                      >
+                        {chapter}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base">{t('bibleBook.references')}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-sm">
-                      <p className="text-muted-foreground">
-                        {t('bibleBook.bookOrder', { name: localizedName, order: book.order })}
-                      </p>
-                      {book.apocrypha && (
-                        <p className="text-amber-600 bg-amber-50 p-2 rounded">
-                          {t('bibleBook.deuterocanonicalNote')}
-                        </p>
-                      )}
-                      <p className="text-muted-foreground">
-                        {t('bibleBook.chapterInstruction', { count: book.chapters })}
-                      </p>
-                    </CardContent>
-                  </Card>
+                <div className="mt-8 space-y-3 text-sm">
+                  <h3 className="text-base font-semibold text-foreground">{t('bibleBook.info')}</h3>
+                  <div className="divide-y divide-border">
+                    <div className="flex justify-between py-2">
+                      <span className="text-muted-foreground">{t('bibleBook.fullName')}</span>
+                      <span className="font-semibold">{localizedName}</span>
+                    </div>
+                    <div className="flex justify-between py-2">
+                      <span className="text-muted-foreground">{t('bibleBook.abbreviation')}</span>
+                      <span className="font-semibold">{localizedAbbr}</span>
+                    </div>
+                    <div className="flex justify-between py-2">
+                      <span className="text-muted-foreground">{t('bibleBook.testament')}</span>
+                      <span className="font-semibold">{testamentName}</span>
+                    </div>
+                    <div className="flex justify-between py-2">
+                      <span className="text-muted-foreground">{t('bibleBook.position')}</span>
+                      <span className="font-semibold">{book.order}</span>
+                    </div>
+                  </div>
+                  {book.apocrypha && (
+                    <p className="text-xs italic text-muted-foreground mt-2">
+                      {t('bibleBook.deuterocanonicalNote')}
+                    </p>
+                  )}
                 </div>
               </>
             )}
