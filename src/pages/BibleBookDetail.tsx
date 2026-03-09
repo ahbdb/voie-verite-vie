@@ -47,6 +47,7 @@ const BibleBookDetail = () => {
   const fullTextRef = useRef<string>('');
   const startOffsetRef = useRef<number>(0);
   const charOffsetRef = useRef<number>(0);
+  const pauseRequestedRef = useRef<boolean>(false);
 
   const langCode = i18n.language?.split('-')[0] === 'en' ? 'en-US' : i18n.language?.split('-')[0] === 'it' ? 'it-IT' : 'fr-FR';
 
