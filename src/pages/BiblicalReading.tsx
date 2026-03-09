@@ -490,29 +490,31 @@ const BiblicalReading = () => {
                             {reading.comment && <p className="text-xs italic text-muted-foreground line-clamp-2">{reading.comment}</p>}
                           </div>
 
-                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <div className="flex items-center gap-2 flex-shrink-0">
                             {completed && (
-                              <button
+                              <Button
+                                size="sm"
+                                variant="outline"
                                 onClick={() => {
                                   setQuizReading(reading);
                                   setShowQuiz(true);
                                 }}
-                                className="p-1.5 rounded-full hover:bg-muted transition-colors"
-                                title="Quiz"
+                                className="gap-1.5 text-xs"
                               >
-                                <Brain className="w-4 h-4 text-primary" />
-                              </button>
+                                <Brain className="w-3.5 h-3.5" />
+                                Quiz
+                              </Button>
                             )}
 
-                            <button
+                            <Button
+                              size="sm"
+                              variant={completed ? 'default' : 'outline'}
                               onClick={() => toggleReadingComplete(reading)}
-                              className={`p-1.5 rounded-full transition-colors ${
-                                completed ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:bg-muted'
-                              }`}
-                              title={completed ? t('biblicalReading.completed') : t('biblicalReading.markAsRead')}
+                              className="gap-1.5 text-xs"
                             >
-                              <CheckCircle className="w-5 h-5" />
-                            </button>
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              {completed ? t('biblicalReading.completed') : t('biblicalReading.markAsRead')}
+                            </Button>
                           </div>
                         </div>
                       </div>
