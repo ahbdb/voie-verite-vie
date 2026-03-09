@@ -5,7 +5,7 @@ import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Calendar, BookOpen, CheckCircle, Brain, Library, Flame, Clock3 } from 'lucide-react';
+import { Calendar, BookOpen, CheckCircle, Brain, Library, Flame, Clock3, ListFilter } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
