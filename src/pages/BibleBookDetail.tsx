@@ -94,7 +94,6 @@ const BibleBookDetail = () => {
 
   const handleClearVoice = () => {
     stopSpeaking();
-    setChapterText('');
   };
 
   if (loading) {
