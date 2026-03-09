@@ -41,6 +41,7 @@ const BibleBookDetail = () => {
   const [selectedChapter, setSelectedChapter] = useState<number>(1);
   const [chapterText, setChapterText] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
