@@ -39,6 +39,7 @@ const BiblicalReading = () => {
   const { t, i18n } = useTranslation();
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [selectedTestament, setSelectedTestament] = useState<'all' | 'old' | 'new'>('all');
+  const [onlyUnread, setOnlyUnread] = useState(false);
   const [activeTab, setActiveTab] = useState('program');
   const [allReadings, setAllReadings] = useState<Reading[]>([]);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
