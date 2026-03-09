@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, BookOpen, Play, Square, ChevronDown } from 'lucide-react';
+import { ArrowLeft, BookOpen, Play, Pause, Square, ChevronDown } from 'lucide-react';
 import BibleChapterViewer from '@/components/BibleChapterViewer';
 import { preloadBibleChapters, clearBibleCache } from '@/lib/bible-content-loader';
 import bibleBooks from '@/data/bible-books.json';
