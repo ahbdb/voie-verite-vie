@@ -359,6 +359,12 @@ const AIChat = () => {
     setTimeout(() => setCopiedMessageIndex(null), 1200);
   };
 
+  const handleStopGeneration = useCallback(() => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setIsLoading(false);
+  }, []);
+
   const newChat = useCallback(() => {
     setCurrentConversationId(null);
     setMessages([]);
