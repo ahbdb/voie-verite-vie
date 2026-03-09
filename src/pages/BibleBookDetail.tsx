@@ -111,6 +111,18 @@ const BibleBookDetail = () => {
   const handleStopVoice = useCallback(() => {
     window.speechSynthesis?.cancel();
     setIsSpeaking(false);
+    setIsPaused(false);
+  }, []);
+
+  const handlePauseResume = useCallback(() => {
+    if (!window.speechSynthesis) return;
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+      setIsPaused(false);
+    } else {
+      window.speechSynthesis.pause();
+      setIsPaused(true);
+    }
   }, []);
 
   if (loading) {
