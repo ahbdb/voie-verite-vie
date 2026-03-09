@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Copy, Share2, Heart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { loadBibleChapterCached, clearBibleCache, BibleVerse } from '@/lib/bible-content-loader';
 import { supabase } from '@/integrations/supabase/client';
@@ -285,35 +283,6 @@ export const BibleChapterViewer = ({
               <p className="m-0 text-base leading-relaxed text-foreground">
                 <span className="mr-1 text-xs font-semibold text-primary">{verse.number}</span>
                 <span>{verse.text}</span>
-                <span className="ml-1 inline-flex items-center gap-0 align-middle">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => shareVerse(Number(verse.number))}
-                    title={t('bibleChapter.shareVerse')}
-                  >
-                    <Share2 className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => saveVerse(Number(verse.number))}
-                    title={t('bibleChapter.saveVerse')}
-                  >
-                    <Heart className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => copyToClipboard(verse.text, Number(verse.number))}
-                    title={t('bibleChapter.copyVerse')}
-                  >
-                    <Copy className="h-3.5 w-3.5" />
-                  </Button>
-                </span>
               </p>
             </div>
           ))}

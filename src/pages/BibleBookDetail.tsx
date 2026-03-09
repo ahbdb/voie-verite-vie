@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, BookOpen, Play, Square, ChevronDown } from 'lucide-react';
+import { ArrowLeft, BookOpen, Play, Pause, Square, ChevronDown } from 'lucide-react';
 import BibleChapterViewer from '@/components/BibleChapterViewer';
 import { preloadBibleChapters, clearBibleCache } from '@/lib/bible-content-loader';
 import bibleBooks from '@/data/bible-books.json';
@@ -41,6 +41,7 @@ const BibleBookDetail = () => {
   const [selectedChapter, setSelectedChapter] = useState<number>(1);
   const [chapterText, setChapterText] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
@@ -60,6 +61,7 @@ const BibleBookDetail = () => {
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
+      setIsPaused(false);
     }
   }, [selectedChapter]);
 
@@ -109,6 +111,18 @@ const BibleBookDetail = () => {
   const handleStopVoice = useCallback(() => {
     window.speechSynthesis?.cancel();
     setIsSpeaking(false);
+    setIsPaused(false);
+  }, []);
+
+  const handlePauseResume = useCallback(() => {
+    if (!window.speechSynthesis) return;
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+      setIsPaused(false);
+    } else {
+      window.speechSynthesis.pause();
+      setIsPaused(true);
+    }
   }, []);
 
   if (loading) {
@@ -175,10 +189,16 @@ const BibleBookDetail = () => {
                   {t('bibleBook.voiceRead', 'Lire')}
                 </Button>
               ) : (
-                <Button onClick={handleStopVoice} variant="outline" size="sm">
-                  <Square className="w-4 h-4 mr-1" />
-                  {t('bibleBook.voiceStop', 'Stop')}
-                </Button>
+                <>
+                  <Button onClick={handlePauseResume} variant="outline" size="sm">
+                    {isPaused ? <Play className="w-4 h-4 mr-1" /> : <Pause className="w-4 h-4 mr-1" />}
+                    {isPaused ? t('bibleBook.voiceResume', 'Reprendre') : t('bibleBook.voicePause', 'Pause')}
+                  </Button>
+                  <Button onClick={handleStopVoice} variant="outline" size="sm">
+                    <Square className="w-4 h-4 mr-1" />
+                    {t('bibleBook.voiceStop', 'Stop')}
+                  </Button>
+                </>
               )}
             </div>
           </div>
