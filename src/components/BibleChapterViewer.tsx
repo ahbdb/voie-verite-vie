@@ -14,6 +14,7 @@ interface BibleChapterViewerProps {
   totalChapters?: number;
   onChapterChange?: (ch: number) => void;
   onChapterTextReady?: (text: string) => void;
+  onBack?: () => void;
 }
 
 export const BibleChapterViewer = ({
