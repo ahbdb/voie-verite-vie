@@ -459,7 +459,7 @@ const BiblicalReading = () => {
               <div className="space-y-3">
                 {filteredReadings.length === 0 ? (
                   <div className="rounded-xl border border-border bg-card p-5 text-center text-sm text-muted-foreground">
-                    Aucune lecture pour ce filtre.
+                    {t('about.noReadingsForFilter')}
                   </div>
                 ) : (
                   filteredReadings.map((reading) => {
