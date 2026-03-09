@@ -99,6 +99,12 @@ const AIChat = () => {
     messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
   }, [messages, isLoading]);
 
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
   const loadConversations = async () => {
     if (!user) return;
 
