@@ -212,7 +212,8 @@ export const BibleChapterViewer = ({
           await navigator.share({
             files: [file],
             title: reference,
-            text: `${reference} — Voie, Vérité, Vie`,
+            url: 'https://voie-verite-vie.lovable.app',
+            text: reference,
           });
           return;
         } catch {}
