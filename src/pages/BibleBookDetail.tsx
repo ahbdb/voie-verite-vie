@@ -65,13 +65,17 @@ const BibleBookDetail = () => {
     }
   }, [bookId]);
 
-  // Stop speaking on chapter change
+  // Stop speaking on chapter change + scroll navbar
   useEffect(() => {
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
       setIsPaused(false);
     }
+    // Scroll the chapter button into view in the navbar
+    setTimeout(() => {
+      chapterButtonsRef.current.get(selectedChapter)?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }, 50);
   }, [selectedChapter]);
 
   const speakFrom = useCallback((offset: number) => {
