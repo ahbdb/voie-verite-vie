@@ -29,6 +29,14 @@ export const useBroadcastNotifications = () => {
       }
     };
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        stopRinging();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     const channel = supabase
       .channel(`notifications-toast:${user.id}`)
       .on(
