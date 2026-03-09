@@ -108,8 +108,13 @@ const Profile = () => {
     event.target.value = '';
     if (!file || !user) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Veuillez choisir une image');
+    if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+      toast.error('Format non supporté. Utilise JPG, PNG ou WEBP');
+      return;
+    }
+
+    if (file.size > MAX_AVATAR_SIZE_BYTES) {
+      toast.error('Image trop lourde (max 5MB)');
       return;
     }
 
@@ -140,6 +145,28 @@ const Profile = () => {
     } catch (error) {
       console.error('Avatar upload failed:', error);
       toast.error('Échec de l’upload de la photo');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!user) return;
+
+    try {
+      setUploadingAvatar(true);
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_url: null })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      setProfile((prev) => (prev ? { ...prev, avatar_url: null } : prev));
+      toast.success('Photo supprimée');
+    } catch (error) {
+      console.error('Avatar removal failed:', error);
+      toast.error('Échec de suppression de la photo');
     } finally {
       setUploadingAvatar(false);
     }
