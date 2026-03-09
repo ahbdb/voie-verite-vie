@@ -219,8 +219,12 @@ const BiblicalReading = () => {
 
   const todayReading = useMemo(() => {
     if (allReadings.length === 0) return null;
-    const today = new Date();
-    const todayIso = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString().slice(0, 10);
+    // Use local date (respects user's timezone/country)
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const todayIso = `${yyyy}-${mm}-${dd}`;
     const exact = allReadings.find((r) => r.date === todayIso);
     if (exact) return exact;
     return allReadings.find((r) => !isCompleted(r.id)) || allReadings[0];
