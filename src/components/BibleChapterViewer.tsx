@@ -204,17 +204,24 @@ export const BibleChapterViewer = ({
   const shareVerse = useCallback(
     async (verseNumber: number) => {
       const reference = `${abbreviation} ${chapterNumber}:${verseNumber}`;
+      const appUrl = 'https://voie-verite-vie.lovable.app';
       const blob = await generateVerseImage(verseNumber);
 
-      if (blob && navigator.share && navigator.canShare?.({ files: [new File([blob], 'verse.png', { type: 'image/png' })] })) {
+      if (blob && navigator.share) {
+        const file = new File([blob], `${reference.replace(/\s+/g, '-')}.png`, { type: 'image/png' });
+        const canShareFiles = navigator.canShare?.({ files: [file] });
+
         try {
-          const file = new File([blob], `${reference.replace(/\s+/g, '-')}.png`, { type: 'image/png' });
-          await navigator.share({
-            files: [file],
-            title: reference,
-            url: 'https://voie-verite-vie.lovable.app',
-            text: reference,
-          });
+          if (canShareFiles) {
+            // Share image + URL together — the image IS the clickable link on social platforms
+            await navigator.share({
+              url: appUrl,
+              files: [file],
+            });
+          } else {
+            // Device can't share files — share URL only
+            await navigator.share({ url: appUrl, text: `${reference}` });
+          }
           return;
         } catch {}
       }
