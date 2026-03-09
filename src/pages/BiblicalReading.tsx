@@ -475,12 +475,14 @@ const BiblicalReading = () => {
 
                           <div className="flex-1 min-w-0 space-y-1">
                             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Jour {reading.day_number}</p>
-                            <button
-                              className="text-left font-semibold text-sm text-foreground hover:text-primary transition-colors leading-snug"
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className="p-0 h-auto text-left font-semibold text-sm text-foreground hover:text-primary leading-snug justify-start"
                               onClick={() => setSelectedDayReading(reading)}
                             >
                               {translateBookName(reading.books, i18n.language)} {reading.chapters}
-                            </button>
+                            </Button>
                             <p className="text-xs text-muted-foreground">
                               {reading.chapters_count}{' '}
                               {reading.chapters_count > 1
@@ -490,29 +492,31 @@ const BiblicalReading = () => {
                             {reading.comment && <p className="text-xs italic text-muted-foreground line-clamp-2">{reading.comment}</p>}
                           </div>
 
-                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <div className="flex items-center gap-2 flex-shrink-0">
                             {completed && (
-                              <button
+                              <Button
+                                size="sm"
+                                variant="outline"
                                 onClick={() => {
                                   setQuizReading(reading);
                                   setShowQuiz(true);
                                 }}
-                                className="p-1.5 rounded-full hover:bg-muted transition-colors"
-                                title="Quiz"
+                                className="gap-1.5 text-xs"
                               >
-                                <Brain className="w-4 h-4 text-primary" />
-                              </button>
+                                <Brain className="w-3.5 h-3.5" />
+                                Quiz
+                              </Button>
                             )}
 
-                            <button
+                            <Button
+                              size="sm"
+                              variant={completed ? 'default' : 'outline'}
                               onClick={() => toggleReadingComplete(reading)}
-                              className={`p-1.5 rounded-full transition-colors ${
-                                completed ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:bg-muted'
-                              }`}
-                              title={completed ? t('biblicalReading.completed') : t('biblicalReading.markAsRead')}
+                              className="gap-1.5 text-xs"
                             >
-                              <CheckCircle className="w-5 h-5" />
-                            </button>
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              {completed ? t('biblicalReading.completed') : t('biblicalReading.markAsRead')}
+                            </Button>
                           </div>
                         </div>
                       </div>
