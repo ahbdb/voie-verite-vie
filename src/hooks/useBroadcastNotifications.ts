@@ -112,6 +112,7 @@ export const useBroadcastNotifications = () => {
 
     return () => {
       stopRinging();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       supabase.removeChannel(channel);
     };
   }, [user?.id]);
