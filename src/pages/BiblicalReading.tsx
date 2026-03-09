@@ -370,7 +370,7 @@ const BiblicalReading = () => {
               <div className="rounded-2xl border border-border bg-card p-4 md:p-5 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-medium text-foreground">Programme de lecture</p>
+                    <p className="text-sm font-medium text-foreground">{t('about.readingProgram')}</p>
                     <p className="text-xs text-muted-foreground">
                       {completedCount}/{TOTAL_PROGRAM_DAYS} {t('biblicalReading.completedLabel')}
                     </p>
