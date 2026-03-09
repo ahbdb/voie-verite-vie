@@ -3,16 +3,25 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 export type Theme = 'light' | 'dark' | 'system';
 export type TextSize = 'small' | 'normal' | 'large' | 'extra-large';
 
+export interface VoiceOption {
+  name: string;
+  lang: string;
+  voiceURI: string;
+}
+
 interface Settings {
   theme: Theme;
   textSize: TextSize;
+  selectedVoice: string | null;
 }
 
 interface SettingsContextType {
   settings: Settings;
   setTheme: (theme: Theme) => void;
   setTextSize: (size: TextSize) => void;
+  setSelectedVoice: (voiceURI: string | null) => void;
   isDarkMode: boolean;
+  availableVoices: VoiceOption[];
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -20,30 +29,50 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   textSize: 'normal',
+  selectedVoice: null,
 };
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [availableVoices, setAvailableVoices] = useState<VoiceOption[]>([]);
 
-  // Charger depuis localStorage au montage
+  // Load voices
+  useEffect(() => {
+    const loadVoices = () => {
+      const voices = window.speechSynthesis?.getVoices() || [];
+      const voiceOptions: VoiceOption[] = voices
+        .filter(v => v.lang.startsWith('fr') || v.lang.startsWith('en') || v.lang.startsWith('it'))
+        .map(v => ({
+          name: v.name,
+          lang: v.lang,
+          voiceURI: v.voiceURI,
+        }));
+      setAvailableVoices(voiceOptions);
+    };
+
+    loadVoices();
+    if (window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }, []);
+
+  // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('app-settings');
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as Settings;
-        setSettings(parsed);
+        setSettings({ ...DEFAULT_SETTINGS, ...parsed });
       } catch (e) {
         console.warn('Erreur parsing settings', e);
       }
     }
 
-    // Détecter mode sombre système
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     updateDarkMode(saved ? JSON.parse(saved).theme : 'system', prefersDark);
   }, []);
 
-  // Listener pour changements mode système
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e: MediaQueryListEvent) => {
@@ -72,7 +101,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     updateDarkMode(theme, prefersDark);
     const updated = { ...settings, theme };
     setSettings(updated);
-    localStorage.setItem('app-settings', JSON.stringify(updated));
+    localStorage.setItem('app-settings', JSON-stringify(updated));
   };
 
   const setTextSize = (size: TextSize) => {
@@ -80,6 +109,12 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     setSettings(updated);
     localStorage.setItem('app-settings', JSON.stringify(updated));
     applyTextSize(size);
+  };
+
+  const setSelectedVoice = (voiceURI: string | null) => {
+    const updated = { ...settings, selectedVoice: voiceURI };
+    setSettings(updated);
+    localStorage.setItem('app-settings', JSON.stringify(updated));
   };
 
   const applyTextSize = (size: TextSize) => {
@@ -93,13 +128,12 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     root.style.setProperty('--text-scale', String(scales[size]));
   };
 
-  // Appliquer la taille au montage
   useEffect(() => {
     applyTextSize(settings.textSize);
   }, [settings.textSize]);
 
   return (
-    <SettingsContext.Provider value={{ settings, setTheme, setTextSize, isDarkMode }}>
+    <SettingsContext.Provider value={{ settings, setTheme, setTextSize, setSelectedVoice, isDarkMode, availableVoices }}>
       {children}
     </SettingsContext.Provider>
   );
