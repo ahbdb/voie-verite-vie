@@ -71,6 +71,7 @@ const AIChat = () => {
 
   const messageListRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const { toast } = useToast();
   const { user, loading } = useAuth();
@@ -97,6 +98,12 @@ const AIChat = () => {
     if (!messageListRef.current) return;
     messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   const loadConversations = async () => {
     if (!user) return;
@@ -168,6 +175,9 @@ const AIChat = () => {
 
       if (!session) return;
 
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chat`, {
         method: 'POST',
         headers: {
@@ -175,6 +185,7 @@ const AIChat = () => {
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ messages: [...messages, userMessage] }),
+        signal: controller.signal,
       });
 
       if (!response.ok || !response.body) {
@@ -218,6 +229,7 @@ const AIChat = () => {
           textBuffer = textBuffer.slice(newlineIndex + 1);
 
           if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
           if (!line.startsWith('data: ')) continue;
 
           const jsonStr = line.slice(6).trim();
@@ -248,8 +260,14 @@ const AIChat = () => {
       }
 
       if (assistantMessage) await saveMessage(convId, 'assistant', assistantMessage);
-    } catch {
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        toast({ title: 'Réponse interrompue' });
+        return;
+      }
       toast({ title: t('common.error'), variant: 'destructive' });
+    } finally {
+      abortControllerRef.current = null;
     }
   };
 
@@ -346,6 +364,12 @@ const AIChat = () => {
     setCopiedMessageIndex(index);
     setTimeout(() => setCopiedMessageIndex(null), 1200);
   };
+
+  const handleStopGeneration = useCallback(() => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setIsLoading(false);
+  }, []);
 
   const newChat = useCallback(() => {
     setCurrentConversationId(null);
@@ -562,9 +586,16 @@ const AIChat = () => {
                   />
                 </div>
 
-                <Button onClick={() => void handleSend()} disabled={isLoading || !input.trim()} size="sm" className="h-[52px] px-4">
-                  <Send className="w-4 h-4" />
-                </Button>
+                {isLoading ? (
+                  <Button onClick={handleStopGeneration} variant="outline" size="sm" className="h-[52px] px-4 gap-2">
+                    <X className="w-4 h-4" />
+                    Stop
+                  </Button>
+                ) : (
+                  <Button onClick={() => void handleSend()} disabled={!input.trim()} size="sm" className="h-[52px] px-4">
+                    <Send className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
 
               <p className="text-[11px] text-muted-foreground px-1">

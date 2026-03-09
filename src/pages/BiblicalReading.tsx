@@ -5,7 +5,7 @@ import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Calendar, BookOpen, CheckCircle, Brain, Library, Flame, Clock3 } from 'lucide-react';
+import { Calendar, BookOpen, CheckCircle, Brain, Library, Flame, Clock3, ListFilter } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
@@ -39,6 +39,7 @@ const BiblicalReading = () => {
   const { t, i18n } = useTranslation();
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [selectedTestament, setSelectedTestament] = useState<'all' | 'old' | 'new'>('all');
+  const [onlyUnread, setOnlyUnread] = useState(false);
   const [activeTab, setActiveTab] = useState('program');
   const [allReadings, setAllReadings] = useState<Reading[]>([]);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
@@ -110,10 +111,12 @@ const BiblicalReading = () => {
     if (user) void loadUserProgress();
   }, [user, loadAllReadings, loadUserProgress]);
 
-  const isCompleted = useCallback(
-    (readingId: string) => userProgress.some((p) => p.reading_id === readingId && p.completed),
+  const completedSet = useMemo(
+    () => new Set(userProgress.filter((p) => p.completed).map((p) => p.reading_id)),
     [userProgress]
   );
+
+  const isCompleted = useCallback((readingId: string) => completedSet.has(readingId), [completedSet]);
 
   const getLocale = () => {
     const lang = i18n.language?.split('-')[0] || 'fr';
@@ -145,6 +148,23 @@ const BiblicalReading = () => {
       return { key: `${m}-${y}`, name: `${label.charAt(0).toUpperCase() + label.slice(1)} ${y}` };
     });
   }, [i18n.language]);
+
+  const monthStats = useMemo(() => {
+    return monthsOrder.reduce<Record<string, { total: number; completed: number; ratio: number }>>((acc, month) => {
+      const [m, y] = month.key.split('-').map(Number);
+      const monthReadings = allReadings.filter((r) => r.month === m && r.year === y);
+      const completed = monthReadings.filter((r) => completedSet.has(r.id)).length;
+      const total = monthReadings.length;
+
+      acc[month.key] = {
+        total,
+        completed,
+        ratio: total > 0 ? Math.round((completed / total) * 100) : 0,
+      };
+
+      return acc;
+    }, {});
+  }, [monthsOrder, allReadings, completedSet]);
 
   const filteredReadings = useMemo(() => {
     let filtered = allReadings;
@@ -184,8 +204,12 @@ const BiblicalReading = () => {
           : filtered.filter((r) => ntBooks.some((nt) => r.books.includes(nt)));
     }
 
+    if (onlyUnread) {
+      filtered = filtered.filter((r) => !completedSet.has(r.id));
+    }
+
     return filtered;
-  }, [allReadings, selectedMonth, selectedTestament]);
+  }, [allReadings, selectedMonth, selectedTestament, onlyUnread, completedSet]);
 
   const completedCount = useMemo(() => userProgress.filter((p) => p.completed).length, [userProgress]);
   const progressPercentage = useMemo(
@@ -339,126 +363,162 @@ const BiblicalReading = () => {
             </TabsList>
 
             <TabsContent value="program" className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    {completedCount}/{TOTAL_PROGRAM_DAYS} {t('biblicalReading.completedLabel')}
-                  </span>
-                  <span className="font-cinzel font-bold text-primary">{progressPercentage}%</span>
-                </div>
+              <div className="rounded-2xl border border-border bg-card p-4 md:p-5 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Programme de lecture</p>
+                    <p className="text-xs text-muted-foreground">
+                      {completedCount}/{TOTAL_PROGRAM_DAYS} {t('biblicalReading.completedLabel')}
+                    </p>
+                  </div>
 
-                <div className="flex flex-wrap gap-1.5">
                   <button
-                    onClick={() => setSelectedMonth('all')}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                      selectedMonth === 'all'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    type="button"
+                    onClick={() => setOnlyUnread((prev) => !prev)}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                      onlyUnread ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
                     }`}
                   >
-                    {t('biblicalReading.all')}
+                    <ListFilter className="w-3.5 h-3.5" />
+                    {onlyUnread ? 'Lectures non lues' : 'Toutes les lectures'}
                   </button>
-                  {monthsOrder.map((month) => {
-                    const [m, y] = month.key.split('-').map(Number);
-                    const hasReadings = allReadings.some((r) => r.month === m && r.year === y);
-                    if (!hasReadings) return null;
-
-                    return (
-                      <button
-                        key={month.key}
-                        onClick={() => setSelectedMonth(month.key)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                          selectedMonth === month.key
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                        }`}
-                      >
-                        {month.name}
-                      </button>
-                    );
-                  })}
                 </div>
 
-                <div className="flex gap-1.5 flex-wrap">
-                  {[
-                    { key: 'all', label: t('biblicalReading.all') },
-                    { key: 'old', label: t('biblicalReading.oldTestament') },
-                    { key: 'new', label: t('biblicalReading.newTestament') },
-                  ].map((f) => (
-                    <button
-                      key={f.key}
-                      onClick={() => setSelectedTestament(f.key as 'all' | 'old' | 'new')}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                        selectedTestament === f.key
-                          ? 'bg-secondary text-secondary-foreground'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      }`}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Progression totale</span>
+                    <span className="font-cinzel font-bold text-primary">{progressPercentage}%</span>
+                  </div>
+                  <Progress value={progressPercentage} className="h-2" />
                 </div>
               </div>
 
-              <div className="divide-y divide-border border border-border rounded-xl overflow-hidden">
-                {filteredReadings.map((reading) => {
-                  const completed = isCompleted(reading.id);
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                <button
+                  onClick={() => setSelectedMonth('all')}
+                  className={`rounded-xl border p-3 text-left transition-colors ${
+                    selectedMonth === 'all'
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border bg-card hover:bg-muted/40'
+                  }`}
+                >
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">Filtre</p>
+                  <p className="text-sm font-semibold text-foreground">{t('biblicalReading.all')}</p>
+                </button>
+
+                {monthsOrder.map((month) => {
+                  const stats = monthStats[month.key];
+                  if (!stats || stats.total === 0) return null;
 
                   return (
-                    <div key={reading.id} className={`p-4 flex items-start gap-3 ${completed ? 'bg-muted/20' : 'bg-background'}`}>
-                      <div className="w-12 flex-shrink-0 text-center">
-                        <p className="text-lg font-cinzel font-bold text-primary leading-none">{reading.day_number}</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">
-                          {new Date(reading.date).toLocaleDateString(getLocale(), {
-                            day: 'numeric',
-                            month: 'short',
-                          })}
-                        </p>
+                    <button
+                      key={month.key}
+                      onClick={() => setSelectedMonth(month.key)}
+                      className={`rounded-xl border p-3 text-left transition-colors ${
+                        selectedMonth === month.key
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border bg-card hover:bg-muted/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-semibold text-foreground truncate">{month.name}</p>
+                        <span className="text-[11px] text-muted-foreground">
+                          {stats.completed}/{stats.total}
+                        </span>
                       </div>
-
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <button
-                          className="text-left font-semibold text-sm text-foreground hover:text-primary transition-colors leading-snug"
-                          onClick={() => setSelectedDayReading(reading)}
-                        >
-                          {translateBookName(reading.books, i18n.language)} {reading.chapters}
-                        </button>
-                        <p className="text-xs text-muted-foreground">
-                          {reading.chapters_count}{' '}
-                          {reading.chapters_count > 1
-                            ? t('biblicalReading.chaptersPlural')
-                            : t('biblicalReading.chapters')}
-                        </p>
-                        {reading.comment && <p className="text-xs italic text-muted-foreground/80 line-clamp-1">{reading.comment}</p>}
-                      </div>
-
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        {completed && (
-                          <button
-                            onClick={() => {
-                              setQuizReading(reading);
-                              setShowQuiz(true);
-                            }}
-                            className="p-1.5 rounded-full hover:bg-muted transition-colors"
-                            title="Quiz"
-                          >
-                            <Brain className="w-4 h-4 text-primary" />
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => toggleReadingComplete(reading)}
-                          className={`p-1.5 rounded-full transition-colors ${
-                            completed ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:bg-muted'
-                          }`}
-                          title={completed ? t('biblicalReading.completed') : t('biblicalReading.markAsRead')}
-                        >
-                          <CheckCircle className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
+                      <Progress value={stats.ratio} className="h-1.5 mt-2" />
+                    </button>
                   );
                 })}
+              </div>
+
+              <div className="flex gap-1.5 flex-wrap">
+                {[
+                  { key: 'all', label: t('biblicalReading.all') },
+                  { key: 'old', label: t('biblicalReading.oldTestament') },
+                  { key: 'new', label: t('biblicalReading.newTestament') },
+                ].map((f) => (
+                  <button
+                    key={f.key}
+                    onClick={() => setSelectedTestament(f.key as 'all' | 'old' | 'new')}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      selectedTestament === f.key
+                        ? 'bg-secondary text-secondary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-3">
+                {filteredReadings.length === 0 ? (
+                  <div className="rounded-xl border border-border bg-card p-5 text-center text-sm text-muted-foreground">
+                    Aucune lecture pour ce filtre.
+                  </div>
+                ) : (
+                  filteredReadings.map((reading) => {
+                    const completed = isCompleted(reading.id);
+
+                    return (
+                      <div key={reading.id} className={`rounded-xl border p-4 transition-colors ${completed ? 'border-primary/40 bg-primary/5' : 'border-border bg-card'}`}>
+                        <div className="flex items-start gap-3">
+                          <div className="w-14 rounded-lg border border-border bg-muted/40 px-2 py-1 text-center">
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                              {new Date(reading.date).toLocaleDateString(getLocale(), { month: 'short' })}
+                            </p>
+                            <p className="text-lg leading-none font-cinzel font-bold text-primary">
+                              {new Date(reading.date).toLocaleDateString(getLocale(), { day: 'numeric' })}
+                            </p>
+                          </div>
+
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Jour {reading.day_number}</p>
+                            <button
+                              className="text-left font-semibold text-sm text-foreground hover:text-primary transition-colors leading-snug"
+                              onClick={() => setSelectedDayReading(reading)}
+                            >
+                              {translateBookName(reading.books, i18n.language)} {reading.chapters}
+                            </button>
+                            <p className="text-xs text-muted-foreground">
+                              {reading.chapters_count}{' '}
+                              {reading.chapters_count > 1
+                                ? t('biblicalReading.chaptersPlural')
+                                : t('biblicalReading.chapters')}
+                            </p>
+                            {reading.comment && <p className="text-xs italic text-muted-foreground line-clamp-2">{reading.comment}</p>}
+                          </div>
+
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            {completed && (
+                              <button
+                                onClick={() => {
+                                  setQuizReading(reading);
+                                  setShowQuiz(true);
+                                }}
+                                className="p-1.5 rounded-full hover:bg-muted transition-colors"
+                                title="Quiz"
+                              >
+                                <Brain className="w-4 h-4 text-primary" />
+                              </button>
+                            )}
+
+                            <button
+                              onClick={() => toggleReadingComplete(reading)}
+                              className={`p-1.5 rounded-full transition-colors ${
+                                completed ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:bg-muted'
+                              }`}
+                              title={completed ? t('biblicalReading.completed') : t('biblicalReading.markAsRead')}
+                            >
+                              <CheckCircle className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </TabsContent>
 

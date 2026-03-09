@@ -141,7 +141,7 @@ const Navigation = () => {
             </span>
           </Link>
 
-          <div className="hidden lg:flex items-center space-x-1">
+          <div className="hidden lg:flex items-center gap-2">
             {siteLinks.map((category) => {
               const visibleItems = category.items.filter((i) => i.showInNav !== false);
               const categoryIsActive = visibleItems.some((item) => isPathActive(item.href));
@@ -150,17 +150,18 @@ const Navigation = () => {
                 <div key={category.id} className="group relative">
                   <button
                     className={
-                      'px-3 py-2 text-sm font-medium transition-colors duration-150 rounded-md ' +
+                      'inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors duration-150 rounded-full border ' +
                       (categoryIsActive
-                        ? 'text-primary bg-muted/40'
-                        : 'text-muted-foreground hover:text-primary hover:bg-muted/50')
+                        ? 'text-primary border-primary/40 bg-primary/10'
+                        : 'text-muted-foreground border-transparent hover:text-primary hover:border-border hover:bg-muted/40')
                     }
                     aria-current={categoryIsActive ? 'page' : undefined}
                   >
                     {t(category.titleKey)}
+                    <ChevronDown className="w-3.5 h-3.5" />
                   </button>
 
-                  <div className="absolute left-0 mt-0 w-56 bg-popover text-popover-foreground border border-border/60 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out origin-top-left z-50">
+                  <div className="absolute left-0 mt-2 w-64 bg-popover text-popover-foreground border border-border rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out origin-top-left z-50">
                     <div className="py-2">
                       {visibleItems.map((item) => {
                         const Icon = item.icon ? ICONS[item.icon as string] : undefined;
@@ -171,7 +172,7 @@ const Navigation = () => {
                             key={item.nameKey}
                             to={item.href}
                             className={
-                              'flex items-center gap-2 px-4 py-2 text-sm transition-colors duration-150 ' +
+                              'mx-2 flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-150 ' +
                               (active ? 'bg-muted text-primary font-semibold' : 'hover:bg-muted/50')
                             }
                             aria-current={active ? 'page' : undefined}
@@ -279,12 +280,12 @@ const Navigation = () => {
                       const catIsActive = visibleItems.some((item) => isPathActive(item.href));
 
                       return (
-                        <div key={cat.id} className="border-b border-border/30 pb-4 last:border-0">
+                        <div key={cat.id} className="rounded-xl border border-border/60 bg-card p-3">
                           <button
                             onClick={() => setExpandedCategory(isExpanded ? null : cat.id)}
                             aria-expanded={isExpanded}
                             className={
-                              'w-full flex items-center px-0 py-2 text-sm font-bold uppercase tracking-wider transition-opacity text-left ' +
+                              'w-full flex items-center px-0 py-1 text-xs font-bold uppercase tracking-wider transition-opacity text-left ' +
                               (catIsActive ? 'text-primary' : 'text-muted-foreground hover:opacity-80')
                             }
                           >
@@ -295,7 +296,7 @@ const Navigation = () => {
                           </button>
 
                           {isExpanded && (
-                            <div className="space-y-1 mt-2">
+                            <div className="space-y-1 mt-2 pt-2 border-t border-border/60">
                               {visibleItems.map((item) => {
                                 const Icon = item.icon ? ICONS[item.icon as string] : undefined;
                                 const active = isPathActive(item.href);
@@ -305,7 +306,7 @@ const Navigation = () => {
                                     key={item.nameKey}
                                     to={item.href}
                                     className={
-                                      'flex items-center space-x-3 py-2 px-2 rounded-md transition-colors ' +
+                                      'flex items-center space-x-3 py-2 px-2 rounded-lg transition-colors ' +
                                       (active ? 'bg-muted text-primary font-semibold' : 'hover:bg-muted/60')
                                     }
                                     aria-current={active ? 'page' : undefined}

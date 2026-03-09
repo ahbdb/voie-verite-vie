@@ -14,6 +14,8 @@ export interface NotificationPayload {
   silent?: boolean;
   badge_count?: number;
   requireInteraction?: boolean;
+  vibrate?: number[];
+  renotify?: boolean;
 }
 
 const NOTIFICATION_SW_PATH = '/notification-sw.js';
@@ -37,6 +39,8 @@ const buildNotificationOptions = (payload: NotificationPayload) => ({
   icon: payload.icon || '/logo-3v.png',
   tag: payload.tag || 'default',
   silent: payload.silent ?? true,
+  renotify: payload.renotify ?? payload.action === 'call',
+  vibrate: payload.vibrate || (payload.action === 'call' ? [250, 150, 250, 150, 350] : [120, 60, 120]),
   requireInteraction: payload.requireInteraction ?? payload.action === 'call',
   data: {
     ...payload.data,
@@ -105,6 +109,7 @@ export const sendVisibleNotification = async (payload: NotificationPayload) => {
         buildNotificationOptions({
           ...payload,
           silent: false,
+          renotify: payload.renotify ?? true,
           requireInteraction: payload.requireInteraction ?? true,
           tag: payload.tag || `visible-${Date.now()}`,
         })
@@ -118,6 +123,7 @@ export const sendVisibleNotification = async (payload: NotificationPayload) => {
         buildNotificationOptions({
           ...payload,
           silent: false,
+          renotify: payload.renotify ?? true,
           requireInteraction: payload.requireInteraction ?? true,
           tag: payload.tag || `visible-${Date.now()}`,
         })
