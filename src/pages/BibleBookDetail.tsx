@@ -10,11 +10,12 @@ import bibleBooks from '@/data/bible-books.json';
 import { getBookName, getBookAbbreviation } from '@/lib/bible-utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useSettings } from '@/hooks/useSettings';
 import { useToast } from '@/components/ui/use-toast';
 
