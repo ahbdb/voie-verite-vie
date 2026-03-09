@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Copy, Share2, Heart } from 'lucide-react';
+import { Copy, Share2, Heart } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { loadBibleChapterCached, clearBibleCache, BibleVerse } from '@/lib/bible-content-loader';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,10 +10,12 @@ interface BibleChapterViewerProps {
   bookName: string;
   abbreviation: string;
   chapterNumber: number;
+  totalChapters?: number;
+  onChapterChange?: (ch: number) => void;
   onBack: () => void;
 }
 
-export const BibleChapterViewer = ({ bookId, bookName, abbreviation, chapterNumber, onBack }: BibleChapterViewerProps) => {
+export const BibleChapterViewer = ({ bookId, bookName, abbreviation, chapterNumber, totalChapters, onChapterChange, onBack }: BibleChapterViewerProps) => {
   const { t, i18n } = useTranslation();
   const [verses, setVerses] = useState<BibleVerse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,59 +101,76 @@ export const BibleChapterViewer = ({ bookId, bookName, abbreviation, chapterNumb
     }
   }, [abbreviation, chapterNumber, verses, bookName, toast, t]);
 
+  if (loading) {
+    return (
+      <div className="py-12 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+        <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+      </div>
+    );
+  }
+
   if (error) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-cinzel font-bold">{bookName} {chapterNumber}</h2>
-          <Button variant="ghost" size="sm" onClick={onBack}><ArrowLeft className="w-4 h-4" /></Button>
-        </div>
+      <div className="py-8">
         <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 text-destructive text-sm">{error}</div>
-        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>{t('bibleChapter.retry')}</Button>
       </div>
     );
   }
 
   return (
     <div>
-      {/* Header – flat */}
-      <div className="flex items-center justify-between mb-6">
-        <Button variant="ghost" size="sm" onClick={onBack}><ArrowLeft className="w-4 h-4" /></Button>
-        <h2 className="text-xl font-cinzel font-bold">{bookName} {chapterNumber}</h2>
-        <div className="w-8" />
-      </div>
+      {/* Chapter title */}
+      <h2 className="text-lg font-semibold text-foreground mb-4">
+        {bookName} — {t('bibleBook.chaptersTitle')} {chapterNumber}
+      </h2>
 
-      {/* Verses – flat list, no Card */}
+      {/* Verses: inline flow, no boxes, no spacing between verses */}
       {verses.length > 0 && (
-        <div className="space-y-1">
+        <div className="text-base leading-relaxed text-foreground/90 text-justify">
           {verses.map((verse) => (
-            <div key={verse.number} className="flex gap-3 py-1 group">
-              <Badge variant="secondary" className="h-fit flex-shrink-0 font-semibold text-xs mt-0.5 w-7 justify-center">
-                {verse.number}
-              </Badge>
-              <div className="flex-1">
-                <p className="text-sm leading-relaxed text-foreground/90 text-justify inline">
-                  {verse.text}
-                  <span className="inline-flex gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="h-5 w-5 p-0 inline-flex items-center justify-center text-muted-foreground hover:text-primary transition-colors" onClick={() => copyToClipboard(verse.text)} title={t('bibleChapter.copyVerse')}>
-                      <Copy className="w-3 h-3" />
-                    </button>
-                    <button className="h-5 w-5 p-0 inline-flex items-center justify-center text-muted-foreground hover:text-primary transition-colors" onClick={() => shareVerse(verse.number)} title={t('bibleChapter.shareVerse')}>
-                      <Share2 className="w-3 h-3" />
-                    </button>
-                    <button className="h-5 w-5 p-0 inline-flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors" onClick={() => saveVerse(verse.number)} title={t('bibleChapter.saveVerse')}>
-                      <Heart className="w-3 h-3" />
-                    </button>
-                  </span>
-                </p>
-              </div>
-            </div>
+            <span key={verse.number} className="group">
+              <sup className="text-xs font-bold text-primary mr-0.5 select-none">{verse.number}</sup>
+              {verse.text}{' '}
+              <span className="inline-flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity align-middle">
+                <button className="h-4 w-4 p-0 inline-flex items-center justify-center text-muted-foreground hover:text-primary transition-colors" onClick={() => copyToClipboard(verse.text)} title={t('bibleChapter.copyVerse')}>
+                  <Copy className="w-3 h-3" />
+                </button>
+                <button className="h-4 w-4 p-0 inline-flex items-center justify-center text-muted-foreground hover:text-primary transition-colors" onClick={() => shareVerse(verse.number)} title={t('bibleChapter.shareVerse')}>
+                  <Share2 className="w-3 h-3" />
+                </button>
+                <button className="h-4 w-4 p-0 inline-flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors" onClick={() => saveVerse(verse.number)} title={t('bibleChapter.saveVerse')}>
+                  <Heart className="w-3 h-3" />
+                </button>
+              </span>
+            </span>
           ))}
         </div>
       )}
 
       {verses.length === 0 && initialLoadDone && !error && (
         <div className="text-center py-8 text-muted-foreground"><p>{t('bibleChapter.noVerses')}</p></div>
+      )}
+
+      {/* Prev / Next chapter navigation */}
+      {totalChapters && onChapterChange && (
+        <div className="flex justify-between items-center mt-8 pt-4 border-t">
+          <button
+            disabled={chapterNumber <= 1}
+            onClick={() => onChapterChange(chapterNumber - 1)}
+            className="text-sm font-medium text-primary disabled:text-muted-foreground disabled:cursor-not-allowed"
+          >
+            ← {t('bibleChapter.prevChapter', 'Précédent')}
+          </button>
+          <span className="text-xs text-muted-foreground">{chapterNumber} / {totalChapters}</span>
+          <button
+            disabled={chapterNumber >= totalChapters}
+            onClick={() => onChapterChange(chapterNumber + 1)}
+            className="text-sm font-medium text-primary disabled:text-muted-foreground disabled:cursor-not-allowed"
+          >
+            {t('bibleChapter.nextChapter', 'Suivant')} →
+          </button>
+        </div>
       )}
     </div>
   );
