@@ -478,7 +478,7 @@ const BiblicalReading = () => {
                           </div>
 
                           <div className="flex-1 min-w-0 space-y-1">
-                            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Jour {reading.day_number}</p>
+                            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{t('biblicalReading.day')} {reading.day_number}</p>
                             <Button
                               variant="link"
                               size="sm"

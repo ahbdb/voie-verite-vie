@@ -13,7 +13,12 @@ const About = memo(() => {
   const timeline = [
     { year: '2024', event: t('about.timeline2024a'), description: t('about.timeline2024aDesc') },
     { year: '2024', event: t('about.timeline2024b'), description: t('about.timeline2024bDesc') },
-    { year: '2025', event: t('about.timeline2025'), description: t('about.timeline2025Desc') },
+    { year: '2024', event: t('about.timeline2024c'), description: t('about.timeline2024cDesc') },
+    { year: '2025', event: t('about.timeline2025a'), description: t('about.timeline2025aDesc') },
+    { year: '2025', event: t('about.timeline2025b'), description: t('about.timeline2025bDesc') },
+    { year: '2025', event: t('about.timeline2025c'), description: t('about.timeline2025cDesc') },
+    { year: '2026', event: t('about.timeline2026a'), description: t('about.timeline2026aDesc') },
+    { year: '2026', event: t('about.timeline2026b'), description: t('about.timeline2026bDesc') },
   ];
 
   const values = [
