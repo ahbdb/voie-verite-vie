@@ -349,6 +349,7 @@ export type Database = {
           saint_name: string
           title: string
           total_days: number | null
+          translations: Json | null
           updated_at: string | null
         }
         Insert: {
@@ -365,6 +366,7 @@ export type Database = {
           saint_name: string
           title: string
           total_days?: number | null
+          translations?: Json | null
           updated_at?: string | null
         }
         Update: {
@@ -381,6 +383,7 @@ export type Database = {
           saint_name?: string
           title?: string
           total_days?: number | null
+          translations?: Json | null
           updated_at?: string | null
         }
         Relationships: []
