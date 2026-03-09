@@ -324,7 +324,7 @@ const BiblicalReading = () => {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 text-primary text-xs font-semibold uppercase tracking-wider">
                       <Flame className="w-4 h-4" />
-                      Lecture du jour
+                      {t('about.readingOfDay')}
                     </div>
                     <p className="text-base md:text-lg font-semibold text-foreground">
                       Jour {todayReading.day_number} · {translateBookName(todayReading.books, i18n.language)} {todayReading.chapters}
