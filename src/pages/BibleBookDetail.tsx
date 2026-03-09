@@ -74,6 +74,14 @@ const BibleBookDetail = () => {
   }, [selectedChapter, stopSpeaking]);
 
   const handlePlayVoice = () => {
+    if (!('speechSynthesis' in window)) {
+      toast({
+        title: t('common.error', 'Erreur'),
+        description: t('bibleBook.voiceUnsupported', 'Lecture vocale non supportée sur cet appareil.'),
+      });
+      return;
+    }
+
     if (!chapterText.trim()) {
       toast({
         title: t('bibleBook.voiceNoTextTitle', 'Aucun texte à lire'),
