@@ -280,12 +280,12 @@ const Navigation = () => {
                       const catIsActive = visibleItems.some((item) => isPathActive(item.href));
 
                       return (
-                        <div key={cat.id} className="border-b border-border/30 pb-4 last:border-0">
+                        <div key={cat.id} className="rounded-xl border border-border/60 bg-card p-3">
                           <button
                             onClick={() => setExpandedCategory(isExpanded ? null : cat.id)}
                             aria-expanded={isExpanded}
                             className={
-                              'w-full flex items-center px-0 py-2 text-sm font-bold uppercase tracking-wider transition-opacity text-left ' +
+                              'w-full flex items-center px-0 py-1 text-xs font-bold uppercase tracking-wider transition-opacity text-left ' +
                               (catIsActive ? 'text-primary' : 'text-muted-foreground hover:opacity-80')
                             }
                           >
@@ -296,7 +296,7 @@ const Navigation = () => {
                           </button>
 
                           {isExpanded && (
-                            <div className="space-y-1 mt-2">
+                            <div className="space-y-1 mt-2 pt-2 border-t border-border/60">
                               {visibleItems.map((item) => {
                                 const Icon = item.icon ? ICONS[item.icon as string] : undefined;
                                 const active = isPathActive(item.href);
@@ -306,7 +306,7 @@ const Navigation = () => {
                                     key={item.nameKey}
                                     to={item.href}
                                     className={
-                                      'flex items-center space-x-3 py-2 px-2 rounded-md transition-colors ' +
+                                      'flex items-center space-x-3 py-2 px-2 rounded-lg transition-colors ' +
                                       (active ? 'bg-muted text-primary font-semibold' : 'hover:bg-muted/60')
                                     }
                                     aria-current={active ? 'page' : undefined}
