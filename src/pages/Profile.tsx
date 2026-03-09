@@ -237,9 +237,22 @@ const Profile = () => {
                   <label className="inline-flex items-center gap-2 text-sm font-medium text-primary cursor-pointer">
                     <Upload className="w-4 h-4" />
                     {uploadingAvatar ? 'Upload en cours...' : 'Changer la photo'}
-                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
+                    <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
                   </label>
-                  <p className="text-xs text-muted-foreground">PNG, JPG, WEBP</p>
+                  <div className="flex items-center gap-3">
+                    <p className="text-xs text-muted-foreground">PNG, JPG, WEBP · Max 5MB</p>
+                    {profile.avatar_url && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveAvatar}
+                        className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
+                        disabled={uploadingAvatar}
+                      >
+                        <ImageMinus className="w-3.5 h-3.5" />
+                        Supprimer
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
