@@ -39,6 +39,8 @@ const buildNotificationOptions = (payload: NotificationPayload) => ({
   icon: payload.icon || '/logo-3v.png',
   tag: payload.tag || 'default',
   silent: payload.silent ?? true,
+  renotify: payload.renotify ?? payload.action === 'call',
+  vibrate: payload.vibrate || (payload.action === 'call' ? [250, 150, 250, 150, 350] : [120, 60, 120]),
   requireInteraction: payload.requireInteraction ?? payload.action === 'call',
   data: {
     ...payload.data,
