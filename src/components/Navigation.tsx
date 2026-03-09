@@ -141,7 +141,7 @@ const Navigation = () => {
             </span>
           </Link>
 
-          <div className="hidden lg:flex items-center space-x-1">
+          <div className="hidden lg:flex items-center gap-2">
             {siteLinks.map((category) => {
               const visibleItems = category.items.filter((i) => i.showInNav !== false);
               const categoryIsActive = visibleItems.some((item) => isPathActive(item.href));
