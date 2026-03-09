@@ -406,7 +406,7 @@ const BiblicalReading = () => {
                       : 'border-border bg-card hover:bg-muted/40'
                   }`}
                 >
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">Filtre</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('about.filter')}</p>
                   <p className="text-sm font-semibold text-foreground">{t('biblicalReading.all')}</p>
                 </button>
 
