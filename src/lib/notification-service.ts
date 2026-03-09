@@ -123,6 +123,7 @@ export const sendVisibleNotification = async (payload: NotificationPayload) => {
         buildNotificationOptions({
           ...payload,
           silent: false,
+          renotify: payload.renotify ?? true,
           requireInteraction: payload.requireInteraction ?? true,
           tag: payload.tag || `visible-${Date.now()}`,
         })
