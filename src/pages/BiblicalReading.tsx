@@ -341,7 +341,7 @@ const BiblicalReading = () => {
                   </div>
 
                   <div className="text-right">
-                    <div className="text-xs text-muted-foreground">Progression</div>
+                    <div className="text-xs text-muted-foreground">{t('about.progression')}</div>
                     <div className="text-xl font-cinzel font-bold text-primary">{progressPercentage}%</div>
                   </div>
                 </div>
