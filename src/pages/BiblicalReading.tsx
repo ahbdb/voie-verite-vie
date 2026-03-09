@@ -327,7 +327,7 @@ const BiblicalReading = () => {
                       {t('about.readingOfDay')}
                     </div>
                     <p className="text-base md:text-lg font-semibold text-foreground">
-                      Jour {todayReading.day_number} · {translateBookName(todayReading.books, i18n.language)} {todayReading.chapters}
+                      {t('biblicalReading.day')} {todayReading.day_number} · {translateBookName(todayReading.books, i18n.language)} {todayReading.chapters}
                     </p>
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <Clock3 className="w-3.5 h-3.5" />
