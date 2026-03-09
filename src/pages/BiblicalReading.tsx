@@ -111,10 +111,12 @@ const BiblicalReading = () => {
     if (user) void loadUserProgress();
   }, [user, loadAllReadings, loadUserProgress]);
 
-  const isCompleted = useCallback(
-    (readingId: string) => userProgress.some((p) => p.reading_id === readingId && p.completed),
+  const completedSet = useMemo(
+    () => new Set(userProgress.filter((p) => p.completed).map((p) => p.reading_id)),
     [userProgress]
   );
+
+  const isCompleted = useCallback((readingId: string) => completedSet.has(readingId), [completedSet]);
 
   const getLocale = () => {
     const lang = i18n.language?.split('-')[0] || 'fr';
