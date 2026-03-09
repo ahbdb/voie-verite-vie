@@ -169,6 +169,9 @@ const AIChat = () => {
 
       if (!session) return;
 
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chat`, {
         method: 'POST',
         headers: {
@@ -176,6 +179,7 @@ const AIChat = () => {
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ messages: [...messages, userMessage] }),
+        signal: controller.signal,
       });
 
       if (!response.ok || !response.body) {
@@ -219,6 +223,7 @@ const AIChat = () => {
           textBuffer = textBuffer.slice(newlineIndex + 1);
 
           if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
           if (!line.startsWith('data: ')) continue;
 
           const jsonStr = line.slice(6).trim();
@@ -249,8 +254,14 @@ const AIChat = () => {
       }
 
       if (assistantMessage) await saveMessage(convId, 'assistant', assistantMessage);
-    } catch {
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        toast({ title: 'Réponse interrompue' });
+        return;
+      }
       toast({ title: t('common.error'), variant: 'destructive' });
+    } finally {
+      abortControllerRef.current = null;
     }
   };
 
