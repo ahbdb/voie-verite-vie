@@ -60,16 +60,26 @@ export const useBroadcastNotifications = () => {
           const url = n.link || '/';
 
           if (isCall) {
+            stopRinging();
             void playAttentionTone();
             let ringCount = 0;
             ringIntervalRef.current = window.setInterval(() => {
               ringCount += 1;
-              if (ringCount >= 10) {
+              if (ringCount >= 10 || document.visibilityState === 'visible') {
                 stopRinging();
                 return;
               }
               void playAttentionTone();
-            }, 3000);
+              void sendVisibleNotification({
+                title: n.title,
+                body: n.message,
+                tag: `${n.type}-${n.id}`,
+                action: 'call',
+                silent: false,
+                requireInteraction: true,
+                data: { url },
+              });
+            }, 3500);
           }
 
           void sendVisibleNotification({
