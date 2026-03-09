@@ -159,7 +159,6 @@ export const BibleChapterViewer = ({
   const generateVerseImage = useCallback(async (verseNumber: number): Promise<Blob | null> => {
     const reference = `${abbreviation} ${chapterNumber}:${verseNumber}`;
     const text = verses.find((v) => Number(v.number) === Number(verseNumber))?.text || '';
-    const appUrl = 'https://voie-verite-vie.lovable.app';
 
     const container = document.createElement('div');
     container.style.cssText = `
@@ -168,16 +167,9 @@ export const BibleChapterViewer = ({
       padding: 40px; font-family: Georgia, serif; border-radius: 16px;
     `;
     container.innerHTML = `
-      <div style="text-align: center; margin-bottom: 24px;">
-        <img src="/logo-3v.png" alt="Logo" style="height: 50px; margin-bottom: 12px;">
-      </div>
-      <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 20px;">
+      <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
         <p style="font-size: 18px; line-height: 1.7; color: #1f2937; margin: 0 0 16px 0; font-style: italic;">"${text}"</p>
         <p style="font-size: 14px; color: #7c3aed; font-weight: 600; margin: 0; text-align: right;">— ${reference}</p>
-      </div>
-      <div style="text-align: center; font-size: 12px; color: #6b7280;">
-        <p style="margin: 0;">Voie, Vérité, Vie</p>
-        <p style="margin: 4px 0 0 0; color: #7c3aed;">${appUrl}</p>
       </div>
     `;
     document.body.appendChild(container);
