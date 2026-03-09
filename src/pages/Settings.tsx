@@ -6,19 +6,26 @@ import Navigation from '@/components/Navigation';
 import LanguageSelector from '@/components/LanguageSelector';
 import { Button } from '@/components/ui/button';
 import { useSettings, type Theme, type TextSize } from '@/hooks/useSettings';
-import { Sun, Moon, Monitor, Type, Bell, Globe, Lock, Download, Trash2, Info, AlertTriangle } from 'lucide-react';
+import { Sun, Moon, Monitor, Type, Bell, Globe, Lock, Download, Trash2, AlertTriangle, Volume2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
 
 const Settings = memo(() => {
   const { t } = useTranslation();
-  const { settings, setTheme, setTextSize } = useSettings();
+  const { settings, setTheme, setTextSize, setSelectedVoice, availableVoices } = useSettings();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -60,6 +67,18 @@ const Settings = memo(() => {
       console.error('Erreur:', error);
       toast({ title: t('common.error'), variant: "destructive" });
     } finally { setDeletingAccount(false); setDeleteDialogOpen(false); }
+  };
+
+  const testVoice = () => {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance('Bonjour, ceci est un test de voix.');
+    const voices = window.speechSynthesis.getVoices();
+    if (settings.selectedVoice) {
+      const voice = voices.find(v => v.voiceURI === settings.selectedVoice);
+      if (voice) utterance.voice = voice;
+    }
+    window.speechSynthesis.speak(utterance);
   };
 
   const Section = ({ icon: Icon, title, desc, children }: { icon: any; title: string; desc: string; children: React.ReactNode }) => (
@@ -116,6 +135,32 @@ const Settings = memo(() => {
                     <span className="text-xs text-muted-foreground/60">{option.scale}</span>
                   </button>
                 ))}
+              </div>
+            </Section>
+
+            {/* Voice Selection */}
+            <Section icon={Volume2} title={t('settings.voiceTitle', 'Voix de lecture')} desc={t('settings.voiceDesc', 'Choisissez la voix pour la lecture biblique')}>
+              <div className="space-y-3">
+                <Select
+                  value={settings.selectedVoice || 'default'}
+                  onValueChange={(val) => setSelectedVoice(val === 'default' ? null : val)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={t('settings.selectVoice', 'Sélectionner une voix')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">{t('settings.defaultVoice', 'Voix par défaut')}</SelectItem>
+                    {availableVoices.map((voice) => (
+                      <SelectItem key={voice.voiceURI} value={voice.voiceURI}>
+                        {voice.name} ({voice.lang})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="sm" onClick={testVoice} className="gap-2">
+                  <Volume2 className="w-4 h-4" />
+                  {t('settings.testVoice', 'Tester la voix')}
+                </Button>
               </div>
             </Section>
 

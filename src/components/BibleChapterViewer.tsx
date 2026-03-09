@@ -156,32 +156,88 @@ export const BibleChapterViewer = ({
     onChapterTextReady(text);
   }, [verses, onChapterTextReady]);
 
+  const generateVerseImage = useCallback(async (verseNumber: number): Promise<Blob | null> => {
+    const reference = `${abbreviation} ${chapterNumber}:${verseNumber}`;
+    const text = verses.find((v) => Number(v.number) === Number(verseNumber))?.text || '';
+    const appUrl = 'https://voie-verite-vie.lovable.app';
+
+    const container = document.createElement('div');
+    container.style.cssText = `
+      position: absolute; left: -9999px; top: -9999px;
+      width: 600px; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      padding: 40px; font-family: Georgia, serif; border-radius: 16px;
+    `;
+    container.innerHTML = `
+      <div style="text-align: center; margin-bottom: 24px;">
+        <img src="/logo-3v.png" alt="Logo" style="height: 50px; margin-bottom: 12px;">
+      </div>
+      <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <p style="font-size: 18px; line-height: 1.7; color: #1f2937; margin: 0 0 16px 0; font-style: italic;">"${text}"</p>
+        <p style="font-size: 14px; color: #7c3aed; font-weight: 600; margin: 0; text-align: right;">— ${reference}</p>
+      </div>
+      <div style="text-align: center; font-size: 12px; color: #6b7280;">
+        <p style="margin: 0;">Voie, Vérité, Vie</p>
+        <p style="margin: 4px 0 0 0; color: #7c3aed;">${appUrl}</p>
+      </div>
+    `;
+    document.body.appendChild(container);
+
+    try {
+      const { default: html2canvas } = await import('html2canvas');
+      const canvas = await html2canvas(container, { backgroundColor: null, scale: 2, useCORS: true });
+      document.body.removeChild(container);
+      return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), 'image/png'));
+    } catch {
+      document.body.removeChild(container);
+      return null;
+    }
+  }, [abbreviation, chapterNumber, verses]);
+
   const copyToClipboard = useCallback(
-    (verseText: string) => {
+    async (verseText: string, verseNumber: number) => {
+      const blob = await generateVerseImage(verseNumber);
+      if (blob && navigator.clipboard?.write) {
+        try {
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          toast({ title: t('bibleChapter.copied'), description: t('bibleChapter.imageCopied', 'Image copiée dans le presse-papiers') });
+          return;
+        } catch {}
+      }
       navigator.clipboard.writeText(verseText);
       toast({ title: t('bibleChapter.copied'), description: t('bibleChapter.verseCopied') });
     },
-    [toast, t]
+    [generateVerseImage, toast, t]
   );
 
   const shareVerse = useCallback(
-    (verseNumber: number) => {
+    async (verseNumber: number) => {
       const reference = `${abbreviation} ${chapterNumber}:${verseNumber}`;
-      const text = verses.find((v) => Number(v.number) === Number(verseNumber))?.text || '';
+      const blob = await generateVerseImage(verseNumber);
 
-      if (navigator.share) {
-        navigator
-          .share({ title: `${bookName} ${chapterNumber}:${verseNumber}`, text: `${reference}\n\n${text}` })
-          .catch(() => {
-            navigator.clipboard.writeText(`${reference}\n\n${text}`);
-            toast({ title: t('bibleChapter.copied'), description: t('bibleChapter.refCopied', { ref: reference }) });
+      if (blob && navigator.share && navigator.canShare?.({ files: [new File([blob], 'verse.png', { type: 'image/png' })] })) {
+        try {
+          const file = new File([blob], `${reference.replace(/\s+/g, '-')}.png`, { type: 'image/png' });
+          await navigator.share({
+            files: [file],
+            title: reference,
+            text: `${reference} — Voie, Vérité, Vie`,
           });
-      } else {
-        navigator.clipboard.writeText(`${reference}\n\n${text}`);
-        toast({ title: t('bibleChapter.copied'), description: t('bibleChapter.refCopied', { ref: reference }) });
+          return;
+        } catch {}
+      }
+
+      // Fallback: download image
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${reference.replace(/\s+/g, '-')}.png`;
+        link.click();
+        URL.revokeObjectURL(url);
+        toast({ title: t('bibleChapter.imageDownloaded', 'Image téléchargée') });
       }
     },
-    [abbreviation, chapterNumber, verses, bookName, toast, t]
+    [abbreviation, chapterNumber, generateVerseImage, toast, t]
   );
 
   const saveVerse = useCallback(
@@ -252,7 +308,7 @@ export const BibleChapterViewer = ({
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6"
-                    onClick={() => copyToClipboard(verse.text)}
+                    onClick={() => copyToClipboard(verse.text, Number(verse.number))}
                     title={t('bibleChapter.copyVerse')}
                   >
                     <Copy className="h-3.5 w-3.5" />

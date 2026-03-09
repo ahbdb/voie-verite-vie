@@ -1,9 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, BookOpen, Play, Square, RotateCcw, ChevronDown } from 'lucide-react';
+import { ArrowLeft, BookOpen, Play, Square, ChevronDown } from 'lucide-react';
 import BibleChapterViewer from '@/components/BibleChapterViewer';
 import { preloadBibleChapters, clearBibleCache } from '@/lib/bible-content-loader';
 import bibleBooks from '@/data/bible-books.json';
@@ -15,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useWebSpeech } from '@/hooks/useWebSpeech';
+import { useSettings } from '@/hooks/useSettings';
 import { useToast } from '@/components/ui/use-toast';
 
 interface BookData {
@@ -34,28 +34,14 @@ const BibleBookDetail = () => {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { settings } = useSettings();
 
   const [book, setBook] = useState<BookData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedChapter, setSelectedChapter] = useState<number>(1);
   const [chapterText, setChapterText] = useState('');
-
-  const speechLanguage = useMemo(() => {
-    const baseLang = i18n.language?.split('-')[0];
-    if (baseLang === 'en') return 'en-US';
-    if (baseLang === 'it') return 'it-IT';
-    return 'fr-FR';
-  }, [i18n.language]);
-
-  const { speak, stopSpeaking, isSpeaking } = useWebSpeech({
-    language: speechLanguage,
-    onError: (message) => {
-      toast({
-        title: t('common.error', 'Erreur'),
-        description: message,
-      });
-    },
-  });
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
     if (bookId) {
@@ -69,11 +55,15 @@ const BibleBookDetail = () => {
     }
   }, [bookId]);
 
+  // Stop speaking on chapter change
   useEffect(() => {
-    stopSpeaking();
-  }, [selectedChapter, stopSpeaking]);
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+  }, [selectedChapter]);
 
-  const handlePlayVoice = () => {
+  const handlePlayVoice = useCallback(() => {
     if (!('speechSynthesis' in window)) {
       toast({
         title: t('common.error', 'Erreur'),
@@ -89,12 +79,37 @@ const BibleBookDetail = () => {
       });
       return;
     }
-    speak(chapterText);
-  };
 
-  const handleClearVoice = () => {
-    stopSpeaking();
-  };
+    // Build text: "Chapitre X" then verse texts only (no verse numbers)
+    const chapterIntro = `${t('bibleBook.chaptersTitle', 'Chapitre')} ${selectedChapter}. `;
+    // chapterText contains "1. text 2. text..." - strip verse numbers
+    const cleanText = chapterText.replace(/\d+\.\s*/g, ' ').trim();
+    const fullText = chapterIntro + cleanText;
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(fullText);
+    utterance.lang = i18n.language?.split('-')[0] === 'en' ? 'en-US' : i18n.language?.split('-')[0] === 'it' ? 'it-IT' : 'fr-FR';
+
+    // Use selected voice from settings
+    const voices = window.speechSynthesis.getVoices();
+    if (settings.selectedVoice) {
+      const voice = voices.find(v => v.voiceURI === settings.selectedVoice);
+      if (voice) utterance.voice = voice;
+    }
+
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    utteranceRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  }, [chapterText, selectedChapter, t, i18n.language, settings.selectedVoice, toast]);
+
+  const handleStopVoice = useCallback(() => {
+    window.speechSynthesis?.cancel();
+    setIsSpeaking(false);
+  }, []);
 
   if (loading) {
     return (
@@ -149,31 +164,22 @@ const BibleBookDetail = () => {
                 <ArrowLeft className="w-4 h-4" />
               </Button>
 
-              <Button
-                onClick={handlePlayVoice}
-                variant="outline"
-                size="sm"
-                disabled={!chapterText.trim() || isSpeaking}
-              >
-                <Play className="w-4 h-4 mr-1" />
-                {t('bibleBook.voiceRead', 'Lire')}
-              </Button>
-
-              <Button onClick={stopSpeaking} variant="outline" size="sm" disabled={!isSpeaking}>
-                <Square className="w-4 h-4 mr-1" />
-                {t('bibleBook.voiceStop', 'Stop')}
-              </Button>
-
-              <Button
-                onClick={handleClearVoice}
-                variant="outline"
-                size="sm"
-                disabled={!chapterText.trim() && !isSpeaking}
-                title={t('bibleBook.voiceClear', 'Effacer la lecture')}
-              >
-                <RotateCcw className="w-4 h-4 mr-1" />
-                {t('bibleBook.voiceClear', 'Effacer')}
-              </Button>
+              {!isSpeaking ? (
+                <Button
+                  onClick={handlePlayVoice}
+                  variant="outline"
+                  size="sm"
+                  disabled={!chapterText.trim()}
+                >
+                  <Play className="w-4 h-4 mr-1" />
+                  {t('bibleBook.voiceRead', 'Lire')}
+                </Button>
+              ) : (
+                <Button onClick={handleStopVoice} variant="outline" size="sm">
+                  <Square className="w-4 h-4 mr-1" />
+                  {t('bibleBook.voiceStop', 'Stop')}
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -184,37 +190,29 @@ const BibleBookDetail = () => {
               <ScrollArea className="w-full">
                 <div className="flex items-center gap-1 pr-2">
                   {chapters.map((ch) => (
-                    ch === selectedChapter ? (
-                      <DropdownMenu key={ch}>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="secondary" size="sm" className="h-9 min-w-14 px-3 gap-1">
-                            {ch}
-                            <ChevronDown className="w-3.5 h-3.5" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="max-h-72 w-40 overflow-y-auto">
-                          {chapters.map((chapterOption) => (
-                            <DropdownMenuItem
-                              key={`menu-${chapterOption}`}
-                              onSelect={() => setSelectedChapter(chapterOption)}
-                              className={selectedChapter === chapterOption ? 'bg-accent text-accent-foreground' : ''}
-                            >
-                              {t('bibleBook.chaptersTitle', 'Chapitre')} {chapterOption}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    ) : (
-                      <Button
-                        key={ch}
-                        onClick={() => setSelectedChapter(ch)}
-                        variant="ghost"
-                        size="sm"
-                        className="h-9 min-w-12 px-3"
-                      >
-                        {ch}
-                      </Button>
-                    )
+                    <DropdownMenu key={ch}>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant={ch === selectedChapter ? 'secondary' : 'ghost'}
+                          size="sm"
+                          className="h-9 min-w-12 px-3 gap-1"
+                        >
+                          {ch}
+                          {ch === selectedChapter && <ChevronDown className="w-3 h-3" />}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="max-h-72 w-40 overflow-y-auto">
+                        {chapters.map((chapterOption) => (
+                          <DropdownMenuItem
+                            key={`menu-${ch}-${chapterOption}`}
+                            onSelect={() => setSelectedChapter(chapterOption)}
+                            className={selectedChapter === chapterOption ? 'bg-accent text-accent-foreground' : ''}
+                          >
+                            {t('bibleBook.chaptersTitle', 'Chapitre')} {chapterOption}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   ))}
                 </div>
                 <ScrollBar orientation="horizontal" />
