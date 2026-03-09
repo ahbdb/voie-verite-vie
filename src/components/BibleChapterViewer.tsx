@@ -308,7 +308,7 @@ export const BibleChapterViewer = ({
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6"
-                    onClick={() => copyToClipboard(verse.text)}
+                    onClick={() => copyToClipboard(verse.text, Number(verse.number))}
                     title={t('bibleChapter.copyVerse')}
                   >
                     <Copy className="h-3.5 w-3.5" />
