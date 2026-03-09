@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { User, BookOpen, Heart, Activity, Mail, LogOut, Clock, Upload } from 'lucide-react';
+import { User, BookOpen, Heart, Activity, Mail, LogOut, Clock, Upload, ImageMinus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface UserProfile {
