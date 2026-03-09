@@ -219,8 +219,12 @@ const BiblicalReading = () => {
 
   const todayReading = useMemo(() => {
     if (allReadings.length === 0) return null;
-    const today = new Date();
-    const todayIso = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString().slice(0, 10);
+    // Use local date (respects user's timezone/country)
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const todayIso = `${yyyy}-${mm}-${dd}`;
     const exact = allReadings.find((r) => r.date === todayIso);
     if (exact) return exact;
     return allReadings.find((r) => !isCompleted(r.id)) || allReadings[0];
@@ -320,10 +324,10 @@ const BiblicalReading = () => {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 text-primary text-xs font-semibold uppercase tracking-wider">
                       <Flame className="w-4 h-4" />
-                      Lecture du jour
+                      {t('about.readingOfDay')}
                     </div>
                     <p className="text-base md:text-lg font-semibold text-foreground">
-                      Jour {todayReading.day_number} · {translateBookName(todayReading.books, i18n.language)} {todayReading.chapters}
+                      {t('biblicalReading.day')} {todayReading.day_number} · {translateBookName(todayReading.books, i18n.language)} {todayReading.chapters}
                     </p>
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <Clock3 className="w-3.5 h-3.5" />
@@ -337,7 +341,7 @@ const BiblicalReading = () => {
                   </div>
 
                   <div className="text-right">
-                    <div className="text-xs text-muted-foreground">Progression</div>
+                    <div className="text-xs text-muted-foreground">{t('about.progression')}</div>
                     <div className="text-xl font-cinzel font-bold text-primary">{progressPercentage}%</div>
                   </div>
                 </div>
@@ -366,7 +370,7 @@ const BiblicalReading = () => {
               <div className="rounded-2xl border border-border bg-card p-4 md:p-5 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-medium text-foreground">Programme de lecture</p>
+                    <p className="text-sm font-medium text-foreground">{t('about.readingProgram')}</p>
                     <p className="text-xs text-muted-foreground">
                       {completedCount}/{TOTAL_PROGRAM_DAYS} {t('biblicalReading.completedLabel')}
                     </p>
@@ -380,13 +384,13 @@ const BiblicalReading = () => {
                     }`}
                   >
                     <ListFilter className="w-3.5 h-3.5" />
-                    {onlyUnread ? 'Lectures non lues' : 'Toutes les lectures'}
+                    {onlyUnread ? t('about.unreadReadings') : t('about.allReadings')}
                   </button>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Progression totale</span>
+                    <span className="text-muted-foreground">{t('about.totalProgress')}</span>
                     <span className="font-cinzel font-bold text-primary">{progressPercentage}%</span>
                   </div>
                   <Progress value={progressPercentage} className="h-2" />
@@ -402,7 +406,7 @@ const BiblicalReading = () => {
                       : 'border-border bg-card hover:bg-muted/40'
                   }`}
                 >
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">Filtre</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('about.filter')}</p>
                   <p className="text-sm font-semibold text-foreground">{t('biblicalReading.all')}</p>
                 </button>
 
@@ -455,7 +459,7 @@ const BiblicalReading = () => {
               <div className="space-y-3">
                 {filteredReadings.length === 0 ? (
                   <div className="rounded-xl border border-border bg-card p-5 text-center text-sm text-muted-foreground">
-                    Aucune lecture pour ce filtre.
+                    {t('about.noReadingsForFilter')}
                   </div>
                 ) : (
                   filteredReadings.map((reading) => {
@@ -474,7 +478,7 @@ const BiblicalReading = () => {
                           </div>
 
                           <div className="flex-1 min-w-0 space-y-1">
-                            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Jour {reading.day_number}</p>
+                            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{t('biblicalReading.day')} {reading.day_number}</p>
                             <Button
                               variant="link"
                               size="sm"

@@ -10,11 +10,12 @@ import bibleBooks from '@/data/bible-books.json';
 import { getBookName, getBookAbbreviation } from '@/lib/bible-utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useSettings } from '@/hooks/useSettings';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -42,6 +43,7 @@ const BibleBookDetail = () => {
   const [chapterText, setChapterText] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const chapterButtonsRef = useRef<Map<number, HTMLButtonElement>>(new Map());
 
   // Refs for pause/resume functionality
   const fullTextRef = useRef<string>('');
@@ -63,13 +65,17 @@ const BibleBookDetail = () => {
     }
   }, [bookId]);
 
-  // Stop speaking on chapter change
+  // Stop speaking on chapter change + scroll navbar
   useEffect(() => {
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
       setIsPaused(false);
     }
+    // Scroll the chapter button into view in the navbar
+    setTimeout(() => {
+      chapterButtonsRef.current.get(selectedChapter)?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }, 50);
   }, [selectedChapter]);
 
   const speakFrom = useCallback((offset: number) => {
@@ -254,33 +260,44 @@ const BibleBookDetail = () => {
 
         <div className="border-b bg-background sticky top-[7.25rem] z-10">
           <div className="container mx-auto px-4">
-            <div className="py-1">
-              <ScrollArea className="w-full">
+            <div className="py-1 flex items-center gap-2">
+              <Select
+                value={String(selectedChapter)}
+                onValueChange={(val) => {
+                  const ch = Number(val);
+                  setSelectedChapter(ch);
+                  // Scroll the chapter button into view
+                  setTimeout(() => {
+                    chapterButtonsRef.current.get(ch)?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                  }, 50);
+                }}
+              >
+                <SelectTrigger className="w-auto min-w-[120px] h-9 text-xs gap-1">
+                  <SelectValue placeholder={`${t('bibleBook.chaptersTitle')} ${selectedChapter}`} />
+                </SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {chapters.map((ch) => (
+                    <SelectItem key={ch} value={String(ch)}>
+                      {t('bibleBook.chaptersTitle')} {ch}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <ScrollArea className="flex-1">
                 <div className="flex items-center gap-1 pr-2">
                   {chapters.map((ch) => (
-                    <DropdownMenu key={ch}>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant={ch === selectedChapter ? 'secondary' : 'ghost'}
-                          size="sm"
-                          className="h-9 min-w-12 px-3 gap-1"
-                        >
-                          {ch}
-                          {ch === selectedChapter && <ChevronDown className="w-3 h-3" />}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="max-h-72 w-40 overflow-y-auto">
-                        {chapters.map((chapterOption) => (
-                          <DropdownMenuItem
-                            key={`menu-${ch}-${chapterOption}`}
-                            onSelect={() => setSelectedChapter(chapterOption)}
-                            className={selectedChapter === chapterOption ? 'bg-accent text-accent-foreground' : ''}
-                          >
-                            {t('bibleBook.chaptersTitle')} {chapterOption}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button
+                      key={ch}
+                      ref={(el) => {
+                        if (el) chapterButtonsRef.current.set(ch, el);
+                      }}
+                      variant={ch === selectedChapter ? 'secondary' : 'ghost'}
+                      size="sm"
+                      className="h-9 min-w-12 px-3"
+                      onClick={() => setSelectedChapter(ch)}
+                    >
+                      {ch}
+                    </Button>
                   ))}
                 </div>
                 <ScrollBar orientation="horizontal" />
