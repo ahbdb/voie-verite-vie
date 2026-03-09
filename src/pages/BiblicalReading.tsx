@@ -390,7 +390,7 @@ const BiblicalReading = () => {
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Progression totale</span>
+                    <span className="text-muted-foreground">{t('about.totalProgress')}</span>
                     <span className="font-cinzel font-bold text-primary">{progressPercentage}%</span>
                   </div>
                   <Progress value={progressPercentage} className="h-2" />
