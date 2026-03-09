@@ -71,6 +71,7 @@ const AIChat = () => {
 
   const messageListRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const { toast } = useToast();
   const { user, loading } = useAuth();
